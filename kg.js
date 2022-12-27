@@ -222,8 +222,6 @@ function physics()
         var y = parseInt(thingA.getAttribute("y"));
         var accX = 0;
         var accY = 0;
-        var colX = 0;
-        var colY = 0;
         var m = parseInt(thingA.getAttribute("mass"));
 
         var attracts = thingA.getAttribute("relations").split(",");
@@ -238,45 +236,37 @@ function physics()
                 var dY = parseInt(thingB.getAttribute("y")) - y;
                 var d = Math.sqrt((dX * dX) + (dY * dY));
 
+                if(d==0)
+                {
+                    var od = 0.1;
+                }
+                else
+                {
+                    var od = d;
+                }
+
                 d = d - (parseInt(thingA.getAttribute("mass")) + parseInt(thingB.getAttribute("mass")));
 
                 if (0>= d)
                 {
-                    var bvx = parseInt(thingB.getAttribute("velx"));
-                    var bvy = parseInt(thingB.getAttribute("vely"));
-                    var bv = Math.sqrt((bvx*bvx) + (bvy*bvy));
-
-                    if(bv < 1)
+                    if(dX==0)
                     {
-                        bv = 1;
-                    }
-
-                    var momentum = parseInt(thingB.getAttribute("mass")) * bv;
-
-                    if (Math.sqrt((dX * dX) + (dY * dY))==0)
-                    {
-                        accX = accX - momentum*2*(Math.round(Math.random()) -0.5);
-                        accY = accY - momentum*2*(Math.round(Math.random()) -0.5);
+                        accX = accX - 10*(Math.round(Math.random()) -0.5);
+                        console.log("0");
                     }
                     else
                     {
-                        if(dX!=0)
-                        {
-                            accX = accX - momentum * d/dX;
-                        }
-                        else
-                        {
-                            accX = accX - momentum * d;
-                        }
+                        accX = accX - repel*(m/od)*(dX/od);
+                    }
 
-                        if(dY!=0)
-                        {
-                            accY = accY - momentum * d/dY;
-                        }
-                        else
-                        {
-                            accY = accY - momentum * d;
-                        }
+                    if(dY==0)
+                    {
+                        accY = accY - 10*(Math.round(Math.random()) -0.5);
+                        console.log("0");
+                    }
+                    else
+                    {
+                        accY = accY - repel*(m/od)*(dY/od);
                     }
                 }
                 else
@@ -320,11 +310,6 @@ function physics()
         var vely = parseInt(thingA.getAttribute("vely")) + accY;
 
         var vel = Math.sqrt((velx*velx) + (vely*vely));
-
-        if(vel>10)
-        {
-            vel = 10;
-        }
 
         if (Math.abs(vel) < friction)
         {
