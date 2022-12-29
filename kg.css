@@ -23,7 +23,13 @@ body
 {
     height:100%;
     width: 100%;
-    position:absolute
+    position:absolute;
+    overflow: hidden;
+}
+
+#graph:active
+{
+     cursor:move;
 }
 
 .circle
@@ -40,10 +46,30 @@ body
     border-style: solid;
 }
 
-.vertical-center {
-  margin: 0;
-  position: relative;
-  top: 50%;
-  -ms-transform: translateY(-50%);
-  transform: translateY(-50%);
+.circle:hover
+{
+    cursor:grab;
+}
+
+.circle:active
+{
+    cursor:grabbing;
+}
+
+.name {
+    margin: 0;
+    position: relative;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+.line
+{
+    position:absolute;
+    background-color: red;
 }

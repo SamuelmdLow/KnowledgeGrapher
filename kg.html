@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="kg.css">
     <script src="kg.js"></script>
 </head>
-<body>
+<body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);">
 
 <input type="hidden" id="old">
 
@@ -14,7 +14,7 @@
 
 </textarea>
 
-<div id="graph" scale="1" panx="700" pany="300" repel="0.1" attract="0.1" friction="0.1">
+<div id="graph" onmousedown="setanchor(this);" onmouseup="removeanchor(this);" scale="10" panx="700" pany="300" repel="0.01" attract="0.01" energy="0">
 
 </div>
 
