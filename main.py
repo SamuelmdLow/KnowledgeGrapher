@@ -11,13 +11,24 @@ def index():
     return render_template('index.html', graphs=graphs)
 
 @app.route('/edit/<id>')
-def graph(id):
-    print("id is " + id)
+def edit(id):
+
     if os.path.exists("/user/"+id):
         return "oops"
     else:
         file = open("user/"+id, "r").read()
-        return render_template('kg.html', file=file)
+        return render_template('kg.html', file=file, id=id)
+
+@app.route('/view/<id>')
+def view(id):
+
+    if os.path.exists("/user/"+id):
+        return "oops"
+    else:
+        file = open("user/"+id, "r").read()
+        return render_template('vkg.html', file=file, id=id)
+
+
 
 @app.route('/save', methods=['GET', 'POST'])
 def save():

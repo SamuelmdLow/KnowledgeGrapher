@@ -1,0 +1,126 @@
+body
+{
+    margin:0;
+}
+
+#input
+{
+    margin:0;
+    padding:0;
+    border-radius:0;
+    width: 20%;
+    height: 95%;
+    min-width:10%;
+    min-height:95%;
+    max-height:95%;
+    z-index: 3;
+    position: absolute;
+    left: 0;
+    bottom:0;
+    border-top-width:0;
+    border-bottom-width:0;
+}
+
+#graph
+{
+    height:100%;
+    width: 100%;
+    position:absolute;
+    overflow: hidden;
+    top:0;
+    z-index: -1;
+}
+
+#graph:active
+{
+     cursor:move;
+}
+
+.circle
+{
+    position:absolute;
+    left:500px;
+    top:500px;
+    border-radius: 100px;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    border-width:1px;
+    border-color: black;
+    border-style: solid;
+    z-index: 2;
+    background-size:cover;
+}
+
+.circle:hover
+{
+    cursor:pointer;
+}
+
+.circle:active
+{
+    cursor:pointer;
+}
+
+.name {
+    margin: 0;
+    position: relative;
+    top: 50%;
+    -ms-transform: translateY(-50%);
+    transform: translateY(-50%);
+
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
+}
+
+.line
+{
+    position:absolute;
+    background-color: red;
+    z-index: 1;
+}
+
+.button
+{
+    position: relative;
+    padding: 5px;
+    border-radius: 20px;
+    background-color: #cfcfcf;
+    display:inline;
+    margin:1px;
+    text-align: center;
+
+}
+
+a
+{
+    text-decoration: none;
+    color:black;
+}
+
+.button:hover
+{
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+#saveButton
+{
+    width:100px;
+}
+
+#inspector
+{
+    width: 300px;
+    height: 100%;
+    position: absolute;
+    right: 0;
+    top: 0;
+    background-color: white;
+    border: black;
+    border-width: 0;
+    border-left-width: 1px;
+    border-style: solid;
+    padding-left: 1%;
+}

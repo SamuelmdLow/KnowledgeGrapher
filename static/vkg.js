@@ -3,9 +3,14 @@ var old = "";
 function onload()
 {
     var saved = document.getElementById("saved").value;
-    document.getElementById("input").value = convertToMarkUp(saved);
     setup(processInput(saved));
-    window.setInterval(update, 10);
+    window.setInterval(staticUpdate, 10);
+}
+
+function staticUpdate()
+{
+    panning();
+    placein();
 }
 
 function convertToMarkUp(file)
@@ -29,6 +34,30 @@ function convertToMarkUp(file)
 
 }
 
+function showInspector(that)
+{
+    var inspector = document.getElementById("inspector");
+    document.getElementById("inspector-name").innerHTML = that.getAttribute("name");
+    document.getElementById("inspector-id").innerHTML = that.id;
+    document.getElementById("inspector-desc").innerHTML = that.getAttribute("desc");
+    var rels = document.getElementById("inspector-rels");
+    rels.innerHTML = '';
+    for(let i=0; i<that.children.length; i++)
+    {
+        var line = that.children[i];
+        if(line.classList.contains("line"))
+        {
+            var relations = line.getAttribute("rel").split(",");
+            for(let x=0; x<relations.length; x++)
+            {
+                var li = document.createElement("li");
+                li.innerHTML = "<p>"+that.getAttribute("name") + " <strong>" + relations[x] + "</strong> " + line.getAttribute("target") + "</p>";
+                rels.appendChild(li);
+            }
+        }
+    }
+}
+
 function setup(things)
 {
     var graph = document.getElementById("graph");
@@ -43,9 +72,10 @@ function setup(things)
         circle.setAttribute("y", thing.y);
         circle.setAttribute("velx", 0);
         circle.setAttribute("vely", 0);
-        circle.setAttribute("onmousedown", "this.setAttribute('clicked', 1);");
-        circle.setAttribute("onmouseup", "releasegrab(this);");
+        circle.setAttribute("onclick", "showInspector(this)");
         circle.setAttribute("mass", thing.mass);
+        circle.setAttribute("name", thing.name);
+        circle.setAttribute("desc", thing.desc);
         circle.style.backgroundImage = "url('"+thing.image+"')";
 
         const name = document.createElement("p");
@@ -68,6 +98,7 @@ function setup(things)
                 var line = document.createElement("DIV");
                 line.classList.add("line");
                 line.setAttribute("target", themId);
+                line.setAttribute("rel",thing.relations[x][0])
                 line.setAttribute("count", 1);
 
                 circle.appendChild(line);
@@ -79,6 +110,7 @@ function setup(things)
                     if(circle.children[n].getAttribute("target")==themId)
                     {
                         var thick = parseInt(circle.children[n].getAttribute("count"))+1;
+                        line.setAttribute("rel", line.getAttribute("rel") + "," + thing.relations[x][0])
                         circle.children[n].setAttribute("count",thick);
                         break;
                     }
@@ -89,6 +121,119 @@ function setup(things)
         circle.setAttribute("relations", attracts.join(","))
 
         graph.appendChild(circle);
+    }
+
+    var children = graph.children;
+    for(let a=0; a<children.length; a++)
+    {
+        var thingA = children[a];
+        thingA.setAttribute("mass",1);
+        for(let b=0; b<children.length; b++)
+        {
+            if (a != b)
+            {
+                var thingB = children[b];
+                var attractB = thingB.getAttribute("relations").split(",");
+                for(let i=0; i<attractB.length; i++)
+                {
+                    if(attractB[i]==thingA.id)
+                    {
+                        thingA.setAttribute("mass", parseInt(thingA.getAttribute("mass"))+1);
+                    }
+                }
+            }
+        }
+        thingA.style.width = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
+        thingA.style.height = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
+    }
+}
+
+function panning()
+{
+    if(graph.getAttribute("anchor")=="1")
+    {
+        var panx = parseFloat(graph.getAttribute("panx"));
+        var pany = parseFloat(graph.getAttribute("pany"));
+
+        var body = document.getElementsByTagName("BODY")[0];
+        panx = panx + (parseInt(body.getAttribute("x")) - parseInt(graph.getAttribute("anchorx")));
+        pany = pany + (parseInt(body.getAttribute("y")) - parseInt(graph.getAttribute("anchory")));
+
+        graph.setAttribute("anchorx", body.getAttribute("x"));
+        graph.setAttribute("anchory", body.getAttribute("y"));
+
+        graph.setAttribute("panx", panx);
+        graph.setAttribute("pany", pany);
+    }
+}
+
+
+
+function placein()
+{
+    var graph = document.getElementById("graph");
+    var scale = parseFloat(graph.getAttribute("scale"));
+    var panx = parseFloat(graph.getAttribute("panx"));
+    var pany = parseFloat(graph.getAttribute("pany"));
+    var children = graph.children;
+
+    for (let i=0; i<children.length; i++)
+    {
+        thingA = children[i]
+
+        var mass = parseInt(thingA.getAttribute("mass"));
+        var x = parseFloat(thingA.getAttribute("x"));
+        var y = parseFloat(thingA.getAttribute("y"));
+
+        thingA.children[0].style.fontSize = String(Math.ceil(scale*mass/5)) + "px";
+
+        thingA.style.width = String(2*scale*mass)+"px";
+        thingA.style.height = String(2*scale*mass)+"px";
+
+        thingA.style.left = String(panx + scale*x - scale*mass) + "px";
+        thingA.style.top = String(pany + scale*y - scale*mass) + "px";
+        thingA.style.borderRadius = String(scale*mass*2) + "px";
+    }
+
+    for (let a=0; a<children.length; a++)
+    {
+        var thingA = children[a];
+        var x = parseFloat(thingA.getAttribute("x"));
+        var y = parseFloat(thingA.getAttribute("y"));
+
+        for(let b=0; b<thingA.children.length; b++)
+        {
+            var line = thingA.children[b];
+            if(line.classList.contains("line"))
+            {
+                var thingB = document.getElementById(line.getAttribute("target"));
+                if (thingB!= null)
+                {
+                    var dX = parseFloat(thingB.getAttribute("x")) - x;
+                    var dY = parseFloat(thingB.getAttribute("y")) - y;
+
+                    var d = Math.sqrt((dX*dX) + (dY*dY));
+                    var thick = parseInt(line.getAttribute("count"));
+
+                    var m = parseInt(thingA.getAttribute("mass"));
+                    var mb = parseInt(thingB.getAttribute("mass"));
+
+                    var length = d-m-mb;
+                    var xoff = (dX/d)*(m+length/2);
+                    var yoff = (dY/d)*(m+length/2);
+
+                    line.style.transform = "rotate(0deg)";
+                    line.style.width = String(length*scale)+"px";
+                    line.style.height = "0.1px";
+                    line.style.left = String((m-length/2)*scale) + "px";
+                    line.style.top = String((m)*scale) + "px";
+                    line.style.transform = "rotate(" + String((180/Math.PI)*Math.atan(dY/dX)) + "deg)";
+                    line.style.left = String((m-length/2+xoff)*scale) + "px";
+                    line.style.top = String((m+yoff)*scale) + "px";
+                    line.style.height = String(thick*scale*0.1)+"px";
+                }
+            }
+        }
     }
 }
 
@@ -108,20 +253,15 @@ function Thing(id, name, image, desc, relations, mass, x, y)
 function update()
 {
     var input = document.getElementById("input").value;
-    var graph = document.getElementById("graph");
     if (old != input)
     {
         old = input;
         redraw();
-        if(graph.getAttribute("saved")=="1")
-        {
-            saveGraph();
-        }
     }
 
     physics();
 
-
+    var graph = document.getElementById("graph");
     var savebutton = document.getElementById("saveButton");
     if(parseFloat(graph.getAttribute("energy")) > 0.0001)
     {
@@ -138,6 +278,8 @@ function update()
         {
             saveGraph();
             graph.setAttribute("saved", 1);
+            savebutton.innerHTML = "Saved";
+            savebutton.style.backgroundColor = "#98bdfb";
         }
     }
 }
@@ -771,10 +913,6 @@ function getComplete()
 
 function saveGraph()
 {
-    var savebutton = document.getElementById("saveButton");
-    savebutton.innerHTML = "Saved";
-    savebutton.style.backgroundColor = "#98bdfb";
-
     console.log("save graph");
     var id = window.location.href.split("edit/")[1];
     var save = getComplete();

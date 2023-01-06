@@ -10,7 +10,7 @@
 <ul>
 {% for graph in graphs %}
 <li>
-    <a href="/edit/{{graph.name}}">{{graph.name}}</a>
+    <p>{{graph.name}} <a href="/edit/{{graph.name}}">edit</a> <a href="/view/{{graph.name}}">view</a></p>
 </li>
 {% endfor %}
 </ul>

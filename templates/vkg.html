@@ -4,28 +4,28 @@
     <meta charset="UTF-8">
     <title>Title</title>
      <meta meta name="viewport" content="width=device-width" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='kg.css') }}">
-    <script src="{{ url_for('static', filename='kg.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='vkg.css') }}">
+    <script src="{{ url_for('static', filename='vkg.js') }}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 </head>
 <body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);" onload="onload()">
 
 <input type="hidden" id="saved" value="{{file}}">
 
-<div>
+<a href="/" ><div class="button">
+    Back
+</div></a>
 
-    <a href="/" ><div class="button">
-        Back
-    </div></a>
-    <a href="/view/{{id}}" ><div class="button">
-        View
-    </div></a>
-    <div id="saveButton" class="button" onclick="saveGraph()">
-        Saved
-    </div>
 
-    <textarea id="input">
-    </textarea>
+<a href="/edit/{{id}}" ><div class="button">
+    Edit
+</div></a>
+
+<div id="inspector">
+    <h1 id="inspector-name"></h1>
+    <p id="inspector-id"></p>
+    <p id="inspector-desc"></p>
+    <ul id="inspector-rels"></ul>
 </div>
 
 <div id="graph" onmousedown="setanchor(this);" onmouseup="removeanchor(this);" saved="0" scale="10" panx="700" pany="300" repel="0.01" attract="0.01" energy="0">
