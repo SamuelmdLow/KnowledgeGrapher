@@ -1,0 +1,183 @@
+samlow{
+name:sam low
+image:null
+desc:null
+x:-5.232231200927356
+y:7.088680179518528
+gr9 -> lucie
+gr10 -> michelle
+gr11 -> cassidy
+gr12 -> michelle
+}
+michelle{
+name:michelle
+image:null
+desc:null
+x:-24.59596918785726
+y:11.662957034953584
+gr97 -> chris
+gr9 -> sams
+gr10 -> ryancao
+gr10 -> samlow
+gr11 -> lucie
+gr12 -> jason
+gr12 -> tina
+}
+ryancao{
+name:ryan cao
+image:null
+desc:null
+x:-21.132527572398196
+y:29.46422772966442
+gr10 -> michelle
+}
+jason{
+name:jason
+image:null
+desc:null
+x:-30.52360875365287
+y:26.52807372235517
+gr7 -> michelle
+gr8 -> michelle
+gr9 -> michelle
+gr10 -> michelle
+gr11 -> michelle
+gr12 -> michelle
+}
+sams{
+name:sam s
+image:null
+desc:null
+x:-5.770552907014012
+y:19.86668054134544
+gr9 -> michelle
+gr11 -> tina
+}
+samc{
+name:sam c
+image:null
+desc:null
+x:10.680469477357972
+y:16.717544700052834
+gr12 -> cassidy
+}
+ryan{
+name:ryan
+image:null
+desc:null
+x:-12.37197707018515
+y:-21.406938831190192
+gr7 -> lucie
+gr8 -> shelby
+gr9 -> yuqi
+gr10 -> lucie
+gr11 -> josia
+gr12 -> josia
+}
+josia{
+name:josia
+image:null
+desc:null
+x:-5.028923816751744
+y:-26.817053776890596
+}
+cassidy{
+name:cassidy
+image:null
+desc:null
+x:3.2831763321517715
+y:13.960890808570381
+gr11 -> samlow
+gr11 -> tina
+gr12 -> samc
+gr12 -> sams
+}
+lucie{
+name:lucie
+image:null
+desc:null
+x:-8.119078390113653
+y:-9.065487609495223
+}
+yuqi{
+name:yuqi
+image:null
+desc:null
+x:-12.7116320163233
+y:-27.832850681595016
+gr9 -> ryan
+}
+shelby{
+name:shelby
+image:null
+desc:null
+x:-28.46959666662176
+y:-22.252857030437852
+gr7 -> jacob
+}
+jacob{
+name:jacob
+image:null
+desc:null
+x:-45.89922829293162
+y:-17.642039076793612
+gr7 -> shelby
+gr9 -> michelle
+gr9 -> yolanda
+gr9 -> emilly
+gr10 -> emilly
+gr11 -> emilly
+gr12 -> selah
+uni1 -> selah
+}
+yolanda{
+name:yolanda
+image:null
+desc:null
+x:-64.01522658389068
+y:-2.3095791892977866
+gr9 -> chris
+gr9 -> jacob
+gr9 -> anthony
+gr10 -> anthony
+gr11 -> anthony
+gr12 -> anthony
+}
+emilly{
+name:emilly
+image:null
+desc:null
+x:-56.7916854851131
+y:-27.7610780322838
+gr9 -> jacob
+gr10 -> jacob
+gr11 -> jacob
+}
+anthony{
+name:anthony
+image:null
+desc:null
+x:-78.32258454217127
+y:0.41634585720643524
+gr9 -> yolanda
+gr10 -> yolanda
+gr11 -> yolanda
+gr12 -> yolanda
+}
+chris{
+name:chris
+image:null
+desc:null
+x:-50.73082402222949
+y:6.427542472527183
+gr9 -> yolanda
+}
+selah{
+name:selah
+image:null
+desc:null
+x:-44.95805625822159
+y:-31.645962680857277
+gr12 -> jacob
+uni1 -> jacob
+}

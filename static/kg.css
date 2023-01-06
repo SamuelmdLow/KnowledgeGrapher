@@ -9,12 +9,14 @@ body
     padding:0;
     border-radius:0;
     width: 20%;
-    height: 100%;
+    height: 95%;
     min-width:10%;
-    min-height:100%;
-    z-index: 1;
+    min-height:95%;
+    max-height:95%;
+    z-index: 3;
     position: absolute;
     left: 0;
+    bottom:0;
     border-top-width:0;
     border-bottom-width:0;
 }
@@ -25,6 +27,8 @@ body
     width: 100%;
     position:absolute;
     overflow: hidden;
+    top:0;
+    z-index: -1;
 }
 
 #graph:active
@@ -44,6 +48,8 @@ body
     border-width:1px;
     border-color: black;
     border-style: solid;
+    z-index: 2;
+    background-size:cover;
 }
 
 .circle:hover
@@ -72,4 +78,34 @@ body
 {
     position:absolute;
     background-color: red;
+    z-index: 1;
+}
+
+.button
+{
+    position: relative;
+    padding: 5px;
+    border-radius: 20px;
+    background-color: #cfcfcf;
+    display:inline;
+    margin:1px;
+    text-align: center;
+
+}
+
+a
+{
+    text-decoration: none;
+    color:black;
+}
+
+.button:hover
+{
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+#saveButton
+{
+    width:100px;
 }

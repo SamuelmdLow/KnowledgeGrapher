@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+     <meta meta name="viewport" content="width=device-width" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='kg.css') }}">
+    <script src="{{ url_for('static', filename='kg.js') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+</head>
+<body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);" onload="onload()">
+
+<input type="hidden" id="saved" value="{{file}}">
+
+<div>
+
+    <a href="/" ><div class="button">
+        Back
+    </div></a>
+    <div id="saveButton" class="button" onclick="saveGraph()">
+        Saved
+    </div>
+
+    <textarea id="input">
+    </textarea>
+</div>
+
+<div id="graph" onmousedown="setanchor(this);" onmouseup="removeanchor(this);" saved="0" scale="10" panx="700" pany="300" repel="0.01" attract="0.01" energy="0">
+
+</div>
+
+</body>
+</html>
