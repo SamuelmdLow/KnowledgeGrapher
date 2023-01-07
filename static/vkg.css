@@ -52,6 +52,11 @@ body
     background-size:cover;
 }
 
+.inspected-circle
+{
+    border-color: red;
+}
+
 .circle:hover
 {
     cursor:pointer;
@@ -77,8 +82,15 @@ body
 .line
 {
     position:absolute;
-    background-color: red;
+    background-color: grey;
     z-index: 1;
+    opacity:0.2;
+}
+
+.inspected-line
+{
+    background-color: red;
+    opacity: 1;
 }
 
 .button
@@ -123,4 +135,5 @@ a
     border-left-width: 1px;
     border-style: solid;
     padding-left: 1%;
+    padding-right: 1%;
 }

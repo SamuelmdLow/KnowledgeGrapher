@@ -34,8 +34,30 @@ function convertToMarkUp(file)
 
 }
 
+function uninspect(that)
+{
+    that.classList.toggle("inspected-circle");
+    for(let i=0; i<that.children.length; i++)
+    {
+        var line = that.children[i];
+        if(line.classList.contains("line"))
+        {
+            line.classList.toggle("inspected-line");
+        }
+    }
+
+    document.getElementById("graph").setAttribute("inspected", "none");
+}
+
 function showInspector(that)
 {
+    var graph = document.getElementById("graph");
+    if(graph.getAttribute("inspected")!="none")
+    {
+        uninspect(document.getElementById(graph.getAttribute("inspected")));
+    }
+    that.classList.toggle("inspected-circle");
+    graph.setAttribute("inspected", that.id);
     var inspector = document.getElementById("inspector");
     document.getElementById("inspector-name").innerHTML = that.getAttribute("name");
     document.getElementById("inspector-id").innerHTML = that.id;
@@ -47,11 +69,12 @@ function showInspector(that)
         var line = that.children[i];
         if(line.classList.contains("line"))
         {
+            line.classList.toggle("inspected-line");
             var relations = line.getAttribute("rel").split(",");
             for(let x=0; x<relations.length; x++)
             {
                 var li = document.createElement("li");
-                li.innerHTML = "<p>"+that.getAttribute("name") + " <strong>" + relations[x] + "</strong> " + line.getAttribute("target") + "</p>";
+                li.innerHTML = "<p>"+that.getAttribute("name") + " <strong>" + relations[x] + "</strong> " + document.getElementById(line.getAttribute("target")).getAttribute("name") + "</p>";
                 rels.appendChild(li);
             }
         }
