@@ -7,6 +7,15 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='vkg.css') }}">
     <script src="{{ url_for('static', filename='vkg.js') }}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    tex2jax: {
+      inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+      processEscapes: true
+    }
+  });
+</script>
 </head>
 <body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);" onload="onload()">
 
@@ -24,11 +33,13 @@
 <div id="inspector">
     <h1 id="inspector-name"></h1>
     <p id="inspector-id"></p>
+    <img id="inspector-image">
     <p id="inspector-desc"></p>
+    <hr>
     <ul id="inspector-rels"></ul>
 </div>
 
-<div id="graph" onmousedown="setanchor(this);" onmouseup="removeanchor(this);" saved="0" scale="10" panx="700" pany="300" repel="0.01" attract="0.01" energy="0" inspected="none">
+<div id="graph" onmouseover="hovering(this);" onmouseout="nothovering(this);" onmousedown="setanchor(this);" onmouseup="removeanchor(this);" saved="0" scale="10" panx="700" pany="300" repel="0.01" attract="0.01" energy="0" inspected="none">
 
 </div>
 

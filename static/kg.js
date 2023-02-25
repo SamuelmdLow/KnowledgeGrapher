@@ -48,10 +48,16 @@ function setup(things)
         circle.setAttribute("mass", thing.mass);
         circle.style.backgroundImage = "url('"+thing.image+"')";
 
+        if(thing.image!="null")
+        {
+            circle.style.color = "white";
+            circle.style.textShadow = "2px 2px 4px #000000";
+        }
+
         const name = document.createElement("p");
         name.innerHTML = thing.name;
         name.classList.add("name");
-        name.style.fontSize = String(Math.ceil(scale*thing.mass/5)) + "px";
+        name.style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
 
         circle.appendChild(name);
 
@@ -145,7 +151,7 @@ function update()
 function processInput(input)
 {
     var things = []
-    input = input.split("}");
+    input = input.split("}\n");
     input.pop();
 
     for (let i=0; i<input.length; i++)
@@ -278,7 +284,7 @@ function redraw()
             var circle = document.getElementById(thing.id);
             circle.children[0].innerHTML = thing.name;
             var mass = parseInt(circle.getAttribute("mass"));
-            circle.children[0].style.fontSize = String(Math.ceil(scale*mass/5)) + "px";
+            circle.children[0].style.fontSize = String(Math.ceil(scale*mass/4)) + "px";
             var lines = circle.children;
 
             for(let n=1; n<lines.length; n++)
@@ -323,6 +329,12 @@ function redraw()
             circle.style.backgroundImage = "url('"+thing.image+"')";
             existing.splice(existing.indexOf(thing.id),1);
 
+            if(thing.image!="null" && thing.image!=null)
+            {
+                circle.style.color = "white";
+                circle.style.textShadow = "2px 2px 4px #000000";
+            }
+
 
         }
         else
@@ -358,7 +370,7 @@ function redraw()
             const name = document.createElement("p");
             name.innerHTML = thing.name;
             name.classList.add("name");
-            name.style.fontSize = String(Math.ceil(scale*thing.mass/5)) + "px";
+            name.style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
 
             circle.appendChild(name);
 
@@ -429,6 +441,7 @@ function redraw()
         thingA.style.width = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
         thingA.style.height = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
     }
+    MathJax.typesetPromise();
 }
 
 function physics()
@@ -624,7 +637,7 @@ function physics()
         thingA.setAttribute("velx", commands[i][3]);
         thingA.setAttribute("vely", commands[i][4]);
 
-        thingA.children[0].style.fontSize = String(Math.ceil(scale*mass/5)) + "px";
+        thingA.children[0].style.fontSize = String(Math.ceil(scale*mass/4)) + "px";
 
         thingA.style.width = String(2*scale*mass)+"px";
         thingA.style.height = String(2*scale*mass)+"px";
@@ -676,6 +689,16 @@ function physics()
     }
 }
 
+function hovering(that)
+{
+    that.setAttribute("hovering", "1");
+}
+
+function nothovering(that)
+{
+    that.setAttribute("hovering", "0");
+}
+
 function setanchor(that)
 {
     var body = document.getElementsByTagName("BODY")[0];
@@ -719,25 +742,28 @@ function releasegrab(that)
 window.addEventListener("wheel", function(e) {
     var body = document.getElementsByTagName("BODY")[0];
     var graph = document.getElementById("graph");
-    var x = parseInt(body.getAttribute("x"));
-    var y = parseInt(body.getAttribute("y"));
-    var panx = parseFloat(graph.getAttribute("panx"));
-    var pany = parseFloat(graph.getAttribute("pany"));
-
-    var dir = Math.sign(e.deltaY);
-    var scale = parseFloat(graph.getAttribute("scale"));
-    if(dir == 1)
+    if(graph.getAttribute("hovering") == "1")
     {
-        var newscale = scale*0.9;
-    }
-    else
-    {
-        var newscale = scale/0.9;
-    }
-    graph.setAttribute("scale", newscale);
+        var x = parseInt(body.getAttribute("x"));
+        var y = parseInt(body.getAttribute("y"));
+        var panx = parseFloat(graph.getAttribute("panx"));
+        var pany = parseFloat(graph.getAttribute("pany"));
 
-    graph.setAttribute("panx", x - ((x-panx)/scale)*newscale);
-    graph.setAttribute("pany", y - ((y-pany)/scale)*newscale);
+        var dir = Math.sign(e.deltaY);
+        var scale = parseFloat(graph.getAttribute("scale"));
+        if(dir == 1)
+        {
+            var newscale = scale*0.9;
+        }
+        else
+        {
+            var newscale = scale/0.9;
+        }
+        graph.setAttribute("scale", newscale);
+
+        graph.setAttribute("panx", x - ((x-panx)/scale)*newscale);
+        graph.setAttribute("pany", y - ((y-pany)/scale)*newscale);
+    }
 });
 
 function getComplete()
@@ -763,7 +789,7 @@ function getComplete()
         {
             complete = complete + thing.relations[x][0] + " -> " + thing.relations[x][1] + "\n";
         }
-        complete = complete + "}\n";
+        complete = complete + "\n}\n";
     }
     console.log(complete);
     return complete;

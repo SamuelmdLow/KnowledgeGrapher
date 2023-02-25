@@ -72,7 +72,7 @@ y:1.8015276353552727
 
     ''')
     file.close()
-    return redirect('/edit/'+id+".txt")
+    return redirect('/edit/'+id)
 
 @app.route('/save', methods=['GET', 'POST'])
 def save():
