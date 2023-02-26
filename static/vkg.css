@@ -138,9 +138,16 @@ a
     padding-right: 1%;
     padding-bottom: 5%;
     overflow-y: scroll;
+    direction: rtl;
+    resize: horizontal;
 }
 
 #inspector-image
 {
     width:100%;
+}
+
+#inspector-info
+{
+    text-align: left;
 }
