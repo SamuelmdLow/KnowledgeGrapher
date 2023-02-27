@@ -145,6 +145,7 @@ a
 #inspector-image
 {
     width:100%;
+    max-width: 300px;
 }
 
 #inspector-info
