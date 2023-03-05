@@ -168,13 +168,13 @@ function setup(things)
                 {
                     if(attractB[i]==thingA.id)
                     {
-                        thingA.setAttribute("mass", parseInt(thingA.getAttribute("mass"))+1);
+                        thingA.setAttribute("mass", parseFloat(thingA.getAttribute("mass"))+0.5);
                     }
                 }
             }
         }
-        thingA.style.width = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
-        thingA.style.height = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
+        thingA.style.width = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
+        thingA.style.height = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
     }
     //MathJax.typesetPromise();
 }
@@ -212,7 +212,7 @@ function placein()
     {
         thingA = children[i]
 
-        var mass = parseInt(thingA.getAttribute("mass"));
+        var mass = parseFloat(thingA.getAttribute("mass"));
         var x = parseFloat(thingA.getAttribute("x"));
         var y = parseFloat(thingA.getAttribute("y"));
 
@@ -246,8 +246,8 @@ function placein()
                     var d = Math.sqrt((dX*dX) + (dY*dY));
                     var thick = parseInt(line.getAttribute("count"));
 
-                    var m = parseInt(thingA.getAttribute("mass"));
-                    var mb = parseInt(thingB.getAttribute("mass"));
+                    var m = parseFloat(thingA.getAttribute("mass"));
+                    var mb = parseFloat(thingB.getAttribute("mass"));
 
                     var length = d-m-mb;
                     var xoff = (dX/d)*(m+length/2);
@@ -450,7 +450,7 @@ function redraw()
         {
             var circle = document.getElementById(thing.id);
             circle.children[0].innerHTML = thing.name;
-            var mass = parseInt(circle.getAttribute("mass"));
+            var mass = parseFloat(circle.getAttribute("mass"));
             circle.children[0].style.fontSize = String(Math.ceil(scale*mass/4)) + "px";
             var lines = circle.children;
 
@@ -594,13 +594,13 @@ function redraw()
                 {
                     if(attractB[i]==thingA.id)
                     {
-                        thingA.setAttribute("mass", parseInt(thingA.getAttribute("mass"))+1);
+                        thingA.setAttribute("mass", parseFloat(thingA.getAttribute("mass"))+1);
                     }
                 }
             }
         }
-        thingA.style.width = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
-        thingA.style.height = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
+        thingA.style.width = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
+        thingA.style.height = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
     }
 }
 
@@ -630,7 +630,7 @@ function physics()
         var y = parseFloat(thingA.getAttribute("y"));
         var accX = 0;
         var accY = 0;
-        var m = parseInt(thingA.getAttribute("mass"));
+        var m = parseFloat(thingA.getAttribute("mass"));
 
         var attracts = thingA.getAttribute("relations").split(",");
 
@@ -651,13 +651,13 @@ function physics()
                 {
                     var thingB = children[b];
 
-                    var mb = parseInt(thingB.getAttribute("mass"));
+                    var mb = parseFloat(thingB.getAttribute("mass"));
 
                     var odX = parseFloat(thingB.getAttribute("x")) - x;
                     var odY = parseFloat(thingB.getAttribute("y")) - y;
                     var od = Math.sqrt((odX * odX) + (odY * odY));
 
-                    var barrier = (parseInt(thingA.getAttribute("mass")) + parseInt(thingB.getAttribute("mass")));
+                    var barrier = (parseFloat(thingA.getAttribute("mass")) + parseFloat(thingB.getAttribute("mass")));
 
                     var d = od - barrier;
 
@@ -676,7 +676,7 @@ function physics()
                         var col = [thingA.id,thingB.id].sort();
                         if(odX==0)
                         {
-                            accX = accX - (100*parseInt(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
+                            accX = accX - (100*parseFloat(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
                         }
                         else
                         {
@@ -685,7 +685,7 @@ function physics()
 
                         if(odY==0)
                         {
-                            accY = accY - (100*parseInt(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
+                            accY = accY - (100*parseFloat(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
                         }
                         else
                         {
@@ -790,7 +790,7 @@ function physics()
     {
         thingA = commands[i][0]
 
-        var mass = parseInt(thingA.getAttribute("mass"));
+        var mass = parseFloat(thingA.getAttribute("mass"));
         thingA.setAttribute("x", commands[i][1]);
         thingA.setAttribute("y", commands[i][2]);
 
@@ -827,8 +827,8 @@ function physics()
                     var d = Math.sqrt((dX*dX) + (dY*dY));
                     var thick = parseInt(line.getAttribute("count"));
 
-                    var m = parseInt(thingA.getAttribute("mass"));
-                    var mb = parseInt(thingB.getAttribute("mass"));
+                    var m = parseFloat(thingA.getAttribute("mass"));
+                    var mb = parseFloat(thingB.getAttribute("mass"));
 
                     var length = d-m-mb;
                     var xoff = (dX/d)*(m+length/2);

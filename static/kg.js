@@ -1,22 +1,22 @@
 var old = "";
+var things = [];
 
 function onload()
 {
     var saved = document.getElementById("saved").value;
-    document.getElementById("input").value = convertToMarkUp(saved);
+    var thingys = processInput(saved);
+    document.getElementById("input").value = convertToMarkUp(thingys);
     setup(processInput(saved));
-    window.setInterval(update, 10);
+    window.setInterval(update, 1);
 }
 
-function convertToMarkUp(file)
+function convertToMarkUp(thingys)
 {
-    var things = processInput(file);
-
     var complete = "";
 
-    for(let i=0; i<things.length; i++)
+    for(let i=0; i<thingys.length; i++)
     {
-        var thing = things[i];
+        var thing = thingys[i];
         complete = complete + thing.id + "{\nname:" + thing.name + "\nimage:" + thing.image + "\ndesc:" + thing.desc +"\n";
         for(let x=0; x<thing.relations.length; x++)
         {
@@ -26,12 +26,12 @@ function convertToMarkUp(file)
     }
 
     return complete;
-
 }
 
 function setup(things)
 {
     var graph = document.getElementById("graph");
+    graph.addEventListener("contextmenu", (e) => {e.preventDefault()});
     var scale = parseFloat(graph.getAttribute("scale"));
     for(let i=0; i<things.length; i++)
     {
@@ -43,10 +43,11 @@ function setup(things)
         circle.setAttribute("y", thing.y);
         circle.setAttribute("velx", 0);
         circle.setAttribute("vely", 0);
-        circle.setAttribute("onmousedown", "this.setAttribute('clicked', 1);");
+        circle.setAttribute("onmousedown", "circleMouseDown(event,this);");
         circle.setAttribute("onmouseup", "releasegrab(this);");
         circle.setAttribute("mass", thing.mass);
         circle.style.backgroundImage = "url('"+thing.image+"')";
+        circle.addEventListener("contextmenu", (e) => {e.preventDefault()});
 
         if(thing.image!="null")
         {
@@ -93,8 +94,62 @@ function setup(things)
 
         }
         circle.setAttribute("relations", attracts.join(","))
+        var circles = document.getElementById("circles");
+        circles.appendChild(circle);
+    }
+}
 
-        graph.appendChild(circle);
+function circleMouseDown(event, that) {
+    if (event.button == 0) {
+        that.setAttribute('clicked', 1);
+        clearPanels();
+        console.log("Clicked");
+    } else if (event.button == 2) {
+        circleOptionPanel(that);
+    }
+}
+
+function circleOptionPanel(that) {
+    var body = document.getElementsByTagName("BODY")[0];
+    var panel = document.createElement("DIV");
+    panel.classList.add("circlePanel");
+    panel.style.position = "absolute";
+    panel.style.left = body.getAttribute("x") + "px"
+    panel.style.top = String(parseInt(body.getAttribute("y"))-60) + "px";
+    panel.innerHTML = "<p class='panelButton' onclick='editNode(" + '"' + that.id + '"' + ")'>Edit node</p><p class='panelButton' onclick='deleteNode(" + '"' + that.id + '"' + ")'>Delete node</p>";
+    graph.appendChild(panel);
+}
+
+function deleteNode(id) {
+    if (confirm("Delete this node?")) {
+        for(let x in things) {
+            if(things[x].id == id) {
+                things.splice(x,1);
+                break;
+            }
+        }
+
+        for(let x in things) {
+            let y = 0;
+            while (y < things[x].relations.length) {
+                if(things[x].relations[y][1] == id) {
+                    things[x].relations.splice(y,1);
+                } else {
+                    y = y + 1;
+                }
+            }
+        }
+
+        document.getElementById("input").value = convertToMarkUp(things);
+        update();
+    }
+}
+
+function clearPanels() {
+    var panels = document.getElementsByClassName("circlePanel");
+    console.log(document.getElementsByClassName("circlePanel").length);
+    while(0<panels.length) {
+        document.getElementsByClassName("circlePanel")[0].remove();
     }
 }
 
@@ -117,6 +172,7 @@ function update()
     var graph = document.getElementById("graph");
     if (old != input)
     {
+        things = processInput(input);
         old = input;
         redraw();
         if(graph.getAttribute("saved")=="1")
@@ -126,8 +182,6 @@ function update()
     }
 
     physics();
-
-
     var savebutton = document.getElementById("saveButton");
     if(parseFloat(graph.getAttribute("energy")) > 0.0001)
     {
@@ -265,9 +319,10 @@ function redraw()
 {
     things = processInput(document.getElementById("input").value);
     var graph = document.getElementById("graph");
+    var circles = document.getElementById("circles");
     var scale = parseFloat(graph.getAttribute("scale"));
 
-    var children = graph.children;
+    var children = circles.children;
     var existing = [];
 
     for (let i=0; i<children.length; i++)
@@ -302,6 +357,7 @@ function redraw()
                 {
                     if(lines[n].getAttribute("target")==thing.relations[x][1])
                     {
+                        console.log(lines[n].getAttribute("target"));
                         lines[n].setAttribute("count",parseInt(lines[n].getAttribute("count"))+1);
                         lineexists = true;
                     }
@@ -362,7 +418,7 @@ function redraw()
             }
             circle.setAttribute("velx", 0);
             circle.setAttribute("vely", 0);
-            circle.setAttribute("onmousedown", "this.setAttribute('clicked', 1);");
+            circle.setAttribute("onmousedown", "circleMouseDown(event,this);");
             circle.setAttribute("onmouseup", "releasegrab(this);");
             circle.setAttribute("mass", thing.mass);
             circle.style.backgroundImage = "url('"+thing.image+"')";
@@ -407,7 +463,7 @@ function redraw()
             }
             circle.setAttribute("relations", attracts.join(","))
 
-            graph.appendChild(circle);
+            circles.appendChild(circle);
         }
     }
 
@@ -417,7 +473,8 @@ function redraw()
     }
 
     var graph = document.getElementById("graph");
-    var children = graph.children;
+    var circles = document.getElementById("circles");
+    var children = circles.children;
 
     for(let a=0; a<children.length; a++)
     {
@@ -433,13 +490,13 @@ function redraw()
                 {
                     if(attractB[i]==thingA.id)
                     {
-                        thingA.setAttribute("mass", parseInt(thingA.getAttribute("mass"))+1);
+                        thingA.setAttribute("mass", parseFloat(thingA.getAttribute("mass"))+0.5);
                     }
                 }
             }
         }
-        thingA.style.width = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
-        thingA.style.height = String(2*scale*parseInt(thingA.getAttribute("mass")))+"px";
+        thingA.style.width = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
+        thingA.style.height = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
     }
     MathJax.typesetPromise();
 }
@@ -447,7 +504,8 @@ function redraw()
 function physics()
 {
     var graph = document.getElementById("graph");
-    var children = graph.children;
+    var circles = document.getElementById("circles");
+    var children = circles.children;
     var friction = parseFloat(graph.getAttribute("energy"));
 
     var repel = parseFloat(graph.getAttribute("repel"));
@@ -470,7 +528,7 @@ function physics()
         var y = parseFloat(thingA.getAttribute("y"));
         var accX = 0;
         var accY = 0;
-        var m = parseInt(thingA.getAttribute("mass"));
+        var m = parseFloat(thingA.getAttribute("mass"));
 
         var attracts = thingA.getAttribute("relations").split(",");
 
@@ -491,13 +549,13 @@ function physics()
                 {
                     var thingB = children[b];
 
-                    var mb = parseInt(thingB.getAttribute("mass"));
+                    var mb = parseFloat(thingB.getAttribute("mass"));
 
                     var odX = parseFloat(thingB.getAttribute("x")) - x;
                     var odY = parseFloat(thingB.getAttribute("y")) - y;
                     var od = Math.sqrt((odX * odX) + (odY * odY));
 
-                    var barrier = (parseInt(thingA.getAttribute("mass")) + parseInt(thingB.getAttribute("mass")));
+                    var barrier = (parseFloat(thingA.getAttribute("mass")) + parseFloat(thingB.getAttribute("mass")));
 
                     var d = od - barrier;
 
@@ -516,7 +574,7 @@ function physics()
                         var col = [thingA.id,thingB.id].sort();
                         if(odX==0)
                         {
-                            accX = accX - (100*parseInt(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
+                            accX = accX - (100*parseFloat(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
                         }
                         else
                         {
@@ -525,7 +583,7 @@ function physics()
 
                         if(odY==0)
                         {
-                            accY = accY - (100*parseInt(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
+                            accY = accY - (100*parseFloat(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
                         }
                         else
                         {
@@ -630,7 +688,7 @@ function physics()
     {
         thingA = commands[i][0]
 
-        var mass = parseInt(thingA.getAttribute("mass"));
+        var mass = parseFloat(thingA.getAttribute("mass"));
         thingA.setAttribute("x", commands[i][1]);
         thingA.setAttribute("y", commands[i][2]);
 
@@ -667,8 +725,8 @@ function physics()
                     var d = Math.sqrt((dX*dX) + (dY*dY));
                     var thick = parseInt(line.getAttribute("count"));
 
-                    var m = parseInt(thingA.getAttribute("mass"));
-                    var mb = parseInt(thingB.getAttribute("mass"));
+                    var m = parseFloat(thingA.getAttribute("mass"));
+                    var mb = parseFloat(thingB.getAttribute("mass"));
 
                     var length = d-m-mb;
                     var xoff = (dX/d)*(m+length/2);
@@ -711,7 +769,7 @@ function setanchor(that)
 function removeanchor(that)
 {
     that.setAttribute("anchor", "0");
-    circles = document.getElementById("graph").children;
+    circles = document.getElementById("circles").children;
 
     for(let i=0; i<circles.length; i++)
     {
@@ -744,6 +802,7 @@ window.addEventListener("wheel", function(e) {
     var graph = document.getElementById("graph");
     if(graph.getAttribute("hovering") == "1")
     {
+        clearPanels();
         var x = parseInt(body.getAttribute("x"));
         var y = parseInt(body.getAttribute("y"));
         var panx = parseFloat(graph.getAttribute("panx"));
@@ -766,11 +825,8 @@ window.addEventListener("wheel", function(e) {
     }
 });
 
-function getComplete()
+function getComplete(things)
 {
-    var things = processInput(document.getElementById("input").value);
-
-
     for(let i=0; i<things.length; i++)
     {
         var thing = document.getElementById(things[i].id);
@@ -784,14 +840,14 @@ function getComplete()
     {
         var thing = things[i];
         complete = complete + thing.id + "{\nname:" + thing.name + "\nimage:" + thing.image + "\ndesc:" + thing.desc + "\nx:" + thing.x + "\ny:" + thing.y + "\n";
-        console.log(thing.relations);
+
         for(let x=0; x<thing.relations.length; x++)
         {
             complete = complete + thing.relations[x][0] + " -> " + thing.relations[x][1] + "\n";
         }
         complete = complete + "\n}\n";
     }
-    console.log(complete);
+
     return complete;
 }
 
@@ -801,9 +857,10 @@ function saveGraph()
     savebutton.innerHTML = "Saved";
     savebutton.style.backgroundColor = "#98bdfb";
 
-    console.log("save graph");
+
     var id = window.location.href.split("edit/")[1];
-    var save = getComplete();
+    var thingys = processInput(document.getElementById("input").value);
+    var save = getComplete(thingys);
     $.ajax({
         type: 'POST',
         url: "/save",

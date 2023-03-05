@@ -151,4 +151,10 @@ a
 #inspector-info
 {
     text-align: left;
+    direction: ltr;
+}
+
+#inspector-desc
+{
+    max-width: 400px;
 }
