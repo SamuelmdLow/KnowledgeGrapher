@@ -10,8 +10,6 @@ body
     width: 20%;
     min-width:10%;
     max-width: 750px;
-    min-height:90%;
-    max-height:90%;
     z-index: 3;
     position: absolute;
     left: 10px;

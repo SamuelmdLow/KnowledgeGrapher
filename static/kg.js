@@ -116,12 +116,12 @@ function circleOptionPanel(that) {
     panel.style.position = "absolute";
     panel.style.left = body.getAttribute("x") + "px"
     panel.style.top = String(parseInt(body.getAttribute("y"))-60) + "px";
-    panel.innerHTML = "<p class='panelButton' onclick='editNode(" + '"' + that.id + '"' + ")'>Edit node</p><p class='panelButton' onclick='deleteNode(" + '"' + that.id + '"' + ")'>Delete node</p>";
+    panel.innerHTML = "<p class='panelButton' onclick='editNode(" + '"' + that.id + '"' + ");'>Edit node</p><p class='panelButton' onclick='deleteNode(" + '"' + that.id + '",this' + ")'>Delete node</p>";
     graph.appendChild(panel);
 }
 
-function deleteNode(id) {
-    if (confirm("Delete this node?")) {
+function deleteNode(id, that) {
+    if (confirm("Delete this node '" + id + "'?")) {
         for(let x in things) {
             if(things[x].id == id) {
                 things.splice(x,1);
@@ -141,6 +141,7 @@ function deleteNode(id) {
         }
 
         document.getElementById("input").value = convertToMarkUp(things);
+        that.parentNode.remove();
         update();
     }
 }
@@ -793,8 +794,8 @@ function releasegrab(that)
     var mousey = (y-pany)/scale;
 
     that.setAttribute('clicked', 0);
-    that.setAttribute('velx',50*(mousex-parseFloat(that.getAttribute('x')))/scale);
-    that.setAttribute('vely',50*(mousey-parseFloat(that.getAttribute('y')))/scale);
+    //that.setAttribute('velx',50*(mousex-parseFloat(that.getAttribute('x')))/scale);
+    //that.setAttribute('vely',50*(mousey-parseFloat(that.getAttribute('y')))/scale);
 }
 
 window.addEventListener("wheel", function(e) {
