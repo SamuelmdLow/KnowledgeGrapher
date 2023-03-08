@@ -1,7 +1,7 @@
 var old = "";
 var things = [];
 var nodeEdit = false;
-var nodeEditIndex = 0;
+var edittedNode;
 
 function onload()
 {
@@ -117,7 +117,7 @@ function circleOptionPanel(that) {
     panel.style.position = "absolute";
     panel.style.left = body.getAttribute("x") + "px"
     panel.style.top = String(parseInt(body.getAttribute("y"))-60) + "px";
-    panel.innerHTML = "<p class='panelButton' onclick='editNode(" + '"' + that.id + '",this' + ");'>Edit node</p><p class='panelButton' onclick='deleteNode(" + '"' + that.id + '",this' + ")'>Delete node</p>";
+    panel.innerHTML = "<p class='panelButton' onclick='deleteNode(" + '"' + that.id + '",this' + ")'>Delete node</p><p class='panelButton' onclick='editNode(" + '"' + that.id + '",this' + ");'>Edit node</p>";
     graph.appendChild(panel);
 }
 
@@ -127,20 +127,17 @@ function editNode(id, that) {
         openNodeEdit();
     }
 
-    var index = null;
     for (let i=0; i<things.length; i++) {
         if (things[i].id == id) {
-            index = i;
+            edittedNode = things[i];
             break;
         }
     }
 
-    if (index != null) {
-        nodeEditIndex = index;
-        document.getElementById("nodeEditor-name").value = things[index].name;
-        document.getElementById("nodeEditor-desc").value = things[index].desc;
-        document.getElementById("nodeEditor-id").innerHTML = id;
-    }
+    document.getElementById("nodeEditor-name").value = edittedNode.name;
+    document.getElementById("nodeEditor-desc").value = edittedNode.desc;
+    document.getElementById("nodeEditor-id").innerHTML = id;
+
     that.parentNode.remove();
 }
 
@@ -241,36 +238,19 @@ function update()
         var desc = document.getElementById("nodeEditor-desc").value;
         var id = document.getElementById("nodeEditor-id").innerHTML;
 
-        if (nodeEditIndex >= 0 && nodeEditIndex < things.length) {
-            if (things[nodeEditIndex].id != id) {
-                for (let i=0; i<things.length; i++) {
-                    if (things[i].id == id) {
-                        nodeEditIndex = i;
-                        break;
-                    }
-                }
-            }
-        } else {
-            console.log(nodeEditIndex);
-            for (let i=0; i<things.length; i++) {
-                if (things[i].id == id) {
-                    nodeEditIndex = i;
-                    break;
-                }
-            }
-        }
-
-
-        if (nodeEditIndex != null) {
-            if (things[nodeEditIndex].name != name) {
-                things[nodeEditIndex].name = name;
+        if (things.includes(edittedNode)) {
+            if (edittedNode.name != name) {
+                edittedNode.name = name;
                 saveGraph();
                 redraw();
             }
-            if (things[nodeEditIndex].desc != desc) {
-                things[nodeEditIndex].desc = desc;
+            if (edittedNode.desc != desc) {
+                edittedNode.desc = desc;
                 saveGraph();
             }
+        } else {
+            closeNodeEdit();
+            openMarkup();
         }
     }
 
