@@ -1,5 +1,6 @@
 var old = "";
 var things = [];
+var nodeEdit = false;
 
 function onload()
 {
@@ -103,7 +104,6 @@ function circleMouseDown(event, that) {
     if (event.button == 0) {
         that.setAttribute('clicked', 1);
         clearPanels();
-        console.log("Clicked");
     } else if (event.button == 2) {
         circleOptionPanel(that);
     }
@@ -116,8 +116,60 @@ function circleOptionPanel(that) {
     panel.style.position = "absolute";
     panel.style.left = body.getAttribute("x") + "px"
     panel.style.top = String(parseInt(body.getAttribute("y"))-60) + "px";
-    panel.innerHTML = "<p class='panelButton' onclick='editNode(" + '"' + that.id + '"' + ");'>Edit node</p><p class='panelButton' onclick='deleteNode(" + '"' + that.id + '",this' + ")'>Delete node</p>";
+    panel.innerHTML = "<p class='panelButton' onclick='editNode(" + '"' + that.id + '",this' + ");'>Edit node</p><p class='panelButton' onclick='deleteNode(" + '"' + that.id + '",this' + ")'>Delete node</p>";
     graph.appendChild(panel);
+}
+
+function editNode(id, that) {
+    closeMarkup();
+    if (nodeEdit != true) {
+        openNodeEdit();
+    }
+
+    var index = null;
+    for (let i=0; i<things.length; i++) {
+        if (things[i].id == id) {
+            index = i;
+            break;
+        }
+    }
+
+    if (index != null) {
+        document.getElementById("nodeEditor-name").value = things[index].name;
+        document.getElementById("nodeEditor-desc").value = things[index].desc;
+        document.getElementById("nodeEditor-id").innerHTML = id;
+    }
+    that.parentNode.remove();
+}
+
+function openNodeEdit() {
+    var nodeEditor = document.getElementById("nodeEditor");
+    nodeEditor.style.opacity = "1";
+    nodeEditor.style.right = "10px";
+    nodeEdit = true;
+}
+
+function closeNodeEdit() {
+    var nodeEdit = document.getElementById("nodeEditor");
+    nodeEdit.style.opacity = "0";
+    nodeEdit.style.right = "-750px";
+    nodeEdit = false;
+}
+
+function closeMarkup() {
+    var markup = document.getElementById("input");
+    markup.style.opacity = "0";
+    markup.style.left = "-750px";
+}
+
+function openMarkup() {
+    var markup = document.getElementById("input");
+    markup.style.opacity = "1";
+    markup.style.left = "10px";
+    markup.value = convertToMarkUp(things);
+    old = convertToMarkUp(things);
+    closeNodeEdit();
+    nodeEdit = false;
 }
 
 function deleteNode(id, that) {
@@ -142,13 +194,13 @@ function deleteNode(id, that) {
 
         document.getElementById("input").value = convertToMarkUp(things);
         that.parentNode.remove();
-        update();
+        saveGraph();
+        redraw();
     }
 }
 
 function clearPanels() {
     var panels = document.getElementsByClassName("circlePanel");
-    console.log(document.getElementsByClassName("circlePanel").length);
     while(0<panels.length) {
         document.getElementsByClassName("circlePanel")[0].remove();
     }
@@ -171,14 +223,40 @@ function update()
 {
     var input = document.getElementById("input").value;
     var graph = document.getElementById("graph");
-    if (old != input)
-    {
-        things = processInput(input);
-        old = input;
-        redraw();
-        if(graph.getAttribute("saved")=="1")
+    if (nodeEdit == false) {
+        if (old != input)
         {
-            saveGraph();
+            things = processInput(input);
+            old = input;
+            redraw();
+            if(graph.getAttribute("saved")=="1")
+            {
+                saveGraph();
+            }
+        }
+    } else {
+        var name = document.getElementById("nodeEditor-name").value;
+        var desc = document.getElementById("nodeEditor-desc").value;
+        var id = document.getElementById("nodeEditor-id").innerHTML;
+        var index = null;
+        for (let i=0; i<things.length; i++) {
+            if (things[i].id == id) {
+                index = i;
+                break;
+            }
+        }
+        if (index != null) {
+            if (things[index].name != name) {
+                things[index].name = name;
+                saveGraph();
+                redraw();
+                console.log(name);
+            }
+            if (things[index].desc != desc) {
+                things[index].desc = desc;
+                saveGraph();
+                console.log(desc);
+            }
         }
     }
 
@@ -318,7 +396,6 @@ function trickleUp(node, worklist, visited)
 
 function redraw()
 {
-    things = processInput(document.getElementById("input").value);
     var graph = document.getElementById("graph");
     var circles = document.getElementById("circles");
     var scale = parseFloat(graph.getAttribute("scale"));
@@ -358,7 +435,6 @@ function redraw()
                 {
                     if(lines[n].getAttribute("target")==thing.relations[x][1])
                     {
-                        console.log(lines[n].getAttribute("target"));
                         lines[n].setAttribute("count",parseInt(lines[n].getAttribute("count"))+1);
                         lineexists = true;
                     }
@@ -860,8 +936,7 @@ function saveGraph()
 
 
     var id = window.location.href.split("edit/")[1];
-    var thingys = processInput(document.getElementById("input").value);
-    var save = getComplete(thingys);
+    var save = getComplete(things);
     $.ajax({
         type: 'POST',
         url: "/save",

@@ -125,21 +125,38 @@ a
 #inspector
 {
     width: 300px;
+    height: 89vh;
     position: absolute;
-    right: 0;
-    top: 0;
-    bottom:0;
     background-color: white;
     border: black;
-    border-width: 0;
-    border-left-width: 1px;
     border-style: solid;
     padding-left: 1%;
     padding-right: 1%;
     padding-bottom: 5%;
     overflow-y: scroll;
     direction: rtl;
-    resize: horizontal;
+    max-height: 89vh;
+    max-width: 600px;
+    right: 10px;
+    top:20px;
+    border-radius:10px;
+    border-width: 1px;
+    resize: both;
+}
+
+#inspector::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+#inspector::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+/* Handle */
+#inspector::-webkit-scrollbar-thumb {
+  background: #eeeeee;
+  border-radius: 10px;
 }
 
 #inspector-image

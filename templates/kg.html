@@ -26,6 +26,7 @@
     <a href="/" ><div class="button">
         Back
     </div></a>
+    <div class="button" onclick="openMarkup()">Markup</div>
     <a href="/view/{{id}}" ><div class="button">
         View
     </div></a>
@@ -35,6 +36,19 @@
 
     <textarea id="input">
     </textarea>
+
+    <div id="nodeEditor">
+    <div id="nodeEditor-info">
+        <p id="nodeEditor-id"></p>
+        <label for="nodeEditor-name">Name:</label>
+        <input type="text" id="nodeEditor-name" name="nodeEditor-name">
+        <img id="nodeEditor-image">
+        <label for="nodeEditor-desc">Description:</label>
+        <textarea id="nodeEditor-desc"></textarea>
+        <hr>
+        <ul id="nodeEditor-rels"></ul>
+    </div>
+</div>
 </div>
 
 <div id="graph" onmouseover="hovering(this);" onmouseout="nothovering(this);" onmousedown="setanchor(this);" onmouseup="removeanchor(this);" saved="0" scale="10" panx="700" pany="300" repel="0.005" attract="0.01" energy="0">

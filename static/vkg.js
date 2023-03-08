@@ -4,7 +4,7 @@ function onload()
 {
     var saved = document.getElementById("saved").value;
     setup(processInput(saved));
-    window.setInterval(staticUpdate, 10);
+    window.setInterval(staticUpdate, 1);
 }
 
 function staticUpdate()

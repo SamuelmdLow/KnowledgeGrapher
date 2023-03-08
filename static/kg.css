@@ -20,6 +20,7 @@ body
     border-bottom-width:0;
     border-width: 1px;
     resize: horizontal;
+    transition-duration: 0.5s;
 }
 
 /* width */
@@ -102,7 +103,7 @@ body
 {
     position: relative;
     padding: 5px;
-    border-radius: 20px;
+    border-radius: 10px;
     background-color: #cfcfcf;
     display:inline;
     margin:1px;
@@ -150,4 +151,25 @@ a
 {
     background-color: #dedede;
     cursor: pointer;
+}
+
+#nodeEditor
+{
+    width: 300px;
+    position: absolute;
+    background-color: white;
+    border: black;
+    border-style: solid;
+    padding-left: 1%;
+    padding-right: 1%;
+    padding-bottom: 5%;
+    overflow-y: scroll;
+    max-height: 89vh;
+    max-width: 600px;
+    right: -750px;
+    top:20px;
+    bottom:20px;
+    border-radius:10px;
+    border-width: 1px;
+    opacity: 0;
 }
