@@ -1,6 +1,7 @@
 var old = "";
 var things = [];
 var nodeEdit = false;
+var nodeEditIndex = 0;
 
 function onload()
 {
@@ -135,6 +136,7 @@ function editNode(id, that) {
     }
 
     if (index != null) {
+        nodeEditIndex = index;
         document.getElementById("nodeEditor-name").value = things[index].name;
         document.getElementById("nodeEditor-desc").value = things[index].desc;
         document.getElementById("nodeEditor-id").innerHTML = id;
@@ -238,24 +240,36 @@ function update()
         var name = document.getElementById("nodeEditor-name").value;
         var desc = document.getElementById("nodeEditor-desc").value;
         var id = document.getElementById("nodeEditor-id").innerHTML;
-        var index = null;
-        for (let i=0; i<things.length; i++) {
-            if (things[i].id == id) {
-                index = i;
-                break;
+
+        if (nodeEditIndex >= 0 && nodeEditIndex < things.length) {
+            if (things[nodeEditIndex].id != id) {
+                for (let i=0; i<things.length; i++) {
+                    if (things[i].id == id) {
+                        nodeEditIndex = i;
+                        break;
+                    }
+                }
+            }
+        } else {
+            console.log(nodeEditIndex);
+            for (let i=0; i<things.length; i++) {
+                if (things[i].id == id) {
+                    nodeEditIndex = i;
+                    break;
+                }
             }
         }
-        if (index != null) {
-            if (things[index].name != name) {
-                things[index].name = name;
+
+
+        if (nodeEditIndex != null) {
+            if (things[nodeEditIndex].name != name) {
+                things[nodeEditIndex].name = name;
                 saveGraph();
                 redraw();
-                console.log(name);
             }
-            if (things[index].desc != desc) {
-                things[index].desc = desc;
+            if (things[nodeEditIndex].desc != desc) {
+                things[nodeEditIndex].desc = desc;
                 saveGraph();
-                console.log(desc);
             }
         }
     }
