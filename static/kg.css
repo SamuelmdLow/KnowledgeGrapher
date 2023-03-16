@@ -179,4 +179,5 @@ a
 #nodeEditor-desc{
     width: 100%;
     height: 300px;
+    resize: vertical;
 }

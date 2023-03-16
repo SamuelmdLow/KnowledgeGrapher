@@ -1,0 +1,27 @@
+crewmate{
+name:crewmate
+image:null
+desc:a player in among us
+x:2.399720684914574
+y:-3.387218848895361
+is in -> amongus
+
+}
+imposter{
+name:imposter
+image:null
+desc:player that secretly attempts to kill and sabotage the rest of the crewmates
+x:4.021553806655043
+y:-0.4376333467563665
+is in -> amongus
+is a -> crewmate
+
+}
+amongus{
+name:among us
+image:null
+desc:a cartoonish astronaut themed social deducation video game
+x:0.2169595238416404
+y:0.7983706771057911
+
+}
