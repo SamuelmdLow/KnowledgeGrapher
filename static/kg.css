@@ -146,6 +146,9 @@ a
     position: relative;
     background-color: #eeeeee;
     text-align: left;
+    -webkit-user-select: none; /* Safari */
+    -ms-user-select: none; /* IE 10 and IE 11 */
+    user-select: none; /* Standard syntax */
 }
 
 .panelButton:hover

@@ -35,7 +35,7 @@ def view(id):
 def new():
     import secrets
     id = secrets.token_urlsafe(5)
-    print(id)
+    #print(id)
     for i in range(15):
         if os.path.exists("/user/"+id+".txt"):
             id = secrets.token_urlsafe(5)
@@ -78,9 +78,9 @@ y:1.8015276353552727
 def save():
     graphid = request.form.get("id")
     data = request.form.get("data")
-    print("stuff")
-    print(graphid)
-    print(data)
+    #print("stuff")
+    #print(graphid)
+    #print(data)
     file = open("user/" + graphid+".txt", "w")
     file.write(data)
     file.close()

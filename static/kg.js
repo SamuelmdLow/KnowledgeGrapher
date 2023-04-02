@@ -6,20 +6,24 @@ var edittedNode;
 function onload()
 {
     var saved = document.getElementById("saved").value;
-    var thingys = processInput(saved);
-    document.getElementById("input").value = convertToMarkUp(thingys);
+    things = processInput(saved);
+    document.getElementById("input").value = convertToMarkUp(things);
     setup(processInput(saved));
     window.setInterval(update, 1);
 }
 
-function convertToMarkUp(thingys)
+function convertToMarkUp(things)
 {
     var complete = "";
 
-    for(let i=0; i<thingys.length; i++)
+    for(let i=0; i<things.length; i++)
     {
-        var thing = thingys[i];
-        complete = complete + thing.id + "{\nname:" + thing.name + "\nimage:" + thing.image + "\ndesc:" + thing.desc +"\n";
+        var thing = things[i];
+        complete = complete + thing.id + "{\nname:" + thing.name;
+         if (thing.image != "null" && thing.image != ""){
+            complete = complete + "\nimage:" + thing.image;
+         }
+         complete = complete + "\ndesc:" + thing.desc +"\n";
         for(let x=0; x<thing.relations.length; x++)
         {
             complete = complete + thing.relations[x][0] + " -> " + thing.relations[x][1] + "\n";
@@ -41,15 +45,23 @@ function setup(things)
         const circle = document.createElement("DIV");
         circle.classList.add("circle");
         circle.id = thing.id;
-        circle.setAttribute("x", thing.x);
-        circle.setAttribute("y", thing.y);
-        circle.setAttribute("velx", 0);
-        circle.setAttribute("vely", 0);
         circle.setAttribute("onmousedown", "circleMouseDown(event,this);");
         circle.setAttribute("onmouseup", "releasegrab(this);");
-        circle.setAttribute("mass", thing.mass);
         circle.style.backgroundImage = "url('"+thing.image+"')";
         circle.addEventListener("contextmenu", (e) => {e.preventDefault()});
+        circle.addEventListener("mouseover", function(event) {
+            if (event.ctrlKey) {
+                circle.style.cursor = "crosshair";
+            } else {
+                circle.style.cursor = "grab";
+            }
+            graph.setAttribute("hovered", parseInt(graph.getAttribute("hovered"))+1);
+        });
+
+        circle.addEventListener("mouseout", function(event) {
+            circle.style.cursor = "grab";
+            graph.setAttribute("hovered", parseInt(graph.getAttribute("hovered"))-1);
+        });
 
         if(thing.image!="null")
         {
@@ -95,17 +107,41 @@ function setup(things)
             }
 
         }
-        circle.setAttribute("relations", attracts.join(","))
         var circles = document.getElementById("circles");
         circles.appendChild(circle);
     }
 }
 
 function circleMouseDown(event, that) {
-    if (event.button == 0) {
+    if (event.ctrlKey) {
+        if (document.getElementById("newRel"))
+        {
+            id = document.getElementById("newRel").getAttribute("owner");
+            thing = getThingsFromId(id);
+            removeanchor(document.getElementById("graph"));
+            rel = prompt("Fill in the relationship\n\n " + thing.name + " ______ " + getThingsFromId(that.id).name);
+            removeanchor(document.getElementById("graph"));
+            thing.relations.push([rel, that.id]);
+            document.getElementById("newRel").remove();
+
+            var line = document.createElement("DIV");
+            line.classList.add("line");
+            line.setAttribute("target", that.id);
+            line.setAttribute("count", 1);
+            document.getElementById(id).appendChild(line);
+        } else {
+            var line = document.createElement("DIV");
+            line.id = "newRel";
+            line.classList.add("line");
+            line.setAttribute("owner", that.id)
+            line.setAttribute("count", 1);
+            document.getElementById("graph").appendChild(line);
+        }
+    } else if (event.button == 0) {
         that.setAttribute('clicked', 1);
         clearPanels();
     } else if (event.button == 2) {
+        clearPanels();
         circleOptionPanel(that);
     }
 }
@@ -118,6 +154,7 @@ function circleOptionPanel(that) {
     panel.style.left = body.getAttribute("x") + "px"
     panel.style.top = String(parseInt(body.getAttribute("y"))-60) + "px";
     panel.innerHTML = "<p class='panelButton' onclick='deleteNode(" + '"' + that.id + '",this' + ")'>Delete node</p><p class='panelButton' onclick='editNode(" + '"' + that.id + '",this' + ");'>Edit node</p>";
+    panel.addEventListener("contextmenu", (e) => {e.preventDefault()});
     graph.appendChild(panel);
 }
 
@@ -215,6 +252,8 @@ function Thing(id, name, image, desc, relations, mass, x, y)
     this.mass = mass;
     this.x = x;
     this.y = y;
+    this.velx = 0;
+    this.vely = 0;
 }
 
 
@@ -278,6 +317,7 @@ function update()
 function processInput(input)
 {
     var things = []
+    input = input + "\n";
     input = input.split("}\n");
     input.pop();
 
@@ -324,8 +364,12 @@ function processInput(input)
                 {
                     var xstr = thing.slice(thing.indexOf("x:"));
                     var xstr = xstr.slice(0, xstr.indexOf("\n"));
-                    var x = parseFloat(xstr.slice(2).trim());
                     thing = thing.replace(xstr, "");
+                    if (xstr=="NaN") {
+                        var x = null
+                    } else {
+                        var x = parseFloat(xstr.slice(2).trim());
+                    }
                 }
                 else
                 {
@@ -336,8 +380,12 @@ function processInput(input)
                 {
                     var ystr = thing.slice(thing.indexOf("y:"));
                     var ystr = ystr.slice(0, ystr.indexOf("\n"));
-                    var y = parseFloat(ystr.slice(2).trim());
                     thing = thing.replace(ystr, "");
+                    if (ystr=="NaN") {
+                        y = null
+                    } else {
+                        var y = parseFloat(ystr.slice(2).trim());
+                    }
                 }
                 else
                 {
@@ -366,21 +414,36 @@ function processInput(input)
 
                 var relations = [];
 
-                for(let x = 0; x<rawrelations.length; x++)
+                for(let n = 0; n<rawrelations.length; n++)
                 {
-                    if (rawrelations[x].includes("->") && rawrelations[x].length > 1)
+                    if (rawrelations[n].includes("->") && rawrelations[n].length > 1)
                     {
-                        var rel = rawrelations[x].split("->");
+                        var rel = rawrelations[n].split("->");
                         relations.push([rel[0].trim(), rel[1].trim()]);
                     }
                 }
 
-                things.push(new Thing(id, name, image, desc, relations, 1,x,y));
+                oldThing = getThingsFromId(id);
+                if(oldThing != null) {
+                    x = oldThing.x;
+                    y = oldThing.y;
+                }
+                things.push(new Thing(id, name, image, desc, relations, 1, x, y));
             }
         }
     }
 
     return things
+}
+
+function getThingsFromId(id) {
+    for(let i=0; i < things.length; i++) {
+        if(things[i].id == id) {
+            return things[i];
+        }
+    }
+
+    return null;
 }
 
 function trickleUp(node, worklist, visited)
@@ -410,7 +473,7 @@ function redraw()
         {
             var circle = document.getElementById(thing.id);
             circle.children[0].innerHTML = thing.name;
-            var mass = parseInt(circle.getAttribute("mass"));
+            var mass = thing.mass;
             circle.children[0].style.fontSize = String(Math.ceil(scale*mass/4)) + "px";
             var lines = circle.children;
 
@@ -452,17 +515,14 @@ function redraw()
                 }
             }
 
-            circle.setAttribute("relations", attracts.join(","))
             circle.style.backgroundImage = "url('"+thing.image+"')";
             existing.splice(existing.indexOf(thing.id),1);
 
-            if(thing.image!="null" && thing.image!=null)
+            if(thing.image!="null" && thing.image!=null && thing.image!="")
             {
                 circle.style.color = "white";
                 circle.style.textShadow = "2px 2px 4px #000000";
             }
-
-
         }
         else
         {
@@ -470,28 +530,18 @@ function redraw()
             const circle = document.createElement("DIV");
             circle.classList.add("circle");
             circle.id = thing.id;
-            if(thing.x!=null)
+            if(thing.x==null)
             {
-                circle.setAttribute("x", thing.x);
-            }
-            else
-            {
-                circle.setAttribute("x", Math.random());
+                thing.x = Math.random()
             }
 
-            if(thing.y!=null)
+            if(thing.y==null)
             {
+                thing.y = Math.random();
                 circle.setAttribute("y", thing.y);
             }
-            else
-            {
-                circle.setAttribute("y", Math.random());
-            }
-            circle.setAttribute("velx", 0);
-            circle.setAttribute("vely", 0);
             circle.setAttribute("onmousedown", "circleMouseDown(event,this);");
             circle.setAttribute("onmouseup", "releasegrab(this);");
-            circle.setAttribute("mass", thing.mass);
             circle.style.backgroundImage = "url('"+thing.image+"')";
 
             const name = document.createElement("p");
@@ -532,7 +582,6 @@ function redraw()
                 }
 
             }
-            circle.setAttribute("relations", attracts.join(","))
 
             circles.appendChild(circle);
         }
@@ -547,27 +596,27 @@ function redraw()
     var circles = document.getElementById("circles");
     var children = circles.children;
 
-    for(let a=0; a<children.length; a++)
+    for(let a=0; a<things.length; a++)
     {
-        var thingA = children[a];
-        thingA.setAttribute("mass",1);
-        for(let b=0; b<children.length; b++)
+        var thingA = things[a];
+        thingA.mass = 1;
+        for(let b=0; b<things.length; b++)
         {
             if (a != b)
             {
-                var thingB = children[b];
-                var attractB = thingB.getAttribute("relations").split(",");
+                var thingB = things[b];
+                var attractB = thingB.relations;
                 for(let i=0; i<attractB.length; i++)
                 {
-                    if(attractB[i]==thingA.id)
+                    if(attractB[i][1]==thingA.id)
                     {
-                        thingA.setAttribute("mass", parseFloat(thingA.getAttribute("mass"))+0.5);
+                        thingA.mass = thingA.mass + 0.5;
                     }
                 }
             }
         }
-        thingA.style.width = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
-        thingA.style.height = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
+        document.getElementById(thingA.id).style.width = String(2*scale*parseFloat(thingA.mass))+"px";
+        document.getElementById(thingA.id).style.height = String(2*scale*parseFloat(thingA.mass))+"px";
     }
     MathJax.typesetPromise();
 }
@@ -591,42 +640,78 @@ function physics()
     var grabbed = false;
 
     var energy = 0;
+    var body = document.body;
 
-    for(let a=0; a<children.length; a++)
+    if (document.getElementById("newRel"))
     {
-        var thingA = children[a];
-        var x = parseFloat(thingA.getAttribute("x"));
-        var y = parseFloat(thingA.getAttribute("y"));
+        var newrel = document.getElementById("newRel");
+
+        thingA = getThingsFromId(newrel.getAttribute("owner"));
+        //console.log(thingA);
+        var dX = parseInt(body.getAttribute("x")) - (thingA.x*scale + panx);
+        var dY = parseInt(body.getAttribute("y")) - (thingA.y*scale + pany);
+
+        var d = Math.sqrt((dX*dX) + (dY*dY));
+
+        //var length = d-thingA.mass*scale;
+        var xoff = (dX/d)*(d/2);
+        var yoff = (dY/d)*(d/2);
+
+        newrel.style.transform = "rotate(0deg)";
+        newrel.style.width = String(d)+"px";
+        newrel.style.height = "0.1px";
+        newrel.style.left = String((thingA.x*scale + panx)+dX/2-d/2) + "px";
+        newrel.style.top = String((thingA.y*scale + pany)+dY/2) + "px";
+        newrel.style.transform = "rotate(" + String((180/Math.PI)*Math.atan(dY/dX)) + "deg)";
+        newrel.style.height = String(scale*0.1)+"px";
+    }
+
+    for(let a=0; a<things.length; a++)
+    {
+        var thingA = things[a];
+        if (Number.isNaN(thingA.x)) {
+            console.log("broke")
+            thingA.x = Math.random();
+        }
+        if (Number.isNaN(thingA.y)) {
+            console.log("broke")
+            thingA.y = Math.random();
+        }
         var accX = 0;
         var accY = 0;
-        var m = parseFloat(thingA.getAttribute("mass"));
 
-        var attracts = thingA.getAttribute("relations").split(",");
-
-        if(thingA.getAttribute("clicked")=="1")
+        if(document.getElementById(thingA.id).getAttribute("clicked")=="1")
         {
             var body = document.getElementsByTagName("BODY")[0];
-            x = (parseInt(body.getAttribute("x")) - panx)/ scale;
-            y = (parseInt(body.getAttribute("y")) - pany)/ scale;
+            var x = (parseInt(body.getAttribute("x")) - panx)/ scale;
+            var y = (parseInt(body.getAttribute("y")) - pany)/ scale;
 
-            commands.push([thingA,x,y,0,0]);
+            commands.push([a,x,y,0,0]);
             grabbed =  true;
         }
         else
         {
-            for(let b=0; b<children.length; b++)
+            for(let b=0; b<things.length; b++)
             {
                 if (a != b)
                 {
-                    var thingB = children[b];
+                    var thingB = things[b];
 
-                    var mb = parseFloat(thingB.getAttribute("mass"));
+                    if (Number.isNaN(thingB.x)) {
+                        console.log("broke");
+                        thingB.x = Math.random();
+                    }
+                    if (Number.isNaN(thingB.y)) {
+                        console.log("broke");
+                        thingB.y = Math.random();
+                    }
 
-                    var odX = parseFloat(thingB.getAttribute("x")) - x;
-                    var odY = parseFloat(thingB.getAttribute("y")) - y;
+
+                    var odX = thingB.x - thingA.x;
+                    var odY = thingB.y - thingA.y;
                     var od = Math.sqrt((odX * odX) + (odY * odY));
 
-                    var barrier = (parseFloat(thingA.getAttribute("mass")) + parseFloat(thingB.getAttribute("mass")));
+                    var barrier = thingA.mass + thingB.mass;
 
                     var d = od - barrier;
 
@@ -642,58 +727,56 @@ function physics()
                     }
                     if (0>= d)
                     {
-                        var col = [thingA.id,thingB.id].sort();
+                        console.log("singularity");
                         if(odX==0)
                         {
-                            accX = accX - (100*parseFloat(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
+                            accX = accX - (100*thingB.mass*(Math.round(Math.random()) -0.5))*thingA.mass;
                         }
                         else
                         {
-                            accX = accX - 20*(repel*(mb/od)*(odX/od));
+                            accX = accX - 20*(repel*(thingB.mass/od)*(odX/od));
                         }
 
                         if(odY==0)
                         {
-                            accY = accY - (100*parseFloat(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
+                            accY = accY - (100*thingB.mass)*(Math.round(Math.random()) -0.5)*thingA.mass;
                         }
                         else
                         {
-                            accY = accY - 20*(repel*(mb/od)*(odY/od));
+                            accY = accY - 20*(repel*(thingB.mass/od)*(odY/od));
                         }
                     }
                     else
                     {
-
-                        accX = accX - (repel*(mb/d)*(dX/d));
-                        accY = accY - (repel*(mb/d)*(dY/d));
+                        accX = accX - (repel*(thingB.mass/d)*(dX/d));
+                        accY = accY - (repel*(thingB.mass/d)*(dY/d));
                     }
 
                     //attracts
                     var count = 0;
-                    for(let i=0; i<attracts.length; i++)
+                    for(let i=0; i<thingA.relations.length; i++)
                     {
-                        if(attracts[i]==thingB.id)
+                        if(thingA.relations[i][1]==thingB.id)
                         {
                             count=count+1;
                         }
                     }
 
-                    var attractB = thingB.getAttribute("relations").split(",");
+                    var attractB = thingB.relations;
                     for(let i=0; i<attractB.length; i++)
                     {
-                        if(attractB[i]==thingA.id)
+                        if(attractB[i][1]==thingA.id)
                         {
                             count=count+1;
                         }
                     }
-
-                    var accX = accX + (count*(attract*dX))/m;
-                    var accY = accY + (count*(attract*dY))/m;
+                    var accX = accX + (count*(attract*dX))/thingA.mass;
+                    var accY = accY + (count*(attract*dY))/thingA.mass;
                 }
             }
 
-            var velx = parseFloat(thingA.getAttribute("velx")) + accX;
-            var vely = parseFloat(thingA.getAttribute("vely")) + accY;
+            var velx = thingA.velx + accX;
+            var vely = thingA.vely + accY;
 
             var vel = Math.sqrt((velx*velx) + (vely*vely));
 
@@ -720,10 +803,11 @@ function physics()
                 }
             }
 
-            energy = energy + 0.5 * m * fricvel * fricvel;
+            energy = energy + 0.5 * thingA.mass * fricvel * fricvel;
 
             if (vel==0)
             {
+                console.log("zero setted")
                 velx = 0;
                 vely = 0;
             }
@@ -731,11 +815,11 @@ function physics()
             {
                 velx = velx * (fricvel/vel);
                 vely = vely * (fricvel/vel);
-                x = x + velx;
-                y = y + vely;
+                var x = thingA.x + velx;
+                var y = thingA.y + vely;
             }
 
-            commands.push([thingA,x,y,velx,vely]);
+            commands.push([a,x,y,velx,vely]);
         }
 
     }
@@ -757,60 +841,56 @@ function physics()
 
     for (let i=0; i<commands.length; i++)
     {
-        thingA = commands[i][0]
+        var thing = things[commands[i][0]];
+        var circle = document.getElementById(thing.id);
 
-        var mass = parseFloat(thingA.getAttribute("mass"));
-        thingA.setAttribute("x", commands[i][1]);
-        thingA.setAttribute("y", commands[i][2]);
+        thing.x = parseFloat(commands[i][1]);
+        thing.y = parseFloat(commands[i][2]);
+        thing.velx = parseFloat(commands[i][3]);
+        thing.vely = parseFloat(commands[i][4]);
 
-        thingA.setAttribute("velx", commands[i][3]);
-        thingA.setAttribute("vely", commands[i][4]);
+        circle.children[0].style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
 
-        thingA.children[0].style.fontSize = String(Math.ceil(scale*mass/4)) + "px";
+        circle.style.width = String(2*scale*thing.mass)+"px";
+        circle.style.height = String(2*scale*thing.mass)+"px";
 
-        thingA.style.width = String(2*scale*mass)+"px";
-        thingA.style.height = String(2*scale*mass)+"px";
-
-        thingA.style.left = String(panx + scale*commands[i][1] - scale*mass) + "px";
-        thingA.style.top = String(pany + scale*commands[i][2] - scale*mass) + "px";
-        thingA.style.borderRadius = String(scale*mass*2) + "px";
+        circle.style.left = String(panx + scale*thing.x - scale*thing.mass) + "px";
+        circle.style.top = String(pany + scale*thing.y - scale*thing.mass) + "px";
+        circle.style.borderRadius = String(scale*thing.mass*2) + "px";
     }
 
-    for (let a=0; a<children.length; a++)
+    for (let a=0; a<things.length; a++)
     {
-        var thingA = children[a];
-        var x = parseFloat(thingA.getAttribute("x"));
-        var y = parseFloat(thingA.getAttribute("y"));
+        var thingA = things[a];
 
-        for(let b=0; b<thingA.children.length; b++)
+        for(let b=0; b<document.getElementById(thingA.id).children.length; b++)
         {
-            var line = thingA.children[b];
+            var line = document.getElementById(thingA.id).children[b];
             if(line.classList.contains("line"))
             {
-                var thingB = document.getElementById(line.getAttribute("target"));
+                thingB = getThingsFromId(line.getAttribute("target"));
+
                 if (thingB!= null)
                 {
-                    var dX = parseFloat(thingB.getAttribute("x")) - x;
-                    var dY = parseFloat(thingB.getAttribute("y")) - y;
+                    var dX = thingB.x - thingA.x;
+                    var dY = thingB.y - thingA.y;
 
                     var d = Math.sqrt((dX*dX) + (dY*dY));
                     var thick = parseInt(line.getAttribute("count"));
 
-                    var m = parseFloat(thingA.getAttribute("mass"));
-                    var mb = parseFloat(thingB.getAttribute("mass"));
 
-                    var length = d-m-mb;
-                    var xoff = (dX/d)*(m+length/2);
-                    var yoff = (dY/d)*(m+length/2);
+                    var length = d-thingA.mass-thingB.mass;
+                    var xoff = (dX/d)*(thingA.mass+length/2);
+                    var yoff = (dY/d)*(thingA.mass+length/2);
 
                     line.style.transform = "rotate(0deg)";
                     line.style.width = String(length*scale)+"px";
                     line.style.height = "0.1px";
-                    line.style.left = String((m-length/2)*scale) + "px";
-                    line.style.top = String((m)*scale) + "px";
+                    line.style.left = String((thingA.mass-length/2)*scale) + "px";
+                    line.style.top = String((thingA.mass)*scale) + "px";
                     line.style.transform = "rotate(" + String((180/Math.PI)*Math.atan(dY/dX)) + "deg)";
-                    line.style.left = String((m-length/2+xoff)*scale) + "px";
-                    line.style.top = String((m+yoff)*scale) + "px";
+                    line.style.left = String((thingA.mass-length/2+xoff)*scale) + "px";
+                    line.style.top = String((thingA.mass+yoff)*scale) + "px";
                     line.style.height = String(thick*scale*0.1)+"px";
                 }
             }
@@ -818,27 +898,70 @@ function physics()
     }
 }
 
-function hovering(that)
+function hovering(that, event)
 {
     that.setAttribute("hovering", "1");
+
+    if (event.ctrlKey) {
+        that.style.cursor = "crosshair";
+    } else {
+        that.style.cursor = "auto";
+    }
 }
 
 function nothovering(that)
 {
     that.setAttribute("hovering", "0");
+    that.style.cursor = "auto";
 }
 
-function setanchor(that)
+function setanchor(event, that)
 {
+    console.log("anchor set")
     var body = document.getElementsByTagName("BODY")[0];
 
-    that.setAttribute("anchorx", body.getAttribute("x"));
-    that.setAttribute("anchory", body.getAttribute("y"));
-    that.setAttribute("anchor", "1");
+    if (event.ctrlKey == false) {
+        if (event.button == 0) {
+            that.setAttribute("anchorx", body.getAttribute("x"));
+            that.setAttribute("anchory", body.getAttribute("y"));
+            that.setAttribute("anchor", "1");
+        } else if (event.button == 2) {
+            if (graph.getAttribute("hovered") == "0") {
+                clearPanels();
+                var panel = document.createElement("DIV");
+                panel.classList.add("circlePanel");
+                panel.style.position = "absolute";
+                panel.style.left = body.getAttribute("x") + "px"
+                panel.style.top = String(parseInt(body.getAttribute("y"))-30) + "px";
+                panel.innerHTML = "<p class='panelButton' onclick='createNode(" +body.getAttribute("x") +","
+                 + body.getAttribute("y") + ", this)'>Create node</p>";
+                panel.addEventListener("contextmenu", (e) => {e.preventDefault()});
+                graph.appendChild(panel);
+            }
+        }
+    }
+}
+
+function createNode(x, y, that)
+{
+    var graph = document.getElementById("graph");
+
+    var nodex = (parseFloat(x) - parseFloat(graph.getAttribute("panx")))/parseFloat(graph.getAttribute("scale"));
+    var nodey = (parseFloat(y) - parseFloat(graph.getAttribute("pany")))/parseFloat(graph.getAttribute("scale"));
+
+    var id = prompt("Enter the new node's id");
+    var node = new Thing(id,id,"","","",1,nodex, nodey);
+    things.push(node);
+
+    document.getElementById("input").value = convertToMarkUp(things);
+    that.parentNode.remove();
+    saveGraph();
+    redraw();
 }
 
 function removeanchor(that)
 {
+    console.log("remove");
     that.setAttribute("anchor", "0");
     circles = document.getElementById("circles").children;
 
@@ -868,6 +991,14 @@ function releasegrab(that)
     //that.setAttribute('vely',50*(mousey-parseFloat(that.getAttribute('y')))/scale);
 }
 
+window.addEventListener("mousemove", function(event) {
+    if(event.ctrlKey == false) {
+        if (document.getElementById("newRel")) {
+            document.getElementById("newRel").remove();
+        }
+    }
+});
+
 window.addEventListener("wheel", function(e) {
     var body = document.getElementsByTagName("BODY")[0];
     var graph = document.getElementById("graph");
@@ -896,21 +1027,25 @@ window.addEventListener("wheel", function(e) {
     }
 });
 
+
 function getComplete(things)
 {
-    for(let i=0; i<things.length; i++)
-    {
-        var thing = document.getElementById(things[i].id);
-        things[i].x = String(parseFloat(thing.getAttribute("x")));
-        things[i].y = String(parseFloat(thing.getAttribute("y")));
-    }
-
     var complete = "";
 
     for(let i=0; i<things.length; i++)
     {
         var thing = things[i];
-        complete = complete + thing.id + "{\nname:" + thing.name + "\nimage:" + thing.image + "\ndesc:" + thing.desc + "\nx:" + thing.x + "\ny:" + thing.y + "\n";
+        complete = complete + thing.id + "{\nname:" + thing.name + "\nimage:" + thing.image + "\ndesc:" + thing.desc;
+        if (Number.isNaN(thing.x)) {
+            complete = complete + "\nx: 0";
+        } else {
+            complete = complete + "\nx:" + thing.x;
+        }
+        if (Number.isNaN(thing.y)) {
+            complete = complete + "\ny: 0\n";
+        } else {
+            complete = complete + "\ny:" + thing.y + "\n";
+        }
 
         for(let x=0; x<thing.relations.length; x++)
         {
