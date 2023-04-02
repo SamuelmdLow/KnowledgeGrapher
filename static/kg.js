@@ -122,6 +122,9 @@ function circleMouseDown(event, that) {
             rel = prompt("Fill in the relationship\n\n " + thing.name + " ______ " + getThingsFromId(that.id).name);
             removeanchor(document.getElementById("graph"));
             thing.relations.push([rel, that.id]);
+            document.getElementById("input").value = convertToMarkUp(things);
+            saveGraph();
+
             document.getElementById("newRel").remove();
 
             var line = document.createElement("DIV");
@@ -129,6 +132,7 @@ function circleMouseDown(event, that) {
             line.setAttribute("target", that.id);
             line.setAttribute("count", 1);
             document.getElementById(id).appendChild(line);
+            redraw();
         } else {
             var line = document.createElement("DIV");
             line.id = "newRel";
