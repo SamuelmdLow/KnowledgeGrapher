@@ -55,6 +55,11 @@ body
      cursor:move;
 }
 
+.crossing
+{
+    cursor: crosshair;
+}
+
 .circle
 {
     position:absolute;
@@ -130,7 +135,6 @@ a
 
 .circlePanel{
     z-index: 2;
-    height:60px;
     display: block;
     position: absolute;
     border-radius: 5px;

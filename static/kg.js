@@ -57,6 +57,7 @@ function setup(things)
             }
             graph.setAttribute("hovered", parseInt(graph.getAttribute("hovered"))+1);
         });
+        circle.setAttribute("ondblclick", "editNode(" + "'" + thing.id + "'" + ");");
 
         circle.addEventListener("mouseout", function(event) {
             circle.style.cursor = "grab";
@@ -121,18 +122,20 @@ function circleMouseDown(event, that) {
             removeanchor(document.getElementById("graph"));
             rel = prompt("Fill in the relationship\n\n " + thing.name + " ______ " + getThingsFromId(that.id).name);
             removeanchor(document.getElementById("graph"));
-            thing.relations.push([rel, that.id]);
-            document.getElementById("input").value = convertToMarkUp(things);
-            saveGraph();
+            if (rel != null) {
+                thing.relations.push([rel, that.id]);
+                document.getElementById("input").value = convertToMarkUp(things);
+                saveGraph();
 
-            document.getElementById("newRel").remove();
+                document.getElementById("newRel").remove();
 
-            var line = document.createElement("DIV");
-            line.classList.add("line");
-            line.setAttribute("target", that.id);
-            line.setAttribute("count", 1);
-            document.getElementById(id).appendChild(line);
-            redraw();
+                var line = document.createElement("DIV");
+                line.classList.add("line");
+                line.setAttribute("target", that.id);
+                line.setAttribute("count", 1);
+                document.getElementById(id).appendChild(line);
+                redraw();
+            }
         } else {
             var line = document.createElement("DIV");
             line.id = "newRel";
@@ -157,12 +160,12 @@ function circleOptionPanel(that) {
     panel.style.position = "absolute";
     panel.style.left = body.getAttribute("x") + "px"
     panel.style.top = String(parseInt(body.getAttribute("y"))-60) + "px";
-    panel.innerHTML = "<p class='panelButton' onclick='deleteNode(" + '"' + that.id + '",this' + ")'>Delete node</p><p class='panelButton' onclick='editNode(" + '"' + that.id + '",this' + ");'>Edit node</p>";
+    panel.innerHTML = "<p class='panelButton' onclick='deleteNode(" + '"' + that.id + '",this' + ")'>Delete node</p><p class='panelButton' onclick='editNode(" + '"' + that.id + '"' + ");this.parentNode.remove();'>Edit node</p>";
     panel.addEventListener("contextmenu", (e) => {e.preventDefault()});
     graph.appendChild(panel);
 }
 
-function editNode(id, that) {
+function editNode(id) {
     closeMarkup();
     if (nodeEdit != true) {
         openNodeEdit();
@@ -179,7 +182,7 @@ function editNode(id, that) {
     document.getElementById("nodeEditor-desc").value = edittedNode.desc;
     document.getElementById("nodeEditor-id").innerHTML = id;
 
-    that.parentNode.remove();
+    //that.parentNode.remove();
 }
 
 function openNodeEdit() {
@@ -548,6 +551,23 @@ function redraw()
             circle.setAttribute("onmouseup", "releasegrab(this);");
             circle.style.backgroundImage = "url('"+thing.image+"')";
 
+            circle.addEventListener("contextmenu", (e) => {e.preventDefault()});
+            circle.addEventListener("mouseover", function(event) {
+                if (event.ctrlKey) {
+                    circle.style.cursor = "crosshair";
+                } else {
+                    circle.style.cursor = "grab";
+                }
+                graph.setAttribute("hovered", parseInt(graph.getAttribute("hovered"))+1);
+            });
+            circle.setAttribute("ondblclick", "editNode(" + "'" + thing.id + "'" + ");");
+
+            circle.addEventListener("mouseout", function(event) {
+                circle.style.cursor = "grab";
+                graph.setAttribute("hovered", parseInt(graph.getAttribute("hovered"))-1);
+            });
+
+
             const name = document.createElement("p");
             name.innerHTML = thing.name;
             name.classList.add("name");
@@ -779,10 +799,12 @@ function physics()
                 }
             }
 
+
             var velx = thingA.velx + accX;
             var vely = thingA.vely + accY;
 
             var vel = Math.sqrt((velx*velx) + (vely*vely));
+
 
             if(friction > 0.0001)
             {
@@ -907,16 +929,15 @@ function hovering(that, event)
     that.setAttribute("hovering", "1");
 
     if (event.ctrlKey) {
-        that.style.cursor = "crosshair";
+        that.classList.add("crossing");
     } else {
-        that.style.cursor = "auto";
+        that.classList.remove("crossing");
     }
 }
 
 function nothovering(that)
 {
     that.setAttribute("hovering", "0");
-    that.style.cursor = "auto";
 }
 
 function setanchor(event, that)
@@ -954,13 +975,15 @@ function createNode(x, y, that)
     var nodey = (parseFloat(y) - parseFloat(graph.getAttribute("pany")))/parseFloat(graph.getAttribute("scale"));
 
     var id = prompt("Enter the new node's id");
-    var node = new Thing(id,id,"","","",1,nodex, nodey);
-    things.push(node);
+    if (id != null) {
+        var node = new Thing(id,id,"","",[],1,nodex, nodey);
+        things.push(node);
 
-    document.getElementById("input").value = convertToMarkUp(things);
+        document.getElementById("input").value = convertToMarkUp(things);
+        saveGraph();
+        redraw();
+    }
     that.parentNode.remove();
-    saveGraph();
-    redraw();
 }
 
 function removeanchor(that)
