@@ -24,9 +24,9 @@ function convertToMarkUp(things)
             complete = complete + "\nimage:" + thing.image;
          }
          complete = complete + "\ndesc:" + thing.desc +"\n";
-        for(let x=0; x<thing.relations.length; x++)
+        for(let x=0; x<thing.sendTo.length; x++)
         {
-            complete = complete + thing.relations[x][0] + " -> " + thing.relations[x][1] + "\n";
+            complete = complete + thing.sendTo[x].rel + " -> " + thing.sendTo[x].node.id + "\n";
         }
         complete = complete + "}\n";
     }
@@ -79,9 +79,9 @@ function setup(things)
 
         var friends = [];
         var attracts = [];
-        for(let x=0;x<thing.relations.length; x++)
+        for(let x=0;x<thing.sendTo.length; x++)
         {
-            var themId = thing.relations[x][1];
+            var themId = thing.sendTo[x].node.id;
             attracts.push(themId);
 
             if(friends.includes(themId) == false)
@@ -123,7 +123,8 @@ function circleMouseDown(event, that) {
             rel = prompt("Fill in the relationship\n\n " + thing.name + " ______ " + getThingsFromId(that.id).name);
             removeanchor(document.getElementById("graph"));
             if (rel != null) {
-                thing.relations.push([rel, that.id]);
+                thing.sendTo.push(new Relation(rel, getThingsFromId(that.id)));
+                getThingsFromId(that.id).receiveFrom.push(new Relation(rel, thing));
                 document.getElementById("input").value = convertToMarkUp(things);
                 saveGraph();
 
@@ -226,9 +227,9 @@ function deleteNode(id, that) {
 
         for(let x in things) {
             let y = 0;
-            while (y < things[x].relations.length) {
-                if(things[x].relations[y][1] == id) {
-                    things[x].relations.splice(y,1);
+            while (y < things[x].sendTo.length) {
+                if(things[x].sendTo[y].node.id == id) {
+                    things[x].sendTo.splice(y,1);
                 } else {
                     y = y + 1;
                 }
@@ -249,18 +250,25 @@ function clearPanels() {
     }
 }
 
-function Thing(id, name, image, desc, relations, mass, x, y)
+function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y)
 {
     this.id = id;
     this.name = name;
     this.image = image;
     this.desc = desc;
-    this.relations = relations;
+    this.sendTo = sendTo;
+    this.receiveFrom = receiveFrom;
     this.mass = mass;
     this.x = x;
     this.y = y;
     this.velx = 0;
     this.vely = 0;
+}
+
+function Relation(rel, node)
+{
+    this.rel = rel;
+    this.node = node;
 }
 
 
@@ -426,7 +434,7 @@ function processInput(input)
                     if (rawrelations[n].includes("->") && rawrelations[n].length > 1)
                     {
                         var rel = rawrelations[n].split("->");
-                        relations.push([rel[0].trim(), rel[1].trim()]);
+                        relations.push(new Relation(rel[0].trim(), rel[1].trim()));
                     }
                 }
 
@@ -435,7 +443,21 @@ function processInput(input)
                     x = oldThing.x;
                     y = oldThing.y;
                 }
-                things.push(new Thing(id, name, image, desc, relations, 1, x, y));
+
+                things.push(new Thing(id, name, image, desc, relations,[], 1, x, y));
+            }
+        }
+    }
+
+    for (let b=0; b<things.length; b++){
+        //alert(thing.sendTo);
+        for (let a=0; a< things[b].sendTo.length; a++) {
+            for(let i=0; i < things.length; i++) {
+                if(things[i].id == things[b].sendTo[a].node) {
+                    things[b].sendTo[a].node = things[i];
+                    things[i].receiveFrom.push(new Relation(things[b].sendTo[a].rel, things[b]))
+                    break;
+                }
             }
         }
     }
@@ -490,14 +512,14 @@ function redraw()
             }
 
             var attracts = [];
-            for(let x=0;x<thing.relations.length; x++)
+            for(let x=0;x<thing.sendTo.length; x++)
             {
-                attracts.push(thing.relations[x][1]);
+                attracts.push(thing.sendTo[x].node.id);
 
                 var lineexists = false;
                 for(let n=1; n<lines.length; n++)
                 {
-                    if(lines[n].getAttribute("target")==thing.relations[x][1])
+                    if(lines[n].getAttribute("target")==thing.sendTo[x].node.id)
                     {
                         lines[n].setAttribute("count",parseInt(lines[n].getAttribute("count"))+1);
                         lineexists = true;
@@ -508,7 +530,7 @@ function redraw()
                 {
                     var line = document.createElement("DIV");
                     line.classList.add("line");
-                    line.setAttribute("target", thing.relations[x][1]);
+                    line.setAttribute("target", thing.sendTo[x].node.id);
                     line.setAttribute("count", 1);
                     circle.appendChild(line);
                 }
@@ -577,9 +599,9 @@ function redraw()
 
             var friends = [];
             var attracts = [];
-            for(let x=0;x<thing.relations.length; x++)
+            for(let x=0;x<thing.sendTo.length; x++)
             {
-                var themId = thing.relations[x][1];
+                var themId = thing.sendTo[x].node.id;
                 attracts.push(themId);
 
                 if(friends.includes(themId) == false)
@@ -629,10 +651,9 @@ function redraw()
             if (a != b)
             {
                 var thingB = things[b];
-                var attractB = thingB.relations;
-                for(let i=0; i<attractB.length; i++)
+                for(let i=0; i<thingB.sendTo.length; i++)
                 {
-                    if(attractB[i][1]==thingA.id)
+                    if(thingB.sendTo[i].node==thingA)
                     {
                         thingA.mass = thingA.mass + 0.5;
                     }
@@ -778,18 +799,18 @@ function physics()
 
                     //attracts
                     var count = 0;
-                    for(let i=0; i<thingA.relations.length; i++)
+                    for(let i=0; i<thingA.sendTo.length; i++)
                     {
-                        if(thingA.relations[i][1]==thingB.id)
+                        if(thingA.sendTo[i].node.id==thingB.id)
                         {
                             count=count+1;
                         }
                     }
 
-                    var attractB = thingB.relations;
-                    for(let i=0; i<attractB.length; i++)
+                    for(let i=0; i<thingB.sendTo.length; i++)
                     {
-                        if(attractB[i][1]==thingA.id)
+                        //console.log(thingB.sendTo[i].node);
+                        if(thingB.sendTo[i].node==thingA)
                         {
                             count=count+1;
                         }
@@ -976,7 +997,7 @@ function createNode(x, y, that)
 
     var id = prompt("Enter the new node's id");
     if (id != null) {
-        var node = new Thing(id,id,"","",[],1,nodex, nodey);
+        var node = new Thing(id,id,"","",[],[],1,nodex, nodey);
         things.push(node);
 
         document.getElementById("input").value = convertToMarkUp(things);
@@ -1074,9 +1095,9 @@ function getComplete(things)
             complete = complete + "\ny:" + thing.y + "\n";
         }
 
-        for(let x=0; x<thing.relations.length; x++)
+        for(let x=0; x<thing.sendTo.length; x++)
         {
-            complete = complete + thing.relations[x][0] + " -> " + thing.relations[x][1] + "\n";
+            complete = complete + thing.sendTo[x].rel + " -> " + thing.sendTo[x].node.id + "\n";
         }
         complete = complete + "\n}\n";
     }

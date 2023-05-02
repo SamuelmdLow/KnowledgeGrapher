@@ -21,6 +21,7 @@ body
     border-bottom-width:0;
     border-width: 1px;
     resize: horizontal;
+    transition-property: left, opacity;
     transition-duration: 0.5s;
 }
 
@@ -180,6 +181,7 @@ a
     border-radius:10px;
     border-width: 1px;
     opacity: 0;
+    transition-property: right, opacity
     transition-duration: 0.5s;
 }
 
