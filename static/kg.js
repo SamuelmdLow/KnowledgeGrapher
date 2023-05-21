@@ -123,8 +123,11 @@ function circleMouseDown(event, that) {
             rel = prompt("Fill in the relationship\n\n " + thing.name + " ______ " + getThingsFromId(that.id).name);
             removeanchor(document.getElementById("graph"));
             if (rel != null) {
-                thing.sendTo.push(new Relation(rel, getThingsFromId(that.id)));
-                getThingsFromId(that.id).receiveFrom.push(new Relation(rel, thing));
+                if (getThingsFromId(that.id) != null) {
+                    thing.sendTo.push(new Relation(rel, getThingsFromId(that.id)));
+                    getThingsFromId(that.id).receiveFrom.push(new Relation(rel, thing));
+                }
+
                 document.getElementById("input").value = convertToMarkUp(things);
                 saveGraph();
 
@@ -449,23 +452,35 @@ function processInput(input)
         }
     }
 
+    console.log("Hey");
     for (let b=0; b<things.length; b++){
         //alert(thing.sendTo);
+        console.log(things[b].sendTo);
+        var newSendTo = [];
         for (let a=0; a< things[b].sendTo.length; a++) {
+            var connection = null;
             for(let i=0; i < things.length; i++) {
                 if(things[i].id == things[b].sendTo[a].node) {
-                    things[b].sendTo[a].node = things[i];
-                    things[i].receiveFrom.push(new Relation(things[b].sendTo[a].rel, things[b]))
+                    connection = things[i];
                     break;
                 }
             }
+            console.log(connection);
+            if (connection != null) {
+                newSendTo.push(new Relation(things[b].sendTo[a].rel, connection));
+                connection.receiveFrom.push(new Relation(things[b].sendTo[a].rel, things[b]));
+            }
         }
+        console.log(newSendTo);
+        things[b].sendTo = newSendTo;
+
     }
 
-    return things
+    return things;
 }
 
 function getThingsFromId(id) {
+
     for(let i=0; i < things.length; i++) {
         if(things[i].id == id) {
             return things[i];
@@ -666,6 +681,56 @@ function redraw()
     MathJax.typesetPromise();
 }
 
+function separateGraph(nodes)
+{
+    var graphs = []
+    for (let n=0; n<nodes.length;n++) {
+        var alreadyIncluded = false;
+        for (let g=0; g<graphs.length;g++) {
+            if (graphs[g].includes(nodes[n])) {
+                alreadyIncluded = true;
+                break;
+            }
+        }
+        if(alreadyIncluded == false) {
+            graphs.push(graphFromNode(nodes[n],[],[]));
+        }
+    }
+
+    return graphs;
+}
+
+function graphFromNode(node, graph, worklist) {
+    graph, worklist = addNode(node,graph,worklist)
+
+    while (worklist.length > 0) {
+        var node = worklist.pop();
+        graph, worklist = addNode(node, graph, worklist);
+    }
+
+    return graph
+}
+
+function addNode(node, graph, worklist) {
+    //console.log("Source node: " + node.id);
+    graph.push(node);
+    for (let i=0; i<node.sendTo.length; i++) {
+        if (graph.includes(node.sendTo[i].node) == false && worklist.includes(node.sendTo[i].node) == false && node.sendTo[i].node != null)
+        {
+            //console.log(" > " + node.sendTo[i].node.id);
+            worklist.push(node.sendTo[i].node);
+        }
+    }
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        if (graph.includes(node.receiveFrom[i].node) == false && worklist.includes(node.receiveFrom[i].node) == false  && node.receiveFrom[i].node != null)
+        {
+            //console.log(" > " + node.receiveFrom[i].node.id);
+            worklist.push(node.receiveFrom[i].node);
+        }
+    }
+    return graph, worklist;
+}
+
 function physics()
 {
     var graph = document.getElementById("graph");
@@ -711,162 +776,186 @@ function physics()
         newrel.style.height = String(scale*0.1)+"px";
     }
 
-    for(let a=0; a<things.length; a++)
-    {
-        var thingA = things[a];
-        if (Number.isNaN(thingA.x)) {
-            console.log("broke")
-            thingA.x = Math.random();
-        }
-        if (Number.isNaN(thingA.y)) {
-            console.log("broke")
-            thingA.y = Math.random();
-        }
-        var accX = 0;
-        var accY = 0;
-
-        if(document.getElementById(thingA.id).getAttribute("clicked")=="1")
+    var graphs = separateGraph(things);
+    for (let g=0; g<graphs.length; g++) {
+        commands = [];
+        for(let a=0; a<graphs[g].length; a++)
         {
-            var body = document.getElementsByTagName("BODY")[0];
-            var x = (parseInt(body.getAttribute("x")) - panx)/ scale;
-            var y = (parseInt(body.getAttribute("y")) - pany)/ scale;
-
-            commands.push([a,x,y,0,0]);
-            grabbed =  true;
-        }
-        else
-        {
-            for(let b=0; b<things.length; b++)
-            {
-                if (a != b)
-                {
-                    var thingB = things[b];
-
-                    if (Number.isNaN(thingB.x)) {
-                        console.log("broke");
-                        thingB.x = Math.random();
-                    }
-                    if (Number.isNaN(thingB.y)) {
-                        console.log("broke");
-                        thingB.y = Math.random();
-                    }
-
-
-                    var odX = thingB.x - thingA.x;
-                    var odY = thingB.y - thingA.y;
-                    var od = Math.sqrt((odX * odX) + (odY * odY));
-
-                    var barrier = thingA.mass + thingB.mass;
-
-                    var d = od - barrier;
-
-                    if (od!=0)
-                    {
-                        var dX = odX * (Math.abs(d)/od);
-                        var dY = odY * (Math.abs(d)/od);
-                    }
-                    else
-                    {
-                        var dX = 0;
-                        var dY = 0;
-                    }
-                    if (0>= d)
-                    {
-                        console.log("singularity");
-                        if(odX==0)
-                        {
-                            accX = accX - (100*thingB.mass*(Math.round(Math.random()) -0.5))*thingA.mass;
-                        }
-                        else
-                        {
-                            accX = accX - 20*(repel*(thingB.mass/od)*(odX/od));
-                        }
-
-                        if(odY==0)
-                        {
-                            accY = accY - (100*thingB.mass)*(Math.round(Math.random()) -0.5)*thingA.mass;
-                        }
-                        else
-                        {
-                            accY = accY - 20*(repel*(thingB.mass/od)*(odY/od));
-                        }
-                    }
-                    else
-                    {
-                        accX = accX - (repel*(thingB.mass/d)*(dX/d));
-                        accY = accY - (repel*(thingB.mass/d)*(dY/d));
-                    }
-
-                    //attracts
-                    var count = 0;
-                    for(let i=0; i<thingA.sendTo.length; i++)
-                    {
-                        if(thingA.sendTo[i].node.id==thingB.id)
-                        {
-                            count=count+1;
-                        }
-                    }
-
-                    for(let i=0; i<thingB.sendTo.length; i++)
-                    {
-                        //console.log(thingB.sendTo[i].node);
-                        if(thingB.sendTo[i].node==thingA)
-                        {
-                            count=count+1;
-                        }
-                    }
-                    var accX = accX + (count*(attract*dX))/thingA.mass;
-                    var accY = accY + (count*(attract*dY))/thingA.mass;
-                }
+            var thingA = graphs[g][a];
+            if (Number.isNaN(thingA.x)) {
+                console.log("broke")
+                thingA.x = Math.random();
             }
+            if (Number.isNaN(thingA.y)) {
+                console.log("broke")
+                thingA.y = Math.random();
+            }
+            var accX = 0;
+            var accY = 0;
 
-
-            var velx = thingA.velx + accX;
-            var vely = thingA.vely + accY;
-
-            var vel = Math.sqrt((velx*velx) + (vely*vely));
-
-
-            if(friction > 0.0001)
+            if(document.getElementById(thingA.id).getAttribute("clicked")=="1")
             {
-                if (Math.abs(vel) < friction || vel==0)
-                {
-                    var fricvel = 0;
-                }
-                else
-                {
-                    var fricvel = vel - friction*(vel/Math.abs(vel));
-                }
+                var body = document.getElementsByTagName("BODY")[0];
+                var x = (parseInt(body.getAttribute("x")) - panx)/ scale;
+                var y = (parseInt(body.getAttribute("y")) - pany)/ scale;
+
+                commands.push([a,x,y,0,0]);
+                grabbed =  true;
             }
             else
             {
-                if (Math.abs(vel) < 0.0001 || vel==0)
+                for(let b=0; b<graphs[g].length; b++)
                 {
-                    var fricvel = 0;
+                    if (a != b)
+                    {
+                        var thingB = graphs[g][b];
+
+                        if (Number.isNaN(thingB.x)) {
+                            console.log("broke");
+                            thingB.x = Math.random();
+                        }
+                        if (Number.isNaN(thingB.y)) {
+                            console.log("broke");
+                            thingB.y = Math.random();
+                        }
+
+
+                        var odX = thingB.x - thingA.x;
+                        var odY = thingB.y - thingA.y;
+                        var od = Math.sqrt((odX * odX) + (odY * odY));
+
+                        var barrier = thingA.mass + thingB.mass;
+
+                        var d = od - barrier;
+
+                        if (od!=0)
+                        {
+                            var dX = odX * (Math.abs(d)/od);
+                            var dY = odY * (Math.abs(d)/od);
+                        }
+                        else
+                        {
+                            var dX = 0;
+                            var dY = 0;
+                        }
+                        if (0>= d)
+                        {
+                            console.log("singularity");
+                            if(odX==0)
+                            {
+                                accX = accX - (100*thingB.mass*(Math.round(Math.random()) -0.5))*thingA.mass;
+                            }
+                            else
+                            {
+                                accX = accX - 20*(repel*(thingB.mass/od)*(odX/od));
+                            }
+
+                            if(odY==0)
+                            {
+                                accY = accY - (100*thingB.mass)*(Math.round(Math.random()) -0.5)*thingA.mass;
+                            }
+                            else
+                            {
+                                accY = accY - 20*(repel*(thingB.mass/od)*(odY/od));
+                            }
+                        }
+                        else
+                        {
+                            accX = accX - (repel*(thingB.mass/d)*(dX/d));
+                            accY = accY - (repel*(thingB.mass/d)*(dY/d));
+                        }
+
+                        //attracts
+                        var count = 0;
+                        for(let i=0; i<thingA.sendTo.length; i++)
+                        {
+                            if(thingA.sendTo[i].node.id==thingB.id)
+                            {
+                                count=count+1;
+                            }
+                        }
+
+                        for(let i=0; i<thingB.sendTo.length; i++)
+                        {
+                            //console.log(thingB.sendTo[i].node);
+                            if(thingB.sendTo[i].node==thingA)
+                            {
+                                count=count+1;
+                            }
+                        }
+                        var accX = accX + (count*(attract*dX))/thingA.mass;
+                        var accY = accY + (count*(attract*dY))/thingA.mass;
+                    }
+                }
+
+
+                var velx = thingA.velx + accX;
+                var vely = thingA.vely + accY;
+
+                var vel = Math.sqrt((velx*velx) + (vely*vely));
+
+
+                if(friction > 0.0001)
+                {
+                    if (Math.abs(vel) < friction || vel==0)
+                    {
+                        var fricvel = 0;
+                    }
+                    else
+                    {
+                        var fricvel = vel - friction*(vel/Math.abs(vel));
+                    }
                 }
                 else
                 {
-                    var fricvel = vel - 0.0001*(vel/Math.abs(vel));
+                    if (Math.abs(vel) < 0.0001 || vel==0)
+                    {
+                        var fricvel = 0;
+                    }
+                    else
+                    {
+                        var fricvel = vel - 0.0001*(vel/Math.abs(vel));
+                    }
                 }
-            }
 
-            energy = energy + 0.5 * thingA.mass * fricvel * fricvel;
+                energy = energy + 0.5 * thingA.mass * fricvel * fricvel;
 
-            if (vel==0)
-            {
-                console.log("zero setted")
-                velx = 0;
-                vely = 0;
-            }
-            else
-            {
-                velx = velx * (fricvel/vel);
-                vely = vely * (fricvel/vel);
+                if (vel==0)
+                {
+                    console.log("zero setted")
+                    velx = 0;
+                    vely = 0;
+                }
+                else
+                {
+                    velx = velx * (fricvel/vel);
+                    vely = vely * (fricvel/vel);
+                }
                 var x = thingA.x + velx;
                 var y = thingA.y + vely;
+
+                commands.push([a,x,y,velx,vely]);
             }
 
-            commands.push([a,x,y,velx,vely]);
+        }
+        for (let i=0; i<commands.length; i++)
+        {
+            var thing = graphs[g][commands[i][0]];
+            var circle = document.getElementById(thing.id);
+
+            thing.x = parseFloat(commands[i][1]);
+            thing.y = parseFloat(commands[i][2]);
+            thing.velx = parseFloat(commands[i][3]);
+            thing.vely = parseFloat(commands[i][4]);
+
+            circle.children[0].style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
+
+            circle.style.width = String(2*scale*thing.mass)+"px";
+            circle.style.height = String(2*scale*thing.mass)+"px";
+
+            circle.style.left = String(panx + scale*thing.x - scale*thing.mass) + "px";
+            circle.style.top = String(pany + scale*thing.y - scale*thing.mass) + "px";
+            circle.style.borderRadius = String(scale*thing.mass*2) + "px";
         }
 
     }
@@ -884,26 +973,6 @@ function physics()
 
         graph.setAttribute("panx", panx);
         graph.setAttribute("pany", pany);
-    }
-
-    for (let i=0; i<commands.length; i++)
-    {
-        var thing = things[commands[i][0]];
-        var circle = document.getElementById(thing.id);
-
-        thing.x = parseFloat(commands[i][1]);
-        thing.y = parseFloat(commands[i][2]);
-        thing.velx = parseFloat(commands[i][3]);
-        thing.vely = parseFloat(commands[i][4]);
-
-        circle.children[0].style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
-
-        circle.style.width = String(2*scale*thing.mass)+"px";
-        circle.style.height = String(2*scale*thing.mass)+"px";
-
-        circle.style.left = String(panx + scale*thing.x - scale*thing.mass) + "px";
-        circle.style.top = String(pany + scale*thing.y - scale*thing.mass) + "px";
-        circle.style.borderRadius = String(scale*thing.mass*2) + "px";
     }
 
     for (let a=0; a<things.length; a++)
