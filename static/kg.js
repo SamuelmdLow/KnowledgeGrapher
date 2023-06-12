@@ -922,7 +922,6 @@ function physics()
 
                 if (vel==0)
                 {
-                    console.log("zero setted")
                     velx = 0;
                     vely = 0;
                 }
