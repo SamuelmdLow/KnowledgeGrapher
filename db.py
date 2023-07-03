@@ -2,25 +2,6 @@ import datetime
 
 import mysql.connector
 
-class Graph:
-    def __init__(self, data):
-        self.user = Database().getUserSlug(data[1])
-        self.slug = data[2]
-        self.name = data[3]
-        self.nodes = data[4]
-        self.privacy = data[5]
-        self.creationDate = data[6]
-        self.pubDate = data[7]
-        self.lastEdit = data[8]
-
-class User:
-    def __init__(self, data):
-        self.slug = data[1]
-        self.email = data[2]
-        self.name = data[3]
-        self.bio = data[4]
-        self.creationDate = data[5]
-
 
 class Database:
 
@@ -53,6 +34,30 @@ class Database:
                 database="mydatabase"
             )
             self.cursor = self.mydb.cursor()
+
+    class Graph:
+        def __init__(self, data):
+            self.user = data[1]
+            self.slug = data[2]
+            self.name = data[3]
+            self.nodes = data[4]
+            self.privacy = data[5]
+            self.creationDate = data[6]
+            self.pubDate = data[7]
+            self.lastEdit = data[8]
+
+    class User:
+        def __init__(self, data):
+            self.slug = data[1]
+            self.email = data[2]
+            self.name = data[3]
+            self.bio = data[4]
+            self.creationDate = data[5]
+
+    def createGraphObj(self, data):
+        graph = self.Graph(data)
+        graph.user = self.getUserSlug(data[1])
+        return graph
 
     def createTables(self):
         self.cursor.execute('''
@@ -166,7 +171,7 @@ class Database:
         if result is None:
             return False
         else:
-            return User(result)
+            return self.User(result)
 
     def getUserSlug(self, id):
         sql = "SELECT slug FROM users WHERE id =%s"
@@ -193,7 +198,7 @@ class Database:
             result = self.cursor.fetchall()
 
             for i in range(len(result)):
-                result[i] = Graph(result[i])
+                result[i] = self.createGraphObj(result[i])
 
             return result
 
@@ -205,7 +210,7 @@ class Database:
         result = self.cursor.fetchall()[:num]
 
         for i in range(len(result)):
-            result[i] = Graph(result[i])
+            result[i] = self.createGraphObj(result[i])
 
         return result
 
@@ -219,7 +224,7 @@ class Database:
         if result is None:
             return False
         else:
-            return Graph(result)
+            return self.createGraphObj(result)
 
     def saveGraph(self, nodes, userSlug, slug):
         userId = self.getUserId(userSlug)
