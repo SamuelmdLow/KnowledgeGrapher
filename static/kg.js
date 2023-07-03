@@ -1116,6 +1116,7 @@ window.addEventListener("mousemove", function(event) {
 });
 
 window.addEventListener("wheel", function(e) {
+    e.preventDefault();
     var body = document.getElementsByTagName("BODY")[0];
     var graph = document.getElementById("graph");
     if(graph.getAttribute("hovering") == "1")
@@ -1141,7 +1142,7 @@ window.addEventListener("wheel", function(e) {
         graph.setAttribute("panx", x - ((x-panx)/scale)*newscale);
         graph.setAttribute("pany", y - ((y-pany)/scale)*newscale);
     }
-});
+},{passive:false});
 
 
 function getComplete(things)
@@ -1179,13 +1180,15 @@ function saveGraph()
     savebutton.innerHTML = "Saved";
     savebutton.style.backgroundColor = "#98bdfb";
 
-
-    var id = window.location.href.split("edit/")[1];
+    var urlParts = window.location.href.split("/");
+    console.log(urlParts);
+    urlParts[5] = "save";
+    var url = urlParts.join("/");
     var save = getComplete(things);
     $.ajax({
         type: 'POST',
-        url: "/save",
-        data: {id: id, data: save},
+        url: url,
+        data: {data: save},
         dataType: "text",
         success: function(data){
                  console.log("Saved");

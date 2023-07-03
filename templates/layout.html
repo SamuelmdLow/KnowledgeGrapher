@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://kit.fontawesome.com/28a7c2be96.js" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+{% block nav %}
+<nav>
+    <ul class="left">
+        <li><a href="#" id="toggle-dashboard"><i class="fa-solid fa-bars"></i></a></li>
+        <li class="mobile-hidden">Logo</li>
+        <li><a href="/">Home</a></li>
+        <li class="mobile-hidden">Subjects</li>
+        <li class="mobile-hidden">Search</li>
+    </ul>
+    <p class="mid mobile-hidden">Brambli</p>
+    <ul class="right">
+        <li><i class="fa-solid fa-bell"></i></li>
+        <li><i class="fa-solid fa-bookmark"></i></li>
+        <li><a href="/new"><i class="fa-solid fa-plus"></i></a></li>
+        <li class="mobile-hidden"><i class="fa-solid fa-folder"></i></li>
+        <li class="dropdown">
+            {% if current_user.is_authenticated %}
+                <a href="/{{ current_user.id }}">{{ current_user.id }}</a>
+                <div class="profile-dropdown dropdown-content">
+                    <ul>
+                        <li><a href="/{{ current_user.id }}">Profile</a></li>
+                        <li><a href="/logout">Sign out</a></li>
+                    </ul>
+                </div>
+            {% else %}
+                <a href="/login">Signed out</a>
+                <div class="profile-dropdown dropdown-content">
+                    <ul>
+                        <li>
+                            <p>Login</p>
+                           <form action='login' method='POST'>
+                            <input type='text' name='username' id='username' placeholder='username'/>
+                            <input type='password' name='password' id='password' placeholder='password'/>
+                            <input type='submit' name='submit'/>
+                           </form>
+                        </li>
+                        <li><a href="/register">Sign up</a></li>
+                    </ul>
+                </div>
+            {% endif %}
+        </li>
+    </ul>
+</nav>
+{% endblock %}
+
+<div class="content">
+    <div id="dashboard-sidebar">
+        <h2>Username</h2>
+        <h2>Recently Viewed</h2>
+        <h2>Recent Edits</h2>
+        <ul>
+            {% for graph in context.user_recent %}
+                <p>{{graph.name}} <a href="/{{graph.user}}/{{graph.slug}}">View</a> <a href="/{{graph.user}}/{{graph.slug}}/edit">Edit</a></p>
+            {% endfor %}
+        </ul>
+
+    </div>
+    {% block content %}
+    {% endblock %}
+</div>
+
+{% block footer %}
+<footer>
+    <div class="footer-content">
+        <p>© 2023 Brambli</p>
+        <p>Created by Sam Low</p>
+        <p>
+            Brabmli combines force-directed graphs (a data visualization technique), knowledge graphs
+            (a concept in information science), and the interactive Web to allow it’s users to easily
+            organize information in a way that more effectively represents relationships between
+            concepts than a traditional notebook or textbook can. This is important due to the
+            associative nature of human memory.
+        </p>
+    </div>
+</footer>
+{% endblock %}
+
+</body>
+</html>

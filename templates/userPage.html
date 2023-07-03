@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block title %}{{context.user.name}}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="main">
+    <h1>{{context.user.name}}</h1>
+
+</div>
+
+{% endblock %}

@@ -125,7 +125,7 @@ a
 #inspector
 {
     width: 300px;
-    height: 89vh;
+    height: 85vh;
     position: absolute;
     background-color: white;
     border: black;
@@ -135,7 +135,7 @@ a
     padding-bottom: 5%;
     overflow-y: scroll;
     direction: rtl;
-    max-height: 89vh;
+    max-height: 85vh;
     max-width: 600px;
     right: 10px;
     top:20px;

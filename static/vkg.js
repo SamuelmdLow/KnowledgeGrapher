@@ -900,6 +900,7 @@ function releasegrab(that)
 }
 
 window.addEventListener("wheel", function(e) {
+    e.preventDefault();
     var body = document.getElementsByTagName("BODY")[0];
     var graph = document.getElementById("graph");
     if(graph.getAttribute("hovering")=="1")
@@ -924,7 +925,7 @@ window.addEventListener("wheel", function(e) {
         graph.setAttribute("panx", x - ((x-panx)/scale)*newscale);
         graph.setAttribute("pany", y - ((y-pany)/scale)*newscale);
     }
-});
+},{passive:false});
 
 function getComplete()
 {

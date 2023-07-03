@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-     <meta meta name="viewport" content="width=device-width" />
+     <meta meta name="viewport" content="width=device-width, user-scalable=no" />
     <link rel="stylesheet" href="{{ url_for('static', filename='vkg.css') }}">
     <script src="{{ url_for('static', filename='vkg.js') }}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
@@ -19,14 +19,14 @@
 </head>
 <body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);" onload="onload()">
 
-<input type="hidden" id="saved" value="{{file}}">
+<input type="hidden" id="saved" value="{{context.graph.nodes}}">
 
 <a href="/" ><div class="button">
     Back
 </div></a>
 
 
-<a href="/edit/{{id}}" ><div class="button">
+<a href="/{{context.graph.user}}/{{context.graph.slug}}/edit" ><div class="button">
     Edit
 </div></a>
 

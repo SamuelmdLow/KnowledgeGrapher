@@ -1,20 +1,24 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<h1>Knowledge grapher</h1>
+{% extends "layout.html" %}
+{% block title %}Brambli{% endblock %}
 
-<p><a href="/new">new</a></p>
-<ul>
-{% for graph in graphs %}
-<li>
-    <p>{{graph}} <a href="/edit/{{graph}}">edit</a> <a href="/view/{{graph}}">view</a></p>
-</li>
-{% endfor %}
-</ul>
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
+{% endblock %}
 
-</body>
-</html>
+{% block content %}
+<div class="main">
+    <h1>Newest</h1>
+
+    <ul>
+    {% for graph in context.newest %}
+    <li>
+        <p>{{graph.slug}} <a href="/{{graph.user}}/{{graph.slug}}">View</a></p>
+    </li>
+    {% endfor %}
+    </ul>
+</div>
+
+<div class="activity-sidebar">
+    <h1>Activity</h1>
+</div>
+{% endblock %}

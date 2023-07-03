@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Title</title>
-     <meta meta name="viewport" content="width=device-width" />
+     <meta meta name="viewport" content="width=device-width, user-scalable=no" />
     <link rel="stylesheet" href="{{ url_for('static', filename='kg.css') }}">
     <script src="{{ url_for('static', filename='kg.js') }}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
@@ -19,7 +19,7 @@
 </head>
 <body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);" onload="onload()">
 
-<input type="hidden" id="saved" value="{{file}}">
+<input type="hidden" id="saved" value="{{context.graph.nodes}}">
 
 <div>
 
@@ -27,7 +27,7 @@
         Back
     </div></a>
     <div class="button" onclick="openMarkup()">Markup</div>
-    <a href="/view/{{id}}" ><div class="button">
+    <a href="/{{context.graph.user}}/{{context.graph.slug}}" ><div class="button">
         View
     </div></a>
     <div id="saveButton" class="button" onclick="saveGraph()">
