@@ -50,6 +50,9 @@ body
     border-style: solid;
     z-index: 2;
     background-size:cover;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none
 }
 
 .inspected-circle

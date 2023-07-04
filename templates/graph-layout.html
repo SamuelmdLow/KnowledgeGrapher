@@ -7,24 +7,32 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://kit.fontawesome.com/28a7c2be96.js" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='kg.css') }}">
+    <script src="{{ url_for('static', filename='kg.js') }}"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+          processEscapes: true
+        }
+      });
+    </script>
     {% block head %}{% endblock %}
 </head>
-<body>
+<body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);" onload="onload()">
+
 {% block nav %}
 <nav>
     <ul class="left">
-        <li><a href="#" id="toggle-dashboard"><i class="fa-solid fa-bars"></i></a></li>
-        <li class="mobile-hidden">Logo</li>
-        <li><a href="/">Home</a></li>
-        <li class="mobile-hidden">Subjects</li>
-        <li class="mobile-hidden">Search</li>
+        <li><a href="/">Logo</a></li>
+        {% block left_nav %}{% endblock%}
     </ul>
-    <p class="mid mobile-hidden">Brambli</p>
+    <p class="mid mobile-hidden">{% block nav_mid %}{% endblock %}</p>
     <ul class="right">
+        {% block right_nav %}{% endblock %}
         {% if current_user.is_authenticated %}
-        <li><i class="fa-solid fa-bell"></i></li>
-        <li><i class="fa-solid fa-bookmark"></i></li>
-        <li><a href="/new"><i class="fa-solid fa-plus"></i></a></li>
         <li class="mobile-hidden"><i class="fa-solid fa-folder"></i></li>
         <li class="dropdown">
             <a href="/{{ current_user.id }}">{{ current_user.id }}</a>
@@ -57,37 +65,15 @@
 </nav>
 {% endblock %}
 
-<div class="content">
-    <div id="dashboard-sidebar">
-        <h2>Username</h2>
-        <h2>Recently Viewed</h2>
-        <h2>Recent Edits</h2>
-        <ul>
-            {% for graph in context.user_recent %}
-                <p>{{graph.name}} <a href="/{{graph.user}}/{{graph.slug}}">View</a> <a href="/{{graph.user}}/{{graph.slug}}/edit">Edit</a></p>
-            {% endfor %}
-        </ul>
+<input type="hidden" id="saved" value="{{context.graph.nodes}}">
 
-    </div>
-    {% block content %}
-    {% endblock %}
+<div id="ui">
+{% block ui%}{% endblock %}
 </div>
 
-{% block footer %}
-<footer>
-    <div class="footer-content">
-        <p>© 2023 Brambli</p>
-        <p>Created by Sam Low</p>
-        <p>
-            Brabmli combines force-directed graphs (a data visualization technique), knowledge graphs
-            (a concept in information science), and the interactive Web to allow it’s users to easily
-            organize information in a way that more effectively represents relationships between
-            concepts than a traditional notebook or textbook can. This is important due to the
-            associative nature of human memory.
-        </p>
-    </div>
-</footer>
-{% endblock %}
+<div id="graph" hovered="0" onmouseover="hovering(this, event);" onmouseout="nothovering(this);" onmousedown="setanchor(event, this);" onmouseup="removeanchor(this);" saved="0" scale="10" panx="700" pany="300" repel="0.005" attract="0.01" energy="0">
+    <div id="circles"></div>
+</div>
 
 </body>
 </html>

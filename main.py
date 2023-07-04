@@ -130,7 +130,7 @@ def edit(ownerSlug, graphSlug):
 
     context["graph"] = graph
 
-    return render_template('kg.html', context=context)
+    return render_template('graph-edit.html', context=context)
 
 @app.route('/<ownerSlug>/<graphSlug>')
 def view(ownerSlug, graphSlug):
