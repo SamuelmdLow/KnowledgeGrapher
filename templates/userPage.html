@@ -8,7 +8,13 @@
 {% block content %}
 <div class="main">
     <h1>{{context.user.name}}</h1>
-
+    <ul>
+    {% for graph in context.graphs %}
+    <li>
+        <p><a href="/{{graph.user}}/{{graph.slug}}">{{graph.name}}</a></p>
+    </li>
+    {% endfor %}
+    </ul>
 </div>
 
 {% endblock %}

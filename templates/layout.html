@@ -7,6 +7,7 @@
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://kit.fontawesome.com/28a7c2be96.js" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png') }}">
     {% block head %}{% endblock %}
 </head>
 <body>
@@ -14,9 +15,10 @@
 <nav>
     <ul class="left">
         <li><a href="#" id="toggle-dashboard"><i class="fa-solid fa-bars"></i></a></li>
-        <li class="mobile-hidden">Logo</li>
-        <li><a href="/">Home</a></li>
-        <li class="mobile-hidden">Subjects</li>
+        <li>
+            <a href="/"><img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}"></a>
+        </li>
+        <li class="mobile-hidden"><a href="/">Home</a></li>
         <li class="mobile-hidden">Search</li>
     </ul>
     <p class="mid mobile-hidden">Brambli</p>
@@ -24,7 +26,7 @@
         {% if current_user.is_authenticated %}
         <li><i class="fa-solid fa-bell"></i></li>
         <li><i class="fa-solid fa-bookmark"></i></li>
-        <li><a href="/new"><i class="fa-solid fa-plus"></i></a></li>
+        <li class="mobile-hidden"><a href="/new"><i class="fa-solid fa-plus"></i></a></li>
         <li class="mobile-hidden"><i class="fa-solid fa-folder"></i></li>
         <li class="dropdown">
             <a href="/{{ current_user.id }}">{{ current_user.id }}</a>
@@ -58,17 +60,6 @@
 {% endblock %}
 
 <div class="content">
-    <div id="dashboard-sidebar">
-        <h2>Username</h2>
-        <h2>Recently Viewed</h2>
-        <h2>Recent Edits</h2>
-        <ul>
-            {% for graph in context.user_recent %}
-                <p>{{graph.name}} <a href="/{{graph.user}}/{{graph.slug}}">View</a> <a href="/{{graph.user}}/{{graph.slug}}/edit">Edit</a></p>
-            {% endfor %}
-        </ul>
-
-    </div>
     {% block content %}
     {% endblock %}
 </div>
@@ -77,7 +68,7 @@
 <footer>
     <div class="footer-content">
         <p>© 2023 Brambli</p>
-        <p>Created by Sam Low</p>
+        <p>Created by <a href="https://www.tubbdoose.com/">Sam Low</a></p>
         <p>
             Brabmli combines force-directed graphs (a data visualization technique), knowledge graphs
             (a concept in information science), and the interactive Web to allow it’s users to easily

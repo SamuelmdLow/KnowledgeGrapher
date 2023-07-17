@@ -2,13 +2,18 @@ body {
     margin: 0;
 }
 
+.logo {
+    height: 100%;
+}
+
 nav {
-    background-color: grey;
+    background-color: #E5E5E5;
     position: relative;
     left:0;
     right:0;
     display: flex;
     z-index: 100;
+    height: 35px;
 }
 
 nav > ul {
@@ -24,6 +29,8 @@ nav > ul > li {
     display: inline-block;
     padding-left: 15px;
     padding-right: 15px;
+    font-size: 1.2em;
+    line-height: 2em;
 }
 
 nav > ul > li > a {
@@ -36,6 +43,8 @@ nav > ul > li > a {
     left: 50%;
     transform: translate(-50%,0);
     margin: 0;
+    font-size: 1.2em;
+    line-height: 2.2em;
 }
 
 .right {
@@ -45,6 +54,7 @@ nav > ul > li > a {
 .profile-dropdown {
     position: absolute;
     right: 0;
+    top: 35px;
     padding: 15px;
     background-color: lightblue;
 }
@@ -68,11 +78,16 @@ nav > ul > li > a {
 
 .content {
     display: flex;
+    min-height: 80vh;
 }
 
 .main {
     flex-grow: 1;
     padding: 15px;
+    padding-left: 50px;
+    max-width: 1000px;
+    margin: auto;
+    margin-top: 0;
 }
 
 #dashboard-sidebar {
@@ -90,6 +105,13 @@ footer {
     background-color: black;
     color: white;
     margin: 0;
+    position: sticky;
+    bottom: 0;
+    top: 100%;
+}
+
+.footer-content > p > a {
+    color: white;
 }
 
 .footer-content {
@@ -108,6 +130,43 @@ footer {
         z-index: 50;
     }
 }
+
+@media only screen and (min-width: 600px) {
+    nav > ul > li:first-child {
+        padding-left: 30px;
+    }
+
+    nav > ul > li:last-child {
+        padding-right: 30px;
+    }
+}
+
+
+#modal {
+    position: fixed;
+    z-index: 500;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.modal-overlay {
+    background-color: #00000060;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+input {
+    display: block;
+}
+
+
+
+
 
 .hidden {
     display: none;

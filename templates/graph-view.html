@@ -1,0 +1,66 @@
+{% extends "graph-layout.html" %}
+
+{% block title %}{{context.graph.name}} - Brambli{% endblock %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='vkg.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='vkg.css') }}">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+{% endblock %}
+
+{% block info %}
+<div class="info-content">
+    <h1>{{context.graph.name}}</h1>
+    {% if context.graph.privacy == 0 %}
+        <p>Private</p>
+    {% elif context.graph.privacy == 1 %}
+        <p>Unlisted</p>
+    {% else %}
+        <p>Public</p>
+    {% endif %}
+
+    <p>{{context.graph.desc}}</p>
+</div>
+{% endblock %}
+
+{% block left_nav %}
+<li><a id="info-button" href="#">Info</a></li>
+{% if context.graph.user == current_user.id %}
+<li>
+    <a href="/{{context.graph.user}}/{{context.graph.slug}}/edit" >Edit</a>
+</li>
+{% endif %}
+{% endblock %}
+
+{% block nav_mid %}
+{{context.graph.name}}
+{% endblock %}
+
+{% block right_nav %}
+{% endblock %}
+
+{% block ui %}
+
+<div id="inspector" class="nodeDetails">
+    <div id="inspector-info">
+        <h1 id="inspector-name"></h1>
+        <p id="inspector-id"></p>
+        <img id="inspector-image">
+        <p id="inspector-desc"></p>
+        <hr>
+        <ul id="inspector-rels"></ul>
+    </div>
+</div>
+
+<script>
+initializeModal();
+</script>
+{% endblock %}

@@ -13,14 +13,13 @@ login_manager.init_app(app)
 
 users = {'foobar': {'password': 'secret'}}
 
-db = Database()
-
 class User(flask_login.UserMixin):
     pass
 
 
 @login_manager.user_loader
 def user_loader(slug):
+    db = Database()
     if db.getUserId(slug) is None:
         return
 
@@ -31,6 +30,7 @@ def user_loader(slug):
 
 @login_manager.request_loader
 def request_loader(request):
+    db = Database()
     slug = request.form.get('username')
     if db.getUserId(slug) is None:
         return
@@ -49,7 +49,7 @@ def login():
                 <input type='submit' name='submit'/>
                </form>
                '''
-
+    db = Database()
     slug = flask.request.form['username']
     password = flask.request.form['password']
     result = db.checkUserCredentials(slug, password)
@@ -73,6 +73,7 @@ def register():
                </form>
                '''
 
+    db = Database()
     slug = flask.request.form['username']
     email = flask.request.form['email']
     password = flask.request.form['password']
@@ -102,55 +103,121 @@ def unauthorized_handler():
 
 @app.route('/')
 def index():
-
-    context = {}
+    db = Database()
+    context = db.setupContext()
     context["newest"] = db.getGraphsNewest()
     if flask_login.current_user.is_authenticated:
         context["user_recent"] = db.getGraphsByUser(flask_login.current_user.id)
     return render_template('index.html', context=context)
 
+@app.route('/admin')
+@flask_login.login_required
+def admin():
+    db = Database()
+    if db.userIsAdmin(flask_login.current_user.id):
+        context = {}
+
+        userCount = db.statsUserCount()
+        graphCount = db.statsGraphCount()
+        graphPubCount = db.statsGraphCount(privacy=2)
+
+        context["user_count"] = userCount
+        context["graphsPerUser"] = graphCount/userCount
+        context["graphsPubPerUser"] = graphPubCount/userCount
+
+        context["graph_count"] = graphCount
+        context["graph_public"] = graphPubCount
+        context["graph_unlisted"] = db.statsGraphCount(privacy=1)
+        context["graph_private"] = db.statsGraphCount(privacy=0)
+
+        context["graph_recent_published"] = db.statsGraphRecents("published")
+        context["graph_recent_edited"] = db.statsGraphRecents("edited")
+        context["graph_recent_created"] = db.statsGraphRecents("created")
+
+        context["user_recent_created"] = db.statsUserRecents()
+
+        return render_template('admin-dashboard.html', context=context)
+    return "Page not found", 404
+
+@app.route('/admin/subjects')
+@flask_login.login_required
+def adminSubjects():
+    db = Database()
+    if db.userIsAdmin(flask_login.current_user.id):
+        context = {}
+        context["subjects"] = db.getSubjects()
+        return render_template('admin-subject.html', context=context)
+    return "Page not found", 404
+
+@app.route('/admin/addSubject', methods=['GET', 'POST'])
+@flask_login.login_required
+def addSubject():
+    if flask.request.method == 'GET':
+        return '''
+               <form action='addSubject' method='POST'>
+                <input type='text' name='name' id='name' placeholder='name'/>
+                <input type='submit' name='submit'/>
+               </form>
+               '''
+    else:
+        db = Database()
+        print(flask.request.form['name'])
+        if db.userIsAdmin(flask_login.current_user.id):
+            db.addSubject(flask.request.form['name'])
+            return '<script>document.location.href = document.referrer</script>'
+        return "Page not found", 404
+
 @app.route('/<userSlug>')
 def userPage(userSlug):
-    context = {}
+    db = Database()
+    context = db.setupContext()
     user = db.getUser(userSlug)
     if not user:
-        return redirect('/404')
+        return "Page not found", 404
 
     context["user"] = user
+    context["graphs"] = db.getGraphsByUser(userSlug, privacy=2)
     return render_template('userPage.html', context=context)
 
 @app.route('/<ownerSlug>/<graphSlug>/edit')
 @flask_login.login_required
 def edit(ownerSlug, graphSlug):
+    if flask_login.current_user.id == ownerSlug:
+        db = Database()
+        context = db.setupContext()
+        graph = db.getGraph(ownerSlug, graphSlug)
+        if not graph:
+            return "Page not found", 404
 
-    context = {}
-    graph = db.getGraph(ownerSlug, graphSlug)
-    if not graph:
-        return redirect('/404')
+        context["graph"] = graph
 
-    context["graph"] = graph
-
-    return render_template('graph-edit.html', context=context)
+        return render_template('graph-edit.html', context=context)
+    return "Page not found", 404
 
 @app.route('/<ownerSlug>/<graphSlug>')
 def view(ownerSlug, graphSlug):
-
-    context = {}
+    db = Database()
+    context = db.setupContext()
 
     graph = db.getGraph(ownerSlug, graphSlug)
+
     if not graph:
         return redirect('/404')
-
     context["graph"] = graph
 
-    return render_template('vkg.html', context=context)
+    if graph.privacy == 2 or graph.privacy == 1:
+        return render_template('graph-view.html', context=context)
+    elif graph.user == flask_login.current_user.id:
+        return render_template('graph-view.html', context=context)
+
+    return "Page not found", 404
 
 @app.route('/new')
 @flask_login.login_required
 def new():
     import secrets
     id = secrets.token_urlsafe(5)
-
+    db = Database()
     db.createGraph(flask_login.current_user.id, id)
 
     return redirect('/'+flask_login.current_user.id+'/'+id+"/edit")
@@ -158,10 +225,43 @@ def new():
 @app.route('/<ownerSlug>/<graphSlug>/save', methods=['GET', 'POST'])
 @flask_login.login_required
 def save(ownerSlug, graphSlug):
-    data = request.form.get("data")
+    if flask_login.current_user.id == ownerSlug:
+        db = Database()
+        data = request.form.get("data")
+        db.saveGraph(data, ownerSlug, graphSlug)
+        return jsonify(status="success")
 
-    db.saveGraph(data, ownerSlug, graphSlug)
-    return jsonify(status="success")
+    return "Page not found", 404
+
+@app.route('/<ownerSlug>/<graphSlug>/saveInfo', methods=['GET', 'POST'])
+@flask_login.login_required
+def saveInfo(ownerSlug, graphSlug):
+    if flask.request.method == 'GET':
+        return '''
+               <form action='saveInfo' method='POST'>
+                <input type='text' name='name' id='name' placeholder='name'/>
+                 <select name="privacy" id="privacy">
+                    <option value="0">Private</option>
+                    <option value="1">Unlisted</option>
+                    <option value="2">Public</option>
+                </select>
+                <input type='text' name='desc' id='desc' placeholder='desc'/>
+                <input type='submit' name='submit'/>
+               </form>
+               '''
+    elif flask_login.current_user.id == ownerSlug:
+        db = Database()
+        name = request.form.get("name")
+        privacy = request.form.get("privacy")
+        desc = request.form.get("desc")
+        db.saveGraphInfo(ownerSlug, graphSlug, name, privacy, desc)
+        return '<script>document.location.href = document.referrer</script>'
+
+    return "Page not found", 404
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 if __name__ == "__main__":
     app.run(debug=True)

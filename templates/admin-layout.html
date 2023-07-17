@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://kit.fontawesome.com/28a7c2be96.js" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+{% block nav %}
+<nav>
+    <ul class="left">
+        <li class="mobile-hidden">
+            <a href="/"><img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}"></a>
+        </li>
+        <li><a href="/admin">Dashboard</a></li>
+        <li><a href="/admin/subjects">Subjects</a></li>
+        <li><a href="/admin/reports">Reports</a></li>
+    </ul>
+    <p class="mid mobile-hidden">Admin</p>
+</nav>
+{% endblock %}
+
+<div class="content">
+    {% block content %}
+    {% endblock %}
+</div>
+
+</body>
+</html>

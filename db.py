@@ -1,7 +1,7 @@
 import datetime
 
 import mysql.connector
-
+import bcrypt
 
 class Database:
 
@@ -40,11 +40,13 @@ class Database:
             self.user = data[1]
             self.slug = data[2]
             self.name = data[3]
-            self.nodes = data[4]
-            self.privacy = data[5]
-            self.creationDate = data[6]
-            self.pubDate = data[7]
-            self.lastEdit = data[8]
+            self.desc = data[4]
+            self.subject = data[5]
+            self.nodes = data[6]
+            self.privacy = data[7]
+            self.creationDate = data[8]
+            self.pubDate = data[9]
+            self.lastEdit = data[10]
 
     class User:
         def __init__(self, data):
@@ -53,6 +55,10 @@ class Database:
             self.name = data[3]
             self.bio = data[4]
             self.creationDate = data[5]
+
+    class Subject:
+        def __init__(self, data):
+            self.name = data[0]
 
     def createGraphObj(self, data):
         graph = self.Graph(data)
@@ -69,9 +75,18 @@ class Database:
                 bio VARCHAR(255),
                 creationdate DATETIME,
                 passhash VARCHAR(255),
+                admin int DEFAULT 0,
                 PRIMARY KEY (id),
                 UNIQUE (email),
                 UNIQUE (slug)
+            )''')
+
+        self.cursor.execute('''
+            CREATE TABLE subjects (
+                id int NOT NULL AUTO_INCREMENT,
+                name VARCHAR(45),
+                PRIMARY KEY (id),
+                UNIQUE (name)
             )''')
 
         self.cursor.execute('''
@@ -80,6 +95,8 @@ class Database:
                 user int,
                 slug VARCHAR(35),
                 name VARCHAR(45),
+                description VARCHAR(500),
+                subject int,
                 nodes LONGTEXT,
                 privacy int,
                 creationdate DATETIME,
@@ -87,8 +104,28 @@ class Database:
                 lastedit DATETIME,
                 PRIMARY KEY (id),
                 FOREIGN KEY (user) REFERENCES users(id),
+                FOREIGN KEY (subject) REFERENCES subjects(id),
                 UNIQUE (user, slug)
             )''')
+
+        self.cursor.execute('''
+            CREATE TABLE likes (
+                user int,
+                graph int,
+                date DATETIME,
+                FOREIGN KEY (user) REFERENCES users(id),
+                FOREIGN KEY (graph) REFERENCES graphs(id)
+            )''')
+
+        self.cursor.execute('''
+            CREATE TABLE bookmarks (
+                user int,
+                graph int,
+                date DATETIME,
+                FOREIGN KEY (user) REFERENCES users(id),
+                FOREIGN KEY (graph) REFERENCES graphs(id)
+            )''')
+
 
     def createGraph(self, userSlug, graphSlug, privacy=0):
         defaultGraph = '''
@@ -131,7 +168,10 @@ class Database:
         self.mydb.commit()
 
     def createUser(self, slug, email, password):
-        passhash = str(hash(password))
+        passhash = bcrypt.hashpw(password.encode('ASCII'), bcrypt.gensalt())
+
+        print(passhash)
+
         sql = "INSERT INTO users (slug, email, name, bio, creationdate, passhash) VALUES (%s, %s, %s, %s, %s, %s)"
         val = (slug, email, slug, "", datetime.datetime.now(), passhash)
 
@@ -147,11 +187,23 @@ class Database:
         val = (userId,)
         self.cursor.execute(sql, val)
         passhash = self.cursor.fetchone()[0]
-
-        if passhash == str(hash(password)):
+        if bcrypt.checkpw(password.encode('ASCII'), passhash.encode('ASCII')):
             return "Success"
         else:
             return "Wrong password"
+
+    def userIsAdmin(self, slug):
+        userId = self.getUserId(slug)
+        if userId is None:
+            return "Wrong username"
+        sql = "SELECT admin FROM users WHERE id =%s"
+        val = (userId,)
+        self.cursor.execute(sql, val)
+        result = self.cursor.fetchone()[0]
+        if result == 1:
+            return True
+        else:
+            return False
 
     def getUserId(self, slug):
         sql = "SELECT id FROM users WHERE slug =%s"
@@ -184,16 +236,20 @@ class Database:
         else:
             return result[0]
 
-    def getGraphsByUser(self, userSlug):
+    def getGraphsByUser(self, userSlug, privacy=None):
         userId = self.getUserId(userSlug)
 
         if userId is None:
             return []
         else:
-
-            sql = "SELECT * FROM graphs WHERE user =%s ORDER BY lastedit DESC"
-            values = (userId,)
-            self.cursor.execute(sql, values)
+            if privacy == None:
+                sql = "SELECT * FROM graphs WHERE user =%s ORDER BY lastedit DESC"
+                values = (userId,)
+                self.cursor.execute(sql, values)
+            else:
+                sql = "SELECT * FROM graphs WHERE user =%s AND privacy =%s ORDER BY pubdate DESC"
+                values = (userId, privacy)
+                self.cursor.execute(sql, values)
 
             result = self.cursor.fetchall()
 
@@ -230,9 +286,91 @@ class Database:
         userId = self.getUserId(userSlug)
         sql = "UPDATE graphs SET nodes = %s, lastedit = %s WHERE user =%s AND slug = %s"
         values = (nodes, datetime.datetime.now(), userId, slug)
-
         self.cursor.execute(sql, values)
         self.mydb.commit()
+    def saveGraphInfo(self, userSlug, slug, name, privacy, desc):
+        graph = self.getGraph(userSlug, slug)
+        userId = self.getUserId(userSlug)
+        if graph.privacy != 2 and int(privacy) == 2:
+            sql = "UPDATE graphs SET lastedit = %s, pubdate = %s, name = %s, privacy = %s, description = %s WHERE user =%s AND slug = %s"
+            values = (datetime.datetime.now(), datetime.datetime.now(), name, int(privacy), desc, userId, slug)
+        else:
+            sql = "UPDATE graphs SET lastedit = %s, name = %s, privacy = %s, description = %s WHERE user =%s AND slug = %s"
+            values = (datetime.datetime.now(), name, int(privacy), desc, userId, slug)
+        self.cursor.execute(sql, values)
+        self.mydb.commit()
+
+    def getSubjects(self):
+        sql = "SELECT name FROM subjects ORDER BY name"
+        self.cursor.execute(sql)
+
+        result = self.cursor.fetchall()
+
+        for i in range(len(result)):
+            result[i] = self.Subject(result[i])
+        return result
+
+    def addSubject(self, name):
+        sql = "INSERT INTO subjects (name) VALUES (%s) "
+        val = (name,)
+
+        self.cursor.execute(sql, val)
+        self.mydb.commit()
+
+    def setupContext(self):
+        context = {}
+        context["subjects"] = self.getSubjects()
+        return context
+
+    def statsGraphCount(self, privacy=None):
+        if privacy == None:
+            sql = "SELECT COUNT(id) FROM graphs"
+            self.cursor.execute(sql)
+        else:
+            sql = "SELECT COUNT(id) FROM graphs WHERE privacy=%s"
+            val = (privacy,)
+            self.cursor.execute(sql, val)
+
+        result = self.cursor.fetchone()[0]
+
+        return result
+
+    def statsUserCount(self):
+        sql = "SELECT COUNT(id) FROM users"
+        self.cursor.execute(sql)
+        result = self.cursor.fetchone()[0]
+
+        return result
+
+    def statsGraphRecents(self, type):
+        day = datetime.timedelta(days=1)
+        yesterday = datetime.datetime.now()-day
+
+        if type == "published":
+            sql = "SELECT COUNT(id) FROM graphs WHERE pubdate > %s"
+        elif type == "edited":
+            sql = "SELECT COUNT(id) FROM graphs WHERE lastedit > %s"
+        else:
+            sql = "SELECT COUNT(id) FROM graphs WHERE creationdate > %s"
+
+        val = (yesterday,)
+        self.cursor.execute(sql, val)
+
+        result = self.cursor.fetchone()[0]
+
+        return result
+
+    def statsUserRecents(self):
+        day = datetime.timedelta(days=1)
+        yesterday = datetime.datetime.now()-day
+
+        sql = "SELECT COUNT(id) FROM users WHERE creationdate > %s"
+        val = (yesterday,)
+        self.cursor.execute(sql, val)
+
+        result = self.cursor.fetchone()[0]
+
+        return result
 
 def remakeDatabase():
     sql = mysql.connector.connect(
@@ -246,4 +384,4 @@ def remakeDatabase():
     Database().createTables()
 
 if __name__ == "__main__":
-    db = Database()
+    remakeDatabase()

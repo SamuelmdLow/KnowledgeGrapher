@@ -125,26 +125,23 @@ a
     width:100px;
 }
 
-#inspector
+.nodeDetails
 {
-    width: 300px;
-    height: 85vh;
+    display: none;
+    width: 400px;
     position: absolute;
     background-color: white;
-    border: black;
-    border-style: solid;
+    border: black 2px solid;
     padding-left: 1%;
     padding-right: 1%;
-    padding-bottom: 5%;
-    overflow-y: scroll;
-    direction: rtl;
-    max-height: 85vh;
+    overflow-y: auto;
+    height: 80%;
     max-width: 600px;
-    right: 10px;
-    top:20px;
-    border-radius:10px;
-    border-width: 1px;
-    resize: both;
+    top: 50px;
+    border-radius: 10px;
+    transition-property: right, opacity;
+    transition-duration: 0.5s;
+    right: 25px;
 }
 
 #inspector::-webkit-scrollbar {
@@ -179,7 +176,49 @@ a
     max-width: 400px;
 }
 
-img
-{
-width:100%
+#info {
+    height: 100%;
+}
+
+.info-box {
+    background-color: white;
+    padding: 15px;
+    position: relative;
+    top: 20%;
+    height: 60%;
+    width: 60%;
+    max-width: 800px;
+    margin: auto;
+}
+
+.info-content {
+    margin: auto;
+    width: 75%;
+    text-align: center;
+}
+
+#inspector-desc img {
+    max-width: 75%;
+    max-height: 250px;
+}
+
+@media only screen and (max-width: 600px) {
+    .nodeDetails {
+        bottom: 0;
+        margin: auto;
+        width: 100%;
+        border-radius: 0;
+        height: 40%;
+        overflow-y: scroll;
+        border: none;
+        border-top: solid;
+        bottom: 0;
+        max-width: none;
+        right: auto;
+        top: auto;
+    }
+}
+
+#ui > div {
+    z-index: 10;
 }

@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png') }}">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://kit.fontawesome.com/28a7c2be96.js" crossorigin="anonymous"></script>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='kg.css') }}">
-    <script src="{{ url_for('static', filename='kg.js') }}"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({
@@ -23,10 +24,26 @@
 </head>
 <body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);" onload="onload()">
 
+<div id="modal" class="hidden">
+
+    <div id="info">
+    <div class="modal-overlay"></div>
+
+    <div class="info-box">
+    {% block info %}{% endblock %}
+    </div>
+</div>
+
+{% block modal %}
+{% endblock %}
+</div>
+
 {% block nav %}
 <nav>
     <ul class="left">
-        <li><a href="/">Logo</a></li>
+        <li><a href="/">
+            <img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}">
+        </a></li>
         {% block left_nav %}{% endblock%}
     </ul>
     <p class="mid mobile-hidden">{% block nav_mid %}{% endblock %}</p>
@@ -71,9 +88,19 @@
 {% block ui%}{% endblock %}
 </div>
 
-<div id="graph" hovered="0" onmouseover="hovering(this, event);" onmouseout="nothovering(this);" onmousedown="setanchor(event, this);" onmouseup="removeanchor(this);" saved="0" scale="10" panx="700" pany="300" repel="0.005" attract="0.01" energy="0">
-    <div id="circles"></div>
+
+<div id="graph" hovered="0" onmouseover="hovering(this, event);" onmouseout="nothovering(this);" onmousedown="setanchor(event, this);" onmouseup="removeanchor(this);" saved="0" scale="10" panx="700" pany="300" repel="0.005" attract="0.01" energy="0" inspected="none">
 </div>
+<div id="circles"></div>
+<div id="panels"></div>
+
+<script>
+    document.getElementById("graph").addEventListener("wheel", function(e) {
+        initializeZooming(e);
+    },{passive:false});
+
+    initializeInfoButton();
+</script>
 
 </body>
 </html>

@@ -9,20 +9,40 @@ body
     margin:0;
     padding:10px;
     width: 20%;
+    height: 80%;
     min-width:10%;
     max-width: 750px;
     z-index: 3;
     position: absolute;
-    left: 10px;
-    top:40px;
+    top:50px;
     bottom:20px;
     border-radius:10px;
     border-top-width:0;
     border-bottom-width:0;
-    border-width: 1px;
-    resize: horizontal;
+    border: 2px black solid;
+    resize: none;
     transition-property: left, opacity;
     transition-duration: 0.5s;
+}
+
+.hidden-markup {
+    opacity: 0;
+    visibility: hidden;
+    left: -750px;
+}
+
+.show-markup {
+    left: 25px;
+}
+
+.hidden-nodeEditor {
+    opacity: 0;
+    visibility: hidden;
+    right: -750px;
+}
+
+.show-nodeEditor {
+    right: 25px;
 }
 
 /* width */
@@ -122,19 +142,14 @@ body
 
 a
 {
+    color: inherit;
     text-decoration: none;
-    color:black;
 }
 
 .button:hover
 {
     opacity: 0.5;
     cursor: pointer;
-}
-
-#saveButton
-{
-    width:100px;
 }
 
 .circlePanel{
@@ -165,31 +180,143 @@ a
     cursor: pointer;
 }
 
-#nodeEditor
+.nodeDetails
 {
-    width: 300px;
+    width: 400px;
     position: absolute;
     background-color: white;
-    border: black;
-    border-style: solid;
+    border: black 2px solid;
     padding-left: 1%;
     padding-right: 1%;
-    padding-bottom: 5%;
-    overflow-y: scroll;
-    max-height: 89vh;
+    overflow-y: auto;
+    height: 80%;
     max-width: 600px;
-    right: -750px;
-    top:20px;
-    bottom:20px;
-    border-radius:10px;
-    border-width: 1px;
-    opacity: 0;
-    transition-property: right, opacity
+    top: 50px;
+    border-radius: 10px;
+    transition-property: right, opacity;
     transition-duration: 0.5s;
+}
+
+#nodeEditor-name{
+    display: inline;
 }
 
 #nodeEditor-desc{
     width: 100%;
     height: 300px;
     resize: vertical;
+}
+
+.graph-button {
+    border-radius: 20px;
+    background-color: #6918A9;
+    color: white;
+    border: 2px black solid;
+    padding: 15px;
+}
+
+#markup-button {
+    position: absolute;
+    bottom: 50px;
+    left: 25px;
+}
+
+#guided-view-button {
+    position: absolute;
+    bottom: 50px;
+    right: 25px;
+}
+
+#info {
+    height: 100%;
+}
+
+.info-box {
+    background-color: white;
+    padding: 15px;
+    position: relative;
+    top: 20%;
+    height: 60%;
+    width: 60%;
+    max-width: 800px;
+    margin: auto;
+}
+
+.info-content {
+    margin: auto;
+    width: 75%;
+    text-align: center;
+}
+
+#inspector::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+#inspector::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+/* Handle */
+#inspector::-webkit-scrollbar-thumb {
+  background: #eeeeee;
+  border-radius: 10px;
+}
+
+#inspector-image
+{
+    width:100%;
+    max-width: 300px;
+}
+
+#inspector-info
+{
+    text-align: left;
+    direction: ltr;
+}
+
+#inspector-desc
+{
+    max-width: 400px;
+}
+
+img
+{
+width:100%
+}
+
+#info {
+    height: 100%;
+}
+
+.info-content {
+    background-color: white;
+    padding: 15px;
+    position: relative;
+    top: 20%;
+    height: 60%;
+    width: 60%;
+    max-width: 800px;
+    margin: auto;
+}
+
+
+@media only screen and (max-width: 600px) {
+    .nodeDetails {
+        bottom: 0;
+        margin: auto;
+        width: 100%;
+        border-radius: 0;
+        height: 40%;
+        overflow-y: scroll;
+        border: none;
+        border-top: solid;
+        max-width: none;
+        right: auto;
+        top: auto;
+    }
+}
+
+#ui > div {
+    z-index: 10;
 }

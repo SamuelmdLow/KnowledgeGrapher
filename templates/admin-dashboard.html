@@ -1,0 +1,39 @@
+{% extends "admin-layout.html" %}
+{% block title %}Admin Brambli{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
+{% endblock %}
+
+{% block content %}
+<div id="dashboard-sidebar">
+    <h1>Audit Log</h1>
+</div>
+
+<div class="main">
+    <h1>Stats Totals</h1>
+
+    <h2>{{context.user_count}} Users Registered</h2>
+    <ul>
+        <li>avg {{context.graphsPerUser}} graphs per user</li>
+        <li>avg {{context.graphsPubPerUser}} public graphs per user</li>
+    </ul>
+
+    <h2>{{context.graph_count}} Graphs Created</h2>
+    <ul>
+        <li>{{context.graph_public}} Public</li>
+        <li>{{context.graph_unlisted}} Unlisted</li>
+        <li>{{context.graph_private}} Private</li>
+    </ul>
+</div>
+
+<div class="activity-sidebar">
+    <h1>Last 24h</h1>
+    <ul>
+        <li>{{context.user_recent_created}} users registered</li>
+        <li>{{context.graph_recent_created}} graphs created</li>
+        <li>{{context.graph_recent_edited}} graphs edited</li>
+        <li>{{context.graph_recent_published}} graphs published</li>
+    </ul>
+</div>
+{% endblock %}
