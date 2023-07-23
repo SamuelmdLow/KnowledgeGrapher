@@ -1,6 +1,7 @@
 body
 {
     margin:0;
+    overflow: hidden;
 }
 
 #input
@@ -221,4 +222,24 @@ a
 
 #ui > div {
     z-index: 10;
+}
+
+#ui > a {
+    z-index: 10;
+}
+
+#inactive-heart {
+    display: inline;
+}
+
+#active-heart {
+    display: none;
+}
+
+.active > #inactive-heart {
+    display: none;
+}
+
+.active > #active-heart {
+    display: inline;
 }

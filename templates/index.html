@@ -15,7 +15,6 @@
             <p>{{graph.name}} <a href="/{{graph.user}}/{{graph.slug}}">View</a> <a href="/{{graph.user}}/{{graph.slug}}/edit">Edit</a></p>
         {% endfor %}
     </ul>
-
 </div>
 <div class="main">
     <h1>Newest</h1>
@@ -23,9 +22,7 @@
     <ul>
     {% for graph in context.newest %}
     <li>
-        <p><a href="/{{graph.user}}/{{graph.slug}}">{{graph.name}}</a> - <a href="/{{graph.user}}">{{graph.user}}</a></p>
-        <p>{{graph.desc}}</p>
-        <p>{{graph.lastEdit}}</p>
+        {% include "graph-thumb.html" %}
     </li>
     {% endfor %}
     </ul>

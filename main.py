@@ -179,6 +179,21 @@ def userPage(userSlug):
     context["graphs"] = db.getGraphsByUser(userSlug, privacy=2)
     return render_template('userPage.html', context=context)
 
+@app.route('/<userSlug>/dir')
+@flask_login.login_required
+def userDir(userSlug):
+    db = Database()
+    context = db.setupContext()
+    user = db.getUser(userSlug)
+    if not user:
+        return "Page not found", 404
+
+    if flask_login.current_user.id == userSlug:
+        context["user"] = user
+        context["graphs"] = db.getGraphsByUser(userSlug)
+        return render_template('userDir.html', context=context)
+    return "Page not found", 404
+
 @app.route('/<ownerSlug>/<graphSlug>/edit')
 @flask_login.login_required
 def edit(ownerSlug, graphSlug):
@@ -205,6 +220,8 @@ def view(ownerSlug, graphSlug):
         return redirect('/404')
     context["graph"] = graph
 
+    context["liked"] = db.userLiked(flask_login.current_user.id, ownerSlug, graphSlug)
+
     if graph.privacy == 2 or graph.privacy == 1:
         return render_template('graph-view.html', context=context)
     elif graph.user == flask_login.current_user.id:
@@ -221,6 +238,16 @@ def new():
     db.createGraph(flask_login.current_user.id, id)
 
     return redirect('/'+flask_login.current_user.id+'/'+id+"/edit")
+
+@app.route('/<ownerSlug>/<graphSlug>/like', methods=['GET', 'POST'])
+@flask_login.login_required
+def like(ownerSlug, graphSlug):
+    if flask_login.current_user.id == ownerSlug:
+        db = Database()
+        state = db.toggleLike(flask_login.current_user.id, ownerSlug, graphSlug)
+        return state
+
+    return "Page not found", 404
 
 @app.route('/<ownerSlug>/<graphSlug>/save', methods=['GET', 'POST'])
 @flask_login.login_required

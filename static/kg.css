@@ -320,3 +320,7 @@ width:100%
 #ui > div {
     z-index: 10;
 }
+
+#ui > a {
+    z-index: 10;
+}

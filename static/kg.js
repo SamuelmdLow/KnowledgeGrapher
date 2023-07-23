@@ -21,7 +21,7 @@ function onload()
     },
     status: false,});
 
-    document.getElementById("graph").setAttribute("ondblclick", "closeNodeEdit()");
+    document.getElementById("graph").setAttribute("ondblclick", "closeNodeEdit(); closeMarkup();");
 }
 
 function showMath()

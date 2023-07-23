@@ -37,6 +37,7 @@ class Database:
 
     class Graph:
         def __init__(self, data):
+            self.id = data[0]
             self.user = data[1]
             self.slug = data[2]
             self.name = data[3]
@@ -55,6 +56,7 @@ class Database:
             self.name = data[3]
             self.bio = data[4]
             self.creationDate = data[5]
+            self.rssCode = data[7]
 
     class Subject:
         def __init__(self, data):
@@ -63,6 +65,7 @@ class Database:
     def createGraphObj(self, data):
         graph = self.Graph(data)
         graph.user = self.getUserSlug(data[1])
+        graph.likes = self.likeCount(graph.id)
         return graph
 
     def createTables(self):
@@ -75,6 +78,7 @@ class Database:
                 bio VARCHAR(255),
                 creationdate DATETIME,
                 passhash VARCHAR(255),
+                rssCode VARCHAR(40),
                 admin int DEFAULT 0,
                 PRIMARY KEY (id),
                 UNIQUE (email),
@@ -282,6 +286,8 @@ class Database:
         else:
             return self.createGraphObj(result)
 
+
+
     def saveGraph(self, nodes, userSlug, slug):
         userId = self.getUserId(userSlug)
         sql = "UPDATE graphs SET nodes = %s, lastedit = %s WHERE user =%s AND slug = %s"
@@ -299,6 +305,56 @@ class Database:
             values = (datetime.datetime.now(), name, int(privacy), desc, userId, slug)
         self.cursor.execute(sql, values)
         self.mydb.commit()
+
+    def toggleLike(self, userSlug, ownerSlug, graphSlug):
+        userId = self.getUserId(userSlug)
+        graph = self.getGraph(ownerSlug, graphSlug)
+
+        sql = "SELECT * FROM likes WHERE user =%s AND graph = %s"
+        values = (userId, graph.id)
+        self.cursor.execute(sql, values)
+
+        result = self.cursor.fetchone()
+        if result is None:
+            sql = "INSERT INTO likes (user, graph, date) VALUES (%s, %s, %s)"
+            val = (userId, graph.id, datetime.datetime.now())
+
+            self.cursor.execute(sql, val)
+            self.mydb.commit()
+
+            return "like"
+        else:
+            sql = "DELETE FROM likes WHERE user = %s AND graph = %s"
+            val = (userId, graph.id)
+
+            self.cursor.execute(sql, val)
+            self.mydb.commit()
+
+            return "unlike"
+
+    def likeCount(self, graphId):
+        sql = "SELECT COUNT(user) FROM likes WHERE graph=%s"
+        val = (graphId,)
+        self.cursor.execute(sql, val)
+
+        result = self.cursor.fetchone()[0]
+        return result
+
+    def userLiked(self, userSlug, ownerSlug, graphSlug):
+        userId = self.getUserId(userSlug)
+        if userId is None:
+            return False
+        graph = self.getGraph(ownerSlug, graphSlug)
+
+        sql = "SELECT COUNT(user) FROM likes WHERE user=%s AND graph=%s"
+        val = (userId, graph.id)
+        self.cursor.execute(sql, val)
+
+        result = self.cursor.fetchone()[0]
+
+        if result > 0:
+            return True
+        return False
 
     def getSubjects(self):
         sql = "SELECT name FROM subjects ORDER BY name"

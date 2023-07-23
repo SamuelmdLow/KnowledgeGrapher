@@ -50,7 +50,6 @@
     <ul class="right">
         {% block right_nav %}{% endblock %}
         {% if current_user.is_authenticated %}
-        <li class="mobile-hidden"><i class="fa-solid fa-folder"></i></li>
         <li class="dropdown">
             <a href="/{{ current_user.id }}">{{ current_user.id }}</a>
             <div class="profile-dropdown dropdown-content">

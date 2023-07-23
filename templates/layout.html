@@ -27,7 +27,7 @@
         <li><i class="fa-solid fa-bell"></i></li>
         <li><i class="fa-solid fa-bookmark"></i></li>
         <li class="mobile-hidden"><a href="/new"><i class="fa-solid fa-plus"></i></a></li>
-        <li class="mobile-hidden"><i class="fa-solid fa-folder"></i></li>
+        <li class="mobile-hidden"><a href="/{{ current_user.id }}/dir"><i class="fa-solid fa-folder"></i></a></li>
         <li class="dropdown">
             <a href="/{{ current_user.id }}">{{ current_user.id }}</a>
             <div class="profile-dropdown dropdown-content">

@@ -465,8 +465,6 @@ function initializeZooming(e){
     graph.setAttribute("pany", y - ((y-pany)/scale)*newscale);
 }
 
-
-
 function placein()
 {
     var graph = document.getElementById("graph");
@@ -530,4 +528,42 @@ function placein()
             }
         }
     }
+}
+
+function likeGraph()
+{
+    var urlParts = window.location.href.split("/");
+    console.log(urlParts);
+    urlParts[5] = "like";
+    var url = urlParts.join("/");
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: {},
+        dataType: "text",
+        success: function(data){
+             console.log(data);
+             if (data=="like") {
+                document.getElementById('like-count').innerHTML = parseInt(document.getElementById('like-count').innerHTML)+1;
+             } else {
+                document.getElementById('like-count').innerHTML = parseInt(document.getElementById('like-count').innerHTML)-1;
+             }
+
+             document.getElementById("like-button").classList.toggle("active");
+       }
+    });
+}
+
+function initializeLikeButton() {
+    document.getElementById("like-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       likeGraph();
+   });
+}
+
+function initializeBookmarkButton() {
+    document.getElementById("bookmark-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       openInfo();
+   });
 }
