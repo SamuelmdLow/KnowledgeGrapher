@@ -14,9 +14,9 @@
 {% block nav %}
 <nav>
     <ul class="left">
-        <li><a href="#" id="toggle-dashboard"><i class="fa-solid fa-bars"></i></a></li>
-        <li>
-            <a href="/"><img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}"></a>
+        <li class="desktop-hidden"><a href="#" id="toggle-dashboard" ><i class="fa-solid fa-bars"></i></a></li>
+        <li class="logo-li">
+            <a href="/"><img class="logo" src="{{ url_for('static', filename='images/icon.svg') }}"></a>
         </li>
         <li class="mobile-hidden"><a href="/">Home</a></li>
         <li class="mobile-hidden">Search</li>
@@ -60,6 +60,18 @@
 {% endblock %}
 
 <div class="content">
+
+    <div id="dashboard-sidebar" class="{% block dashboard %}desktop-hidden invisible{% endblock %}">
+    <h2>{{ current_user.id }}</h2>
+    <h2>Recently Viewed</h2>
+    <h2>Recent Edits</h2>
+    <ul>
+        {% for graph in context.user_recent %}
+            <p>{{graph.name}} <a href="/{{graph.user}}/{{graph.slug}}">View</a> <a href="/{{graph.user}}/{{graph.slug}}/edit">Edit</a></p>
+        {% endfor %}
+    </ul>
+    </div>
+
     {% block content %}
     {% endblock %}
 </div>

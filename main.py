@@ -1,4 +1,5 @@
 import flask
+import requests
 from flask import Response, Flask, flash, session, render_template, redirect, url_for, request, send_from_directory, jsonify
 from pathlib import Path
 import os
@@ -105,7 +106,8 @@ def unauthorized_handler():
 def index():
     db = Database()
     context = db.setupContext()
-    context["newest"] = db.getGraphsNewest()
+    context["popular"] = db.getGraphsPopular()
+    context["newest"] = db.getGraphs(orderby="newest")
     if flask_login.current_user.is_authenticated:
         context["user_recent"] = db.getGraphsByUser(flask_login.current_user.id)
     return render_template('index.html', context=context)
@@ -281,7 +283,28 @@ def saveInfo(ownerSlug, graphSlug):
         name = request.form.get("name")
         privacy = request.form.get("privacy")
         desc = request.form.get("desc")
+        wordcloud = request.form.get("wordcloud")
         db.saveGraphInfo(ownerSlug, graphSlug, name, privacy, desc)
+
+        resp = requests.post('https://quickchart.io/wordcloud', json={
+            'format': 'png',
+            'width': 300,
+            'height': 200,
+            'fontScale': 10,
+            'scale': 'linear',
+            'useWordList': True,
+            'cleanWords': False,
+            'removeStopwords': False,
+            'rotation': '0',
+            'minWordLength': 4,
+            'case': 'none',
+            'text': wordcloud,
+            'colors': ["#420F69", "#9A22F5", "#6918A9", "#7219B5", "#5A148F"],
+        })
+
+        with open('static/images/thumbnails/' + str(ownerSlug) + '-' + str(graphSlug) + '.png', 'wb') as f:
+            f.write(resp.content)
+
         return '<script>document.location.href = document.referrer</script>'
 
     return "Page not found", 404

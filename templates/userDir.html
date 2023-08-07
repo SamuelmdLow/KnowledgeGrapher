@@ -8,10 +8,10 @@
 {% block content %}
 <div class="main">
     <h1>{{context.user.name}}</h1>
-    <ul>
+    <ul class="dirList">
     {% for graph in context.graphs %}
     <li>
-        {% include "graph-thumb.html" %}
+        {% include "graph-thumb-dir.html" %}
     </li>
     {% endfor %}
     </ul>

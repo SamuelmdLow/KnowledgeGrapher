@@ -1239,6 +1239,18 @@ function saveGraph()
                  console.log("Saved");
                }
     });
+
+    var wordcloud = "";
+    for (let i=0; i<things.length; i++) {
+        var node = "";
+        for (let a=0; a<things[i].receiveFrom.length; a++) {
+            node = node + "," + things[i].name;
+        }
+        wordcloud = wordcloud + node;
+    }
+
+    console.log(wordcloud);
+    document.getElementById("wordcloud").value = wordcloud;
 }
 
 function initializeMarkupButton(){
