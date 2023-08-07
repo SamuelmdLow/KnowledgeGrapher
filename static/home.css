@@ -1,6 +1,14 @@
 .activity-sidebar {
-    position: relative;
     right: 0;
-    width: 25%;
-    padding: 15px;
+    width: 400px;
+    margin: 30px;
+    border-left: solid 3px #e1e1e1;
+    padding: 30px;
+    padding-top: 0;
+}
+
+@media only screen and (max-width: 1500px) {
+.activity-sidebar {
+    display: none;
+}
 }

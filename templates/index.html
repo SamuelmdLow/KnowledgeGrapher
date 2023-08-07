@@ -5,30 +5,36 @@
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
 {% endblock %}
 
+{% block dashboard %}
+{% endblock %}
+
 {% block content %}
-<div id="dashboard-sidebar">
-    <h2>{{ current_user.id }}</h2>
-    <h2>Recently Viewed</h2>
-    <h2>Recent Edits</h2>
-    <ul>
-        {% for graph in context.user_recent %}
-            <p>{{graph.name}} <a href="/{{graph.user}}/{{graph.slug}}">View</a> <a href="/{{graph.user}}/{{graph.slug}}/edit">Edit</a></p>
-        {% endfor %}
-    </ul>
-</div>
-<div class="main">
-    <h1>Newest</h1>
+<div class="home-content">
+    <div class="banner"></div>
+    <div class="home-main-content">
+        <div class="main">
+            <h1>Popular</h1>
+            <ul class="scrollList">
+            {% for graph in context.popular %}
+            <li>
+                {% include "graph-thumb.html" %}
+            </li>
+            {% endfor %}
+            </ul>
 
-    <ul>
-    {% for graph in context.newest %}
-    <li>
-        {% include "graph-thumb.html" %}
-    </li>
-    {% endfor %}
-    </ul>
-</div>
+            <h1>Newest</h1>
+            <ul class="scrollList">
+            {% for graph in context.newest %}
+            <li>
+                {% include "graph-thumb.html" %}
+            </li>
+            {% endfor %}
+            </ul>
+        </div>
 
-<div class="activity-sidebar mobile-hidden">
-    <h1>Activity</h1>
+        <div class="activity-sidebar mobile-hidden">
+            <h1>Activity</h1>
+        </div>
+    </div>
 </div>
 {% endblock %}

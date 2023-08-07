@@ -38,6 +38,7 @@ class Database:
     class Graph:
         def __init__(self, data):
             self.id = data[0]
+            self.userId = data[1]
             self.user = data[1]
             self.slug = data[2]
             self.name = data[3]
@@ -45,9 +46,10 @@ class Database:
             self.subject = data[5]
             self.nodes = data[6]
             self.privacy = data[7]
-            self.creationDate = data[8]
-            self.pubDate = data[9]
-            self.lastEdit = data[10]
+            self.likes = data[8]
+            self.creationDate = data[9]
+            self.pubDate = data[10]
+            self.lastEdit = data[11]
 
     class User:
         def __init__(self, data):
@@ -65,7 +67,6 @@ class Database:
     def createGraphObj(self, data):
         graph = self.Graph(data)
         graph.user = self.getUserSlug(data[1])
-        graph.likes = self.likeCount(graph.id)
         return graph
 
     def createTables(self):
@@ -103,6 +104,7 @@ class Database:
                 subject int,
                 nodes LONGTEXT,
                 privacy int,
+                likes int DEFAULT 0,
                 creationdate DATETIME,
                 pubdate DATETIME,
                 lastedit DATETIME,
@@ -128,6 +130,24 @@ class Database:
                 date DATETIME,
                 FOREIGN KEY (user) REFERENCES users(id),
                 FOREIGN KEY (graph) REFERENCES graphs(id)
+            )''')
+
+        self.cursor.execute('''
+            CREATE TABLE views (
+                user int,
+                graph int,
+                date DATETIME,
+                FOREIGN KEY (user) REFERENCES users(id),
+                FOREIGN KEY (graph) REFERENCES graphs(id)
+            )''')
+
+        self.cursor.execute('''
+            CREATE TABLE following (
+                follower int,
+                followed int,
+                date DATETIME,
+                FOREIGN KEY (follower) REFERENCES users(id),
+                FOREIGN KEY (followed) REFERENCES users(id)
             )''')
 
 
@@ -262,8 +282,11 @@ class Database:
 
             return result
 
-    def getGraphsNewest(self, num=15):
-        sql = "SELECT * FROM graphs WHERE privacy =%s ORDER BY pubdate DESC"
+    def getGraphs(self, orderby="newest", num=15):
+        if orderby == "likes":
+            sql = "SELECT * FROM graphs WHERE privacy =%s ORDER BY likes DESC"
+        else:
+            sql = "SELECT * FROM graphs WHERE privacy =%s ORDER BY pubdate DESC"
         values = (2,)
         self.cursor.execute(sql, values)
 
@@ -271,6 +294,41 @@ class Database:
 
         for i in range(len(result)):
             result[i] = self.createGraphObj(result[i])
+
+        return result
+
+    def getGraphsPopular(self):
+        sql = "SELECT * FROM graphs WHERE privacy = 2 ORDER BY likes DESC"
+        self.cursor.execute(sql)
+
+        result = []
+
+        graphs = self.cursor.fetchall()
+
+        for graph in graphs:
+            sql = "SELECT date FROM likes WHERE graph=%s"
+            val = (graph[0],)
+            self.cursor.execute(sql, val)
+
+            dates = self.cursor.fetchall()
+            score = 0
+
+            for date in dates:
+                delta = datetime.datetime.now() - date[0]
+                score = score + pow(0.99, pow(delta.days, 2))
+
+            if len(result) > 15:
+                if result[14][1] < score:
+                    result.append((graph, score))
+                    result.sort(key=sortKey, reverse=True)
+                elif result[14][1] > graph[8]:
+                    break
+            else:
+                result.append((graph, score))
+                result.sort(key=sortKey, reverse=True)
+
+        for i in range(len(result)):
+            result[i] = self.createGraphObj(result[i][0])
 
         return result
 
@@ -322,6 +380,8 @@ class Database:
             self.cursor.execute(sql, val)
             self.mydb.commit()
 
+            self.recountLikes(graph)
+
             return "like"
         else:
             sql = "DELETE FROM likes WHERE user = %s AND graph = %s"
@@ -330,7 +390,15 @@ class Database:
             self.cursor.execute(sql, val)
             self.mydb.commit()
 
+            self.recountLikes(graph)
+
             return "unlike"
+
+    def recountLikes(self, graph):
+        sql = "UPDATE graphs SET likes =%s WHERE id = %s"
+        val = (self.likeCount(graph.id), graph.id)
+        self.cursor.execute(sql, val)
+        self.mydb.commit()
 
     def likeCount(self, graphId):
         sql = "SELECT COUNT(user) FROM likes WHERE graph=%s"
@@ -428,6 +496,9 @@ class Database:
 
         return result
 
+def sortKey(e):
+    return e[1]
+
 def remakeDatabase():
     sql = mysql.connector.connect(
         host="localhost",
@@ -440,4 +511,4 @@ def remakeDatabase():
     Database().createTables()
 
 if __name__ == "__main__":
-    remakeDatabase()
+    db = Database()

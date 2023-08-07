@@ -1,19 +1,45 @@
+@font-face {
+    font-family: lora;
+    src: url(static/fonts/Lora-Italic-VariableFont_wght.ttf);
+}
+
+html {
+    background-color: #d5d5d5;
+}
+
+h1, h2 {
+    font-weight: 500;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+
 body {
     margin: 0;
 }
 
 .logo {
+    width: 70px;
+    background-color: #7c5695;
     height: 100%;
 }
 
 nav {
-    background-color: #E5E5E5;
+    border-bottom: 3px solid #e1e1e1;
     position: relative;
     left:0;
     right:0;
     display: flex;
     z-index: 100;
     height: 35px;
+    font-family: sans-serif;
 }
 
 nav > ul {
@@ -33,11 +59,6 @@ nav > ul > li {
     line-height: 2em;
 }
 
-nav > ul > li > a {
-    color: black;
-    text-decoration: none;
-}
-
 .mid {
     position: absolute;
     left: 50%;
@@ -45,6 +66,7 @@ nav > ul > li > a {
     margin: 0;
     font-size: 1.2em;
     line-height: 2.2em;
+    color: grey;
 }
 
 .right {
@@ -85,13 +107,32 @@ nav > ul > li > a {
     min-height: 80vh;
 }
 
+
+
+.banner {
+    width: 100%;
+    height: 350px;
+    background-size: cover;
+    background-position: center;
+    background-image: url('https://res.cloudinary.com/lesswrong-2-0/image/upload/c_crop,g_custom/c_fill,dpr_auto,q_auto,f_auto,g_auto:faces/uywktywl8kxfnprltziy');
+}
+
+.home-content {
+    width: 100%;
+}
+
+.home-main-content {
+    display: flex;
+}
+
 .main {
     flex-grow: 1;
     padding: 15px;
-    padding-left: 50px;
     max-width: 1000px;
     margin: auto;
     margin-top: 0;
+    margin-bottom: 50px;
+    width: -webkit-fill-available;
 }
 
 #dashboard-sidebar {
@@ -99,11 +140,14 @@ nav > ul > li > a {
     left: 0;
     top:0;
     margin: 0;
-    width: 20%;
-    background-color: #D9D9D9;
+    width: 350px;
     height: 100vh;
     padding: 15px;
+    padding-left: 30px;
+    border-right: 3px solid #e1e1e1;
 }
+
+
 
 footer {
     background-color: black;
@@ -123,28 +167,6 @@ footer {
     margin: auto;
     padding: 15px;
 }
-
-@media only screen and (max-width: 600px) {
-    .mobile-hidden {
-        display: none;
-    }
-    #dashboard-sidebar {
-        position: fixed;
-        width: 66%;
-        z-index: 50;
-    }
-}
-
-@media only screen and (min-width: 600px) {
-    nav > ul > li:first-child {
-        padding-left: 30px;
-    }
-
-    nav > ul > li:last-child {
-        padding-right: 30px;
-    }
-}
-
 
 #modal {
     position: fixed;
@@ -182,4 +204,112 @@ input {
 
 .invisible {
     visibility: hidden;
+}
+
+.scrollList {
+    list-style: none;
+    padding: 0;
+    overflow: auto;
+    height: auto;
+    white-space: nowrap;
+}
+
+.scrollList > li {
+    display: inline-block;
+    margin: 0.5em;
+    margin-left: 0;
+}
+
+.scrollList > li > .graph-thumb {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
+}
+
+.scrollList > li > .graph-thumb > .graph-thumb-desc > h3 {
+    margin-top: 0.8em;
+    margin-bottom: 0.5em;
+}
+
+.scrollList > li > .graph-thumb > .graph-thumb-desc > p {
+    margin: 0;
+}
+
+.graph-thumb-img {
+    height: 200px;
+    width: 250px;
+    background-size: contain;
+    background-position: center;
+    border-radius: 10px;
+    border: 3px solid #e1e1e1;
+    background-color: #eeeeee;
+}
+
+.graph-thumb-desc {
+    padding-left: 1.2em;
+    padding-right: 1.2em;
+    overflow: hidden;
+}
+
+.dirList {
+    list-style: none;
+    padding: 0;
+}
+
+.dirList > li {
+    margin: 2em;
+    margin-left: 0;
+}
+
+.dirList > li > .graph-thumb {
+    display: flex;
+}
+
+
+@media only screen and (max-width: 600px) {
+    .mobile-hidden {
+        display: none;
+    }
+
+    .logo-li {
+        padding-left: 0;
+    }
+
+    #dashboard-sidebar {
+        position: fixed;
+        width: 66%;
+        z-index: 50;
+        padding-top: 35px;
+        background-color: #d5d5d5;
+    }
+
+    .scrollList {
+        height: auto;
+    }
+}
+
+@media only screen and (min-width: 600px) {
+    h1 {
+        font-size: xxx-large;
+    }
+
+    #dashboard-sidebar > h2 {
+        font-size: xx-large;
+    }
+
+    .desktop-hidden {
+        display: none;
+    }
+
+    nav > ul > li:first-child {
+        padding-left: 30px;
+    }
+
+    .logo-li {
+        padding-left: 30px;
+    }
+
+    nav > ul > li:last-child {
+        padding-right: 30px;
+    }
 }

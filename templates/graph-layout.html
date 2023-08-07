@@ -42,7 +42,7 @@
 <nav>
     <ul class="left">
         <li><a href="/">
-            <img class="logo" src="{{ url_for('static', filename='images/logo.svg') }}">
+            <img class="logo" src="{{ url_for('static', filename='images/icon.svg') }}">
         </a></li>
         {% block left_nav %}{% endblock%}
     </ul>
@@ -50,6 +50,7 @@
     <ul class="right">
         {% block right_nav %}{% endblock %}
         {% if current_user.is_authenticated %}
+                <li class="mobile-hidden"><a href="/{{ current_user.id }}/dir"><i class="fa-solid fa-folder"></i></a></li>
         <li class="dropdown">
             <a href="/{{ current_user.id }}">{{ current_user.id }}</a>
             <div class="profile-dropdown dropdown-content">
