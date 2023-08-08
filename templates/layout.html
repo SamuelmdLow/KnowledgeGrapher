@@ -61,13 +61,18 @@
 
 <div class="content">
 
-    <div id="dashboard-sidebar" class="{% block dashboard %}desktop-hidden invisible{% endblock %}">
+    <div id="dashboard-sidebar" class="mobile-hidden {% block dashboard %}desktop-hidden invisible{% endblock %}">
     <h2>{{ current_user.id }}</h2>
     <h2>Recently Viewed</h2>
+    <ul>
+        {% for graph in context.user_viewed %}
+            <p><a href="/{{graph.user}}/{{graph.slug}}">{{graph.name}}</a> {% if graph.user == current_user.id %}<a href="/{{graph.user}}/{{graph.slug}}/edit"><i class="fa-solid fa-pencil"></i></a>{% endif %}</p>
+        {% endfor %}
+    </ul>
     <h2>Recent Edits</h2>
     <ul>
         {% for graph in context.user_recent %}
-            <p>{{graph.name}} <a href="/{{graph.user}}/{{graph.slug}}">View</a> <a href="/{{graph.user}}/{{graph.slug}}/edit">Edit</a></p>
+            <p><a href="/{{graph.user}}/{{graph.slug}}">{{graph.name}}</a> <a href="/{{graph.user}}/{{graph.slug}}/edit"><i class="fa-solid fa-pencil"></i></a></p>
         {% endfor %}
     </ul>
     </div>

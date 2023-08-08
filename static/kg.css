@@ -77,6 +77,9 @@ body
     overflow: hidden;
     top:0;
     z-index: -1;
+    background-image: url('images/grid.png');
+    opacity: 0.05;
+    background-size: 50px;
 }
 
 #graph:active
@@ -108,6 +111,15 @@ body
     user-select: none
 }
 
+.imageText {
+    color: white;
+    text-shadow:
+        black -2px  2px 4px,
+        black -2px -2px 4px,
+        black  2px  2px 4px,
+        black  2px -2px 4px;
+}
+
 .circle:hover
 {
     cursor:grab;
@@ -128,6 +140,8 @@ body
     -webkit-user-select: none; /* Safari */
     -ms-user-select: none; /* IE 10 and IE 11 */
     user-select: none; /* Standard syntax */
+
+    font-family: atkinson;
 }
 
 .line

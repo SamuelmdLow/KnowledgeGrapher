@@ -109,7 +109,8 @@ def index():
     context["popular"] = db.getGraphsPopular()
     context["newest"] = db.getGraphs(orderby="newest")
     if flask_login.current_user.is_authenticated:
-        context["user_recent"] = db.getGraphsByUser(flask_login.current_user.id)
+        context["user_recent"] = db.getGraphsByUser(flask_login.current_user.id, num=7)
+        context["user_viewed"] = db.getGraphsViewedByUser(flask_login.current_user.id)
     return render_template('index.html', context=context)
 
 @app.route('/admin')
@@ -222,7 +223,11 @@ def view(ownerSlug, graphSlug):
         return redirect('/404')
     context["graph"] = graph
 
-    context["liked"] = db.userLiked(flask_login.current_user.id, ownerSlug, graphSlug)
+    if flask_login.current_user.is_authenticated:
+        context["liked"] = db.userLiked(flask_login.current_user.id, ownerSlug, graphSlug)
+        db.viewGraph(flask_login.current_user.id, ownerSlug, graphSlug)
+    else:
+        context["liked"] = False
 
     if graph.privacy == 2 or graph.privacy == 1:
         return render_template('graph-view.html', context=context)

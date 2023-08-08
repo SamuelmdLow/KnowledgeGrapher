@@ -1,5 +1,7 @@
 <div class="graph-thumb">
-    <div class="graph-thumb-img" style="background-image: url('{{ url_for('static', filename='images/thumbnails/' + graph.user + '-' + graph.slug + '.png') }}')"></div>
+    <a href="/{{graph.user}}/{{graph.slug}}/edit">
+        <div class="graph-thumb-img" style="background-image: url('{{ url_for('static', filename='images/thumbnails/' + graph.user + '-' + graph.slug + '.png') }}')"></div>
+    </a>
     <div class="graph-thumb-desc">
         <h2><a href="/{{graph.user}}/{{graph.slug}}/edit">{{graph.name}}</a></h2>
         <p>{{graph.desc}}</p>

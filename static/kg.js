@@ -86,15 +86,13 @@ function setup(things)
             initializeZooming(e);
         },{passive:false});
 
-        if(thing.image!="null")
-        {
-            circle.style.color = "white";
-            circle.style.textShadow = "2px 2px 4px #000000";
-        }
-
         const name = document.createElement("p");
         name.innerHTML = thing.name;
         name.classList.add("name");
+        if(thing.image!="null")
+        {
+            name.classList.add("imageText");
+        }
         name.style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
 
         circle.appendChild(name);

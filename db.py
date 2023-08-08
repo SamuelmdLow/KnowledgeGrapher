@@ -260,7 +260,7 @@ class Database:
         else:
             return result[0]
 
-    def getGraphsByUser(self, userSlug, privacy=None):
+    def getGraphsByUser(self, userSlug, privacy=None, num=None):
         userId = self.getUserId(userSlug)
 
         if userId is None:
@@ -277,10 +277,42 @@ class Database:
 
             result = self.cursor.fetchall()
 
+            if num != None:
+                result = result[:num]
+
             for i in range(len(result)):
                 result[i] = self.createGraphObj(result[i])
 
             return result
+
+    def getGraphsViewedByUser(self, userSlug, num=7):
+        userId = self.getUserId(userSlug)
+
+        if userId is None:
+            return []
+        else:
+            sql = "SELECT graph FROM views WHERE user =%s ORDER BY date DESC"
+            val = (userId,)
+
+            self.cursor.execute(sql, val)
+            result = self.cursor.fetchall()[:num]
+
+            for i in range(len(result)):
+                result[i] = self.getGraphById(result[i][0])
+
+            return result
+
+    def getGraphById(self, id):
+        sql = "SELECT * FROM graphs WHERE id =%s"
+        val = (id,)
+        self.cursor.execute(sql, val)
+        result = self.cursor.fetchone()
+
+        if result is None:
+            return None
+        else:
+            return self.createGraphObj(result)
+
 
     def getGraphs(self, orderby="newest", num=15):
         if orderby == "likes":
@@ -363,6 +395,32 @@ class Database:
             values = (datetime.datetime.now(), name, int(privacy), desc, userId, slug)
         self.cursor.execute(sql, values)
         self.mydb.commit()
+
+    def viewGraph(self, userSlug, ownerSlug, graphSlug):
+        userId = self.getUserId(userSlug)
+        graph = self.getGraph(ownerSlug, graphSlug)
+
+        sql = "SELECT * FROM views WHERE user =%s AND graph = %s"
+        values = (userId, graph.id)
+        self.cursor.execute(sql, values)
+
+        result = self.cursor.fetchone()
+        if result is None:
+            sql = "INSERT INTO views (user, graph, date) VALUES (%s, %s, %s)"
+            val = (userId, graph.id, datetime.datetime.now())
+
+            self.cursor.execute(sql, val)
+            self.mydb.commit()
+
+            return "first view"
+        else:
+            sql = "UPDATE views SET date = %s WHERE user = %s AND graph = %s"
+            val = (datetime.datetime.now(), userId, graph.id)
+
+            self.cursor.execute(sql, val)
+            self.mydb.commit()
+
+            return "view again"
 
     def toggleLike(self, userSlug, ownerSlug, graphSlug):
         userId = self.getUserId(userSlug)

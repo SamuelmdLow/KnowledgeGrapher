@@ -5,7 +5,7 @@ window.onload = function() {
 function initializeDashboardToggle() {
     document.getElementById("toggle-dashboard").addEventListener("click", function(event) {
        event.preventDefault();
-       document.getElementById("dashboard-sidebar").classList.toggle("invisible");
+       document.getElementById("dashboard-sidebar").classList.toggle("mobile-hidden");
     });
 }
 

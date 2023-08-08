@@ -31,6 +31,10 @@ function uninspect(that)
     document.getElementById("graph").setAttribute("inspected", "none");
 }
 
+function cleanText(plainText) {
+    return DOMPurify.sanitize(plainText, {USE_PROFILES: {html: true}});
+}
+
 function prepareText(plainText)
 {
     let clean = DOMPurify.sanitize(plainText, {USE_PROFILES: {html: true}});
@@ -50,7 +54,7 @@ function showInspector(that)
     graph.setAttribute("inspected", that.id);
     var inspector = document.getElementById("inspector");
     inspector.style.display = "block";
-    document.getElementById("inspector-name").innerHTML = prepareText(thing.name);
+    document.getElementById("inspector-name").innerHTML = cleanText(thing.name);
     document.getElementById("inspector-id").innerHTML = that.id;
     if (thing.image != "null") {
         document.getElementById("inspector-image").style.display = "block";
@@ -97,15 +101,15 @@ function setup(things)
             initializeZooming(e);
         },{passive:false});
 
-        if(thing.image!="null")
-        {
-            circle.style.color = "white";
-            circle.style.textShadow = "2px 2px 4px #000000";
-        }
-
         const name = document.createElement("p");
         name.innerHTML = thing.name;
         name.classList.add("name");
+
+        if(thing.image!="null")
+        {
+            name.classList.add("imageText");
+        }
+
         name.style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
 
         circle.appendChild(name);

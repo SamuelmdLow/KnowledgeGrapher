@@ -38,6 +38,9 @@ body
     overflow: hidden;
     top:0;
     z-index: -1;
+    background-image: url('images/grid.png');
+    opacity: 0.05;
+    background-size: 50px;
 }
 
 #graph:active
@@ -61,7 +64,19 @@ body
     background-size:cover;
     -webkit-user-select: none;
     -ms-user-select: none;
-    user-select: none
+    user-select: none;
+    font-family: atkinson;
+    background-color: white;
+    opacity: 0.8;
+}
+
+.imageText {
+    color: white;
+    text-shadow:
+        black -2px  2px 4px,
+        black -2px -2px 4px,
+        black  2px  2px 4px,
+        black  2px -2px 4px;
 }
 
 .inspected-circle
@@ -94,7 +109,7 @@ body
 .line
 {
     position:absolute;
-    background-color: grey;
+    background-color: red;
     z-index: 1;
     opacity:0.2;
 }
@@ -168,6 +183,10 @@ a
   border-radius: 10px;
 }
 
+#inspector-name {
+    margin-bottom: 0.2em;
+}
+
 #inspector-image
 {
     width:100%;
@@ -183,6 +202,7 @@ a
 #inspector-desc
 {
     max-width: 400px;
+    font-family: atkinson;
 }
 
 #info {
