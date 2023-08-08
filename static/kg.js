@@ -1019,6 +1019,9 @@ function physics()
 
         graph.setAttribute("panx", panx);
         graph.setAttribute("pany", pany);
+
+        graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+        graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
     }
 
     for (let a=0; a<things.length; a++)
@@ -1184,8 +1187,15 @@ function initializeZooming(e){
     }
     graph.setAttribute("scale", newscale);
 
-    graph.setAttribute("panx", x - ((x-panx)/scale)*newscale);
-    graph.setAttribute("pany", y - ((y-pany)/scale)*newscale);
+    var panx = x - ((x-panx)/scale)*newscale;
+    var pany = y - ((y-pany)/scale)*newscale;
+
+    graph.setAttribute("panx", panx);
+    graph.setAttribute("pany", pany);
+
+    graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+    graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
+    graph.style.backgroundSize = String(Math.floor(newscale*25)) + "px";
 }
 
 function getComplete(things)
