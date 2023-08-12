@@ -131,7 +131,7 @@ nav > ul > li {
 }
 
 .home-content {
-    width: 100%;
+    flex-grow: 1;
 }
 
 .home-main-content {

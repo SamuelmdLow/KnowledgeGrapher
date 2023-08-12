@@ -2,6 +2,11 @@ html {
 background-color: white;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
+
 nav {
     background-color: #d5d5d5;
 }
@@ -10,6 +15,8 @@ body
 {
     margin:0;
     overflow: hidden;
+    height: 100vh;
+    clip-path: inset(0 0 0 0);
 }
 
 #input
@@ -213,7 +220,7 @@ a
     overflow-y: auto;
     height: 80%;
     max-width: 600px;
-    top: 50px;
+    top: 4em;
     border-radius: 10px;
     transition-property: right, opacity;
     transition-duration: 0.5s;
@@ -221,6 +228,10 @@ a
 
 #nodeEditor-name{
     display: inline;
+    border: none;
+    font-size: larger;
+    font-family: 'garamond';
+    width: 60%;
 }
 
 #nodeEditor-desc{

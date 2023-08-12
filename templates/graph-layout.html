@@ -51,7 +51,7 @@
         {% block right_nav %}{% endblock %}
         {% if current_user.is_authenticated %}
                 <li class="mobile-hidden"><a href="/{{ current_user.id }}/dir"><i class="fa-solid fa-folder"></i></a></li>
-        <li class="dropdown">
+        <li class="dropdown mobile-hidden">
             <a href="/{{ current_user.id }}">{{ current_user.id }}</a>
             <div class="profile-dropdown dropdown-content">
                 <ul>
@@ -61,7 +61,7 @@
             </div>
         </li>
         {% else %}
-        <li class="dropdown">
+        <li class="dropdown mobile-hidden">
             <a href="/login">Signed out</a>
             <div class="profile-dropdown dropdown-content">
                 <ul>
