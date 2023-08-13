@@ -71,6 +71,10 @@ nav > ul > li {
     line-height: 2em;
 }
 
+nav > ul > li > p{
+    margin: 0;
+}
+
 .mid {
     position: absolute;
     left: 50%;
@@ -284,6 +288,9 @@ input {
 
 
 @media only screen and (max-width: 600px) {
+    .content {
+    display: block;
+    }
     .mobile-hidden {
         display: none;
     }
@@ -302,6 +309,13 @@ input {
 
     .scrollList {
         height: auto;
+    }
+    .dirList > li {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .dirList > li > .graph-thumb {
+        flex-direction: column;
     }
 }
 

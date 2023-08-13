@@ -83,6 +83,9 @@ body
 .inspected-circle
 {
     border-color: red;
+    border-width: 3px;
+    transform: translate(-2px,-2px);
+    font-weight: bold;
 }
 
 .circle:hover

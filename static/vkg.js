@@ -1,13 +1,17 @@
 var old = "";
 var things = [];
+var markup = "";
 
 function onload()
 {
     var saved = document.getElementById("saved").value;
+    markup = saved;
+    console.log("type 'markup' to get the markup for this graph");
     things = processInput(saved);
     setup(things);
     window.setInterval(staticUpdate, 1);
     document.getElementById("graph").setAttribute("ondblclick", "document.getElementById('inspector').style.display = 'none'");
+    document.getElementById("saved").remove();
 }
 
 function staticUpdate()
@@ -300,14 +304,15 @@ function processInput(input)
                 if(thing.includes("desc:"))
                 {
                     var desc = thing.slice(thing.indexOf("desc:")+5);
-                    if(desc.includes("\n---\n")){
-                        desc = desc.slice(0, desc.indexOf("\n---\n")).trim();
+                    var descSep = "\n---\n";
+                    if(desc.includes(descSep)){
+                        desc = desc.slice(0, desc.indexOf(descSep)).trim();
                     } else {
                         desc = desc.slice(0, desc.indexOf("\n")).trim();
                     }
 
                     thing = thing.replace("desc:", "");
-                    thing = thing.replace(desc, "");
+                    thing = thing.replace(desc+descSep, "");
                 }
                 else
                 {
@@ -316,7 +321,7 @@ function processInput(input)
 
                 while(thing.includes("\n\n"))
                 {
-                    thing = thing.replace("\n\n", "");
+                    thing = thing.replace("\n\n", "\n");
                 }
 
                 var rawrelations = thing.split("\n");
@@ -343,10 +348,8 @@ function processInput(input)
         }
     }
 
-    console.log("Hey");
     for (let b=0; b<things.length; b++){
         //alert(thing.sendTo);
-        console.log(things[b].sendTo);
         var newSendTo = [];
         for (let a=0; a< things[b].sendTo.length; a++) {
             var connection = null;
@@ -356,13 +359,12 @@ function processInput(input)
                     break;
                 }
             }
-            console.log(connection);
             if (connection != null) {
                 newSendTo.push(new Relation(things[b].sendTo[a].rel, connection));
                 connection.receiveFrom.push(new Relation(things[b].sendTo[a].rel, things[b]));
             }
         }
-        console.log(newSendTo);
+
         things[b].sendTo = newSendTo;
 
     }
@@ -551,7 +553,6 @@ function placein()
 function likeGraph()
 {
     var urlParts = window.location.href.split("/");
-    console.log(urlParts);
     urlParts[5] = "like";
     var url = urlParts.join("/");
     $.ajax({
