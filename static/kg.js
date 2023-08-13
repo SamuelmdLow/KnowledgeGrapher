@@ -166,7 +166,7 @@ function circleMouseDown(event, that) {
             line.classList.add("line");
             line.setAttribute("owner", that.id)
             line.setAttribute("count", 1);
-            document.getElementById("graph").appendChild(line);
+            document.getElementById("panels").appendChild(line);
         }
     } else if (event.button == 0) {
         that.setAttribute('clicked', 1);
@@ -207,6 +207,15 @@ function editNode(id) {
     simplemde.value(edittedNode.desc);
     document.getElementById("nodeEditor-id").innerHTML = id;
 
+    var rels = document.getElementById("nodeEditor-rels");
+    rels.innerHTML = "";
+    for(let i=0; i<edittedNode.sendTo.length; i++)
+    {
+        var receiver = edittedNode.sendTo[i].node;
+        var li = document.createElement("li");
+        li.innerHTML = "<p>"+ edittedNode.name + " <strong>" + edittedNode.sendTo[i].rel + "</strong> " + receiver.name + "</p>";
+        rels.appendChild(li);
+    }
     //that.parentNode.remove();
 }
 

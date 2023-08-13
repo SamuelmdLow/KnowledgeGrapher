@@ -24,7 +24,7 @@ function uninspect(that)
         var line = that.children[i];
         if(line.classList.contains("line"))
         {
-            line.classList.toggle("inspected-line");
+            line.classList.remove("inspected-line");
         }
     }
 
@@ -63,23 +63,27 @@ function showInspector(that)
         document.getElementById("inspector-image").style.display = "none";
     }
     document.getElementById("inspector-desc").innerHTML = prepareText(thing.desc);
-    //var rels = document.getElementById("inspector-rels");
-    //rels.innerHTML = '';
-    //for(let i=0; i<that.children.length; i++)
-    //{
-    //    var line = that.children[i];
-    //    if(line.classList.contains("line"))
-    //    {
-    //        line.classList.toggle("inspected-line");
-    //        var relations = line.getAttribute("rel").split(",");
-    //        for(let x=0; x<relations.length; x++)
-    //        {
-    //            var li = document.createElement("li");
-    //            li.innerHTML = "<p>"+that.getAttribute("name") + " <strong>" + relations[x] + "</strong> " + document.getElementById(line.getAttribute("target")).getAttribute("name") + "</p>";
-    //            rels.appendChild(li);
-    //        }
-    //    }
-    //}
+
+
+    var rels = document.getElementById("inspector-rels");
+    rels.innerHTML = '';
+
+    for(let i=0; i<that.children.length; i++)
+    {
+        var line = that.children[i];
+        if(line.classList.contains("line"))
+        {
+            line.classList.add("inspected-line");
+        }
+    }
+
+    for(let i=0; i<thing.sendTo.length; i++)
+    {
+        var receiver = thing.sendTo[i].node;
+        var li = document.createElement("li");
+        li.innerHTML = "<p>"+ thing.name + " <strong>" + thing.sendTo[i].rel + "</strong> " + receiver.name + "</p>";
+        rels.appendChild(li);
+    }
     setTimeout(MathJax.typesetPromise(), 1);
 }
 
