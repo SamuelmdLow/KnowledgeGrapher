@@ -22,7 +22,8 @@
     </script>
     {% block head %}{% endblock %}
 </head>
-<body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);" onload="onload()">
+<body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);"
+      onload="onload()">
 
 <div id="modal" class="hidden">
 
@@ -89,7 +90,15 @@
 </div>
 
 
-<div id="graph" hovered="0" onmouseover="hovering(this, event);" onmouseout="nothovering(this);" onmousedown="setanchor(event, this);" onmouseup="removeanchor(this);" saved="0" scale="10" panx="700" pany="300" repel="0.005" attract="0.01" energy="0" inspected="none">
+<div id="graph" hovered="0"
+     onmouseover="hovering(this, event);"
+     onmouseout="nothovering(this);"
+     onmousedown="setanchor(event, this);"
+     onmouseup="removeanchor(this);"
+     ontouchmove="document.getElementsByTagName('BODY')[0].setAttribute('x',event.touches[0].clientX);document.getElementsByTagName('BODY')[0].setAttribute('y',event.touches[0].clientY);console.log('moved');"
+     ontouchstart="document.getElementsByTagName('BODY')[0].setAttribute('x',event.touches[0].clientX);document.getElementsByTagName('BODY')[0].setAttribute('y',event.touches[0].clientY);setanchor(event, this);console.log('touched');"
+     ontouchend="removeanchor(this);"
+     saved="0" scale="10" panx="700" pany="300" repel="0.005" attract="0.01" energy="0" inspected="none">
 </div>
 <div id="circles"></div>
 <div id="panels"></div>

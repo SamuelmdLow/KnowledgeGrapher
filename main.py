@@ -197,6 +197,20 @@ def userDir(userSlug):
         return render_template('userDir.html', context=context)
     return "Page not found", 404
 
+@app.route('/bookmarks')
+@flask_login.login_required
+def bookmarks():
+    db = Database()
+    context = db.setupContext()
+    user = db.getUser(flask_login.current_user.id)
+    if not user:
+        return "Page not found", 404
+
+    context["user"] = user
+    context["graphs"] = db.getUserBookmarks(user.slug)
+    return render_template('userDir.html', context=context)
+
+
 @app.route('/<ownerSlug>/<graphSlug>/edit')
 @flask_login.login_required
 def edit(ownerSlug, graphSlug):
@@ -225,6 +239,7 @@ def view(ownerSlug, graphSlug):
 
     if flask_login.current_user.is_authenticated:
         context["liked"] = db.userLiked(flask_login.current_user.id, ownerSlug, graphSlug)
+        context["bookmarked"] = db.userBookmarked(flask_login.current_user.id, ownerSlug, graphSlug)
         db.viewGraph(flask_login.current_user.id, ownerSlug, graphSlug)
     else:
         context["liked"] = False
@@ -249,12 +264,16 @@ def new():
 @app.route('/<ownerSlug>/<graphSlug>/like', methods=['GET', 'POST'])
 @flask_login.login_required
 def like(ownerSlug, graphSlug):
-    if flask_login.current_user.id == ownerSlug:
-        db = Database()
-        state = db.toggleLike(flask_login.current_user.id, ownerSlug, graphSlug)
-        return state
+    db = Database()
+    state = db.toggleLike(flask_login.current_user.id, ownerSlug, graphSlug)
+    return state
 
-    return "Page not found", 404
+@app.route('/<ownerSlug>/<graphSlug>/bookmark', methods=['GET', 'POST'])
+@flask_login.login_required
+def bookmark(ownerSlug, graphSlug):
+    db = Database()
+    state = db.toggleBookmark(flask_login.current_user.id, ownerSlug, graphSlug)
+    return state
 
 @app.route('/<ownerSlug>/<graphSlug>/save', methods=['GET', 'POST'])
 @flask_login.login_required

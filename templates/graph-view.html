@@ -47,14 +47,17 @@
 
 {% block right_nav %}
 <li>
-    <a id="like-button" {% if context.liked %}class="active"{% endif %} href="/#">
-        <i id="inactive-heart" class="fa-regular fa-heart"></i>
-        <i id="active-heart" class="fa-solid fa-heart"></i>
+    <a id="like-button" class="{% if context.liked %}active{% else %}inactive{% endif %}" href="/#">
+        <i class="inactive nav-icon fa-regular fa-heart"></i>
+        <i class="active nav-icon fa-solid fa-heart"></i>
         <span id="like-count">{{context.graph.likes}}</span>
     </a>
 </li>
 <li>
-    <a id="bookmark-button" href="/#"><i class="fa-regular fa-bookmark"></i></a>
+    <a id="bookmark-button" class="{% if context.bookmarked %}active{% else %}inactive{% endif %}" href="/#">
+        <i class="inactive nav-icon fa-regular fa-bookmark"></i>
+        <i class="active nav-icon fa-solid fa-bookmark"></i>
+    </a>
 </li>
 {% endblock %}
 
@@ -74,5 +77,6 @@
 <script>
 initializeModal();
 initializeLikeButton();
+initializeBookmarkButton();
 </script>
 {% endblock %}

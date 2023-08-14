@@ -376,8 +376,6 @@ class Database:
         else:
             return self.createGraphObj(result)
 
-
-
     def saveGraph(self, nodes, userSlug, slug):
         userId = self.getUserId(userSlug)
         sql = "UPDATE graphs SET nodes = %s, lastedit = %s WHERE user =%s AND slug = %s"
@@ -481,6 +479,66 @@ class Database:
         if result > 0:
             return True
         return False
+
+    def toggleBookmark(self, userSlug, ownerSlug, graphSlug):
+        userId = self.getUserId(userSlug)
+        graph = self.getGraph(ownerSlug, graphSlug)
+
+        sql = "SELECT * FROM bookmarks WHERE user =%s AND graph = %s"
+        values = (userId, graph.id)
+        self.cursor.execute(sql, values)
+
+        result = self.cursor.fetchone()
+        if result is None:
+            sql = "INSERT INTO bookmarks (user, graph, date) VALUES (%s, %s, %s)"
+            val = (userId, graph.id, datetime.datetime.now())
+
+            self.cursor.execute(sql, val)
+            self.mydb.commit()
+
+            return "bookmarked"
+        else:
+            sql = "DELETE FROM bookmarks WHERE user = %s AND graph = %s"
+            val = (userId, graph.id)
+
+            self.cursor.execute(sql, val)
+            self.mydb.commit()
+
+            return "unbookmarked"
+
+    def userBookmarked(self, userSlug, ownerSlug, graphSlug):
+        userId = self.getUserId(userSlug)
+        if userId is None:
+            return False
+        graph = self.getGraph(ownerSlug, graphSlug)
+
+        sql = "SELECT COUNT(user) FROM bookmarks WHERE user=%s AND graph=%s"
+        val = (userId, graph.id)
+        self.cursor.execute(sql, val)
+
+        result = self.cursor.fetchone()[0]
+
+        if result > 0:
+            return True
+        return False
+
+    def getUserBookmarks(self, userSlug):
+        userId = self.getUserId(userSlug)
+        if userId is None:
+            print("fail")
+            return []
+
+        sql = "SELECT graph FROM bookmarks WHERE user=%s ORDER BY date DESC"
+        val = (userId,)
+        self.cursor.execute(sql, val)
+
+        result = self.cursor.fetchall()
+
+        print(result)
+        for i in range(len(result)):
+            result[i] = self.getGraphById(result[i][0])
+
+        return result
 
     def getSubjects(self):
         sql = "SELECT name FROM subjects ORDER BY name"

@@ -1,5 +1,9 @@
 html {
 background-color: white;
+overflow: hidden;
+}
+html, body {
+    overscroll-behavior-x: none;
 }
 
 ::-webkit-scrollbar {
@@ -17,6 +21,7 @@ body
     overflow: hidden;
     height: 100vh;
     clip-path: inset(0 0 0 0);
+    position: relative;
 }
 
 #input

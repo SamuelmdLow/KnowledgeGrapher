@@ -1,5 +1,9 @@
 html {
 background-color: white;
+overflow: hidden;
+}
+html, body {
+    overscroll-behavior-x: none;
 }
 
 nav {
@@ -12,6 +16,7 @@ body
     overflow: hidden;
     height: 100vh;
     clip-path: inset(0 0 0 0);
+    position: relative;
 }
 
 #input
@@ -260,18 +265,14 @@ a
     z-index: 10;
 }
 
-#inactive-heart {
+nav-icon {
     display: inline;
 }
 
-#active-heart {
+.active > .inactive {
     display: none;
 }
 
-.active > #inactive-heart {
+.inactive > .active {
     display: none;
-}
-
-.active > #active-heart {
-    display: inline;
 }

@@ -569,6 +569,26 @@ function likeGraph()
              }
 
              document.getElementById("like-button").classList.toggle("active");
+             document.getElementById("like-button").classList.toggle("inactive");
+       }
+    });
+}
+
+function bookmarkGraph()
+{
+    var urlParts = window.location.href.split("/");
+    urlParts[5] = "bookmark";
+    var url = urlParts.join("/");
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: {},
+        dataType: "text",
+        success: function(data){
+             console.log(data);
+
+            document.getElementById("bookmark-button").classList.toggle("active");
+            document.getElementById("bookmark-button").classList.toggle("inactive");
        }
     });
 }
@@ -583,6 +603,6 @@ function initializeLikeButton() {
 function initializeBookmarkButton() {
     document.getElementById("bookmark-button").addEventListener("click", function(event) {
        event.preventDefault();
-       openInfo();
+       bookmarkGraph()
    });
 }

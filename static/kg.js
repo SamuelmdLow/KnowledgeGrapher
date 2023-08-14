@@ -1094,7 +1094,7 @@ function setanchor(event, that)
     var body = document.getElementsByTagName("BODY")[0];
     clearPanels();
     if (event.ctrlKey == false) {
-        if (event.button == 0) {
+        if (event.button == 0 || event.type=='touchstart') {
             that.setAttribute("anchorx", body.getAttribute("x"));
             that.setAttribute("anchory", body.getAttribute("y"));
             that.setAttribute("anchor", "1");
