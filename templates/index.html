@@ -14,22 +14,30 @@
     <div class="home-main-content">
         <div class="main">
             <h1>Popular</h1>
-            <ul class="scrollList">
-            {% for graph in context.popular %}
-            <li>
-                {% include "graph-thumb.html" %}
-            </li>
-            {% endfor %}
-            </ul>
+            <div class="scrollList-container">
+                <ul class="scrollList">
+                {% for graph in context.popular %}
+                <li>
+                    {% include "graph-thumb.html" %}
+                </li>
+                {% endfor %}
+                </ul>
+                <div class="fader-left"></div>
+                <div class="fader-right"></div>
+            </div>
 
             <h1>Newest</h1>
-            <ul class="scrollList">
-            {% for graph in context.newest %}
-            <li>
-                {% include "graph-thumb.html" %}
-            </li>
-            {% endfor %}
-            </ul>
+            <div class="scrollList-container">
+                <ul class="scrollList">
+                {% for graph in context.newest %}
+                <li>
+                    {% include "graph-thumb.html" %}
+                </li>
+                {% endfor %}
+                </ul>
+                <div class="fader-left"></div>
+                <div class="fader-right"></div>
+            </div>
         </div>
 
         <div class="mobile-hidden">

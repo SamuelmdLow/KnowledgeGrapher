@@ -152,6 +152,10 @@ nav > ul > li > p{
     width: -webkit-fill-available;
 }
 
+.main > h1 {
+    margin-left: 0.5em;
+}
+
 #dashboard-sidebar {
     position: sticky;
     left: 0;
@@ -228,6 +232,8 @@ input {
 .scrollList {
     list-style: none;
     padding: 0;
+    padding-left: 2em;
+    padding-right: 2em;
     overflow: auto;
     height: auto;
     white-space: nowrap;
@@ -254,6 +260,28 @@ input {
 .scrollList > li > .graph-thumb > .graph-thumb-desc > p {
     margin: 0;
     font-family: atkinson;
+}
+
+.scrollList-container {
+    position: relative;
+}
+
+.fader-left {
+    position: absolute;
+    left: -1px;
+    width: 2em;
+    height: 100%;
+    background-image: linear-gradient(to left, #efefef00, #efefef);
+    top: 0;
+}
+
+.fader-right {
+    position: absolute;
+    right: -1px;
+    width: 2em;
+    height: 100%;
+    background-image: linear-gradient(to right, #efefef00, #efefef);
+    top: 0;
 }
 
 .graph-thumb-img {
