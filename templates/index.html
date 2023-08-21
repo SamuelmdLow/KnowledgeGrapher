@@ -40,11 +40,19 @@
             </div>
         </div>
 
+        {% if current_user.is_authenticated %}
         <div class="mobile-hidden">
             <div class="activity-sidebar">
                 <h1>Activity</h1>
+                <ul>
+                    {% for activity in context.activity %}
+                    <li>{{activity[0]|safe}}</li>
+                    {% endfor %}
+                </ul>
+                <p><a href="/rss/{{context.user.rssCode}}"><i class="fa-solid fa-square-rss orange"></i> Rss feed</a></p>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 {% endblock %}

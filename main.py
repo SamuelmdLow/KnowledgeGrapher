@@ -109,8 +109,10 @@ def index():
     context["popular"] = db.getGraphsPopular()
     context["newest"] = db.getGraphs(orderby="newest")
     if flask_login.current_user.is_authenticated:
+        context["user"] = db.getUser(flask_login.current_user.id)
         context["user_recent"] = db.getGraphsByUser(flask_login.current_user.id, num=7)
         context["user_viewed"] = db.getGraphsViewedByUser(flask_login.current_user.id)
+        context["activity"] = db.getActivity(flask_login.current_user.id)
     return render_template('index.html', context=context)
 
 @app.route('/admin')
@@ -179,8 +181,41 @@ def userPage(userSlug):
         return "Page not found", 404
 
     context["user"] = user
-    context["graphs"] = db.getGraphsByUser(userSlug, privacy=2)
-    return render_template('userPage.html', context=context)
+
+    tab = request.args.get("tab", None)
+
+    if tab == "graphs":
+        context["graphs"] = db.getGraphsByUser(userSlug, privacy=2)
+        context["title"] = "All Graphs"
+        return render_template('userDir.html', context=context)
+
+    elif tab == "likes":
+        context["graphs"] = db.getUserLikes(userSlug)
+        context["title"] = "All Likes"
+        return render_template('userDir.html', context=context)
+
+    else:
+        context["graphs"] = db.getGraphsByUser(userSlug, privacy=2)[:5]
+        context["likes"] = db.getUserLikes(userSlug)[:5]
+
+        if tab == "followers":
+            context["followers"] = db.getFollowers(userSlug)
+            context["followCount"] = len(context["followers"])
+        else:
+            context["followCount"] = len(db.getFollowers(userSlug))
+
+        if tab == "following":
+            context["following"] = db.getFollowing(userSlug)
+            context["followingCount"] = len(context["following"])
+        else:
+            context["followingCount"] = len(db.getFollowing(userSlug))
+
+        if flask_login.current_user.is_authenticated:
+            context["isFollowing"] = db.checkFollowing(flask_login.current_user.id, userSlug)
+        else:
+            context["isFollowing"] = False
+
+        return render_template('userPage.html', context=context)
 
 @app.route('/<userSlug>/dir')
 @flask_login.login_required
@@ -194,7 +229,8 @@ def userDir(userSlug):
     if flask_login.current_user.id == userSlug:
         context["user"] = user
         context["graphs"] = db.getGraphsByUser(userSlug)
-        return render_template('userDir.html', context=context)
+        context["title"] = "Directory"
+        return render_template('userDir.html', context=context, edit=True)
     return "Page not found", 404
 
 @app.route('/bookmarks')
@@ -208,6 +244,7 @@ def bookmarks():
 
     context["user"] = user
     context["graphs"] = db.getUserBookmarks(user.slug)
+    context["title"] = "Bookmarks"
     return render_template('userDir.html', context=context)
 
 
@@ -261,6 +298,14 @@ def new():
 
     return redirect('/'+flask_login.current_user.id+'/'+id+"/edit")
 
+@app.route('/follow', methods=['GET', 'POST'])
+@flask_login.login_required
+def follow():
+    db = Database()
+    userSlug = request.form.get("user")
+    db.toggleFollow(flask_login.current_user.id, userSlug)
+    return '<script>document.location.href = document.referrer</script>'
+
 @app.route('/<ownerSlug>/<graphSlug>/like', methods=['GET', 'POST'])
 @flask_login.login_required
 def like(ownerSlug, graphSlug):
@@ -304,7 +349,9 @@ def saveInfo(ownerSlug, graphSlug):
                '''
     elif flask_login.current_user.id == ownerSlug:
         db = Database()
-        name = request.form.get("name")
+        from html_sanitizer import Sanitizer
+        sanitizer = Sanitizer()
+        name = sanitizer.sanitize(request.form.get("name"))
         privacy = request.form.get("privacy")
         desc = request.form.get("desc")
         wordcloud = request.form.get("wordcloud")

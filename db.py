@@ -150,6 +150,14 @@ class Database:
                 FOREIGN KEY (followed) REFERENCES users(id)
             )''')
 
+        self.cursor.execute('''
+            CREATE TABLE activity (
+                user int,
+                img VARCHAR(100),
+                text VARCHAR(500),
+                date DATETIME,
+                FOREIGN KEY (user) REFERENCES users(id)
+            )''')
 
     def createGraph(self, userSlug, graphSlug, privacy=0):
         defaultGraph = '''
@@ -388,6 +396,11 @@ class Database:
         if graph.privacy != 2 and int(privacy) == 2:
             sql = "UPDATE graphs SET lastedit = %s, pubdate = %s, name = %s, privacy = %s, description = %s WHERE user =%s AND slug = %s"
             values = (datetime.datetime.now(), datetime.datetime.now(), name, int(privacy), desc, userId, slug)
+
+            userUser = self.getUser(userSlug)
+
+            text = "🆕 " + "<a href='/" + userUser.slug + "'>" + userUser.name + "</a>" + ' published "'  + "<a href='/" + userUser.slug + "/" + slug + "'>" + name + '"</a>'
+            self.publishActivity(userSlug, text)
         else:
             sql = "UPDATE graphs SET lastedit = %s, name = %s, privacy = %s, description = %s WHERE user =%s AND slug = %s"
             values = (datetime.datetime.now(), name, int(privacy), desc, userId, slug)
@@ -438,6 +451,13 @@ class Database:
 
             self.recountLikes(graph)
 
+
+            userUser = self.getUser(userSlug)
+            ownerUser = self.getUser(ownerSlug)
+
+            text = "💜 " + "<a href='/" + userUser.slug + "'>" + userUser.name + "</a>" + ' liked "'  + "<a href='/" + ownerUser.slug + "/" + graphSlug + "'>" + graph.name + '"</a>'
+            self.publishActivity(userSlug, text)
+
             return "like"
         else:
             sql = "DELETE FROM likes WHERE user = %s AND graph = %s"
@@ -479,6 +499,30 @@ class Database:
         if result > 0:
             return True
         return False
+
+
+    def getUserLikes(self, userSlug):
+        userId = self.getUserId(userSlug)
+        if userId is None:
+            print("fail")
+            return []
+
+        sql = "SELECT graph FROM likes WHERE user=%s ORDER BY date DESC"
+        val = (userId,)
+        self.cursor.execute(sql, val)
+
+        result = self.cursor.fetchall()
+
+        i = 0
+        while i < len(result):
+            result[i] = self.getGraphById(result[i][0])
+
+            if result[i].privacy == 0:
+                result.remove(i)
+            else:
+                i = i + 1
+
+        return result
 
     def toggleBookmark(self, userSlug, ownerSlug, graphSlug):
         userId = self.getUserId(userSlug)
@@ -535,8 +579,86 @@ class Database:
         result = self.cursor.fetchall()
 
         print(result)
-        for i in range(len(result)):
+        i = 0
+        while i < len(result):
             result[i] = self.getGraphById(result[i][0])
+
+            if result[i].privacy == 0:
+                result.remove(i)
+            else:
+                i = i + 1
+
+        return result
+
+    def toggleFollow(self, follower, followed):
+        followerId = self.getUserId(follower)
+        followedId = self.getUserId(followed)
+
+        sql = "SELECT * FROM following WHERE follower =%s AND followed = %s"
+        values = (followerId, followedId)
+        self.cursor.execute(sql, values)
+
+        result = self.cursor.fetchone()
+        if result is None:
+            sql = "INSERT INTO following (follower, followed, date) VALUES (%s, %s, %s)"
+            val = (followerId, followedId, datetime.datetime.now())
+
+            self.cursor.execute(sql, val)
+            self.mydb.commit()
+
+            followerUser = self.getUser(follower)
+            followedUser = self.getUser(followed)
+
+            text = "👥 " + "<a href='/" + followerUser.slug + "'>" + followerUser.name + "</a>" + " followed "  + "<a href='/" + followedUser.slug + "'>" + followedUser.name + "</a>"
+            self.publishActivity(follower, text)
+
+            return "follow"
+        else:
+            sql = "DELETE FROM following WHERE follower =%s AND followed = %s"
+            val = (followerId, followedId)
+
+            self.cursor.execute(sql, val)
+            self.mydb.commit()
+
+            return "unfollow"
+
+    def checkFollowing(self, follower, followed):
+        followerId = self.getUserId(follower)
+        followedId = self.getUserId(followed)
+
+        sql = "SELECT * FROM following WHERE follower =%s AND followed = %s"
+        values = (followerId, followedId)
+        self.cursor.execute(sql, values)
+        result = self.cursor.fetchone()
+        if result is None:
+            return False
+        return True
+
+    def getFollowers(self, userSlug):
+        userId = self.getUserId(userSlug)
+
+        sql = "SELECT follower FROM following WHERE followed = %s ORDER By date DESC"
+        values = (userId,)
+        self.cursor.execute(sql, values)
+
+        result = self.cursor.fetchall()
+
+        for i in range(len(result)):
+            result[i] = self.getUser(self.getUserSlug(result[i][0]))
+
+        return result
+
+    def getFollowing(self, userSlug):
+        userId = self.getUserId(userSlug)
+
+        sql = "SELECT followed FROM following WHERE follower = %s ORDER By date DESC"
+        values = (userId,)
+        self.cursor.execute(sql, values)
+
+        result = self.cursor.fetchall()
+
+        for i in range(len(result)):
+            result[i] = self.getUser(self.getUserSlug(result[i][0]))
 
         return result
 
@@ -612,6 +734,51 @@ class Database:
 
         return result
 
+    def publishActivity(self, userSlug, text, image=""):
+        userId = self.getUserId(userSlug)
+
+        sql = "SELECT follower FROM following WHERE followed = %s ORDER By date DESC"
+        values = (userId,)
+        self.cursor.execute(sql, values)
+
+        followers = self.cursor.fetchall()
+
+        for follower in followers:
+            self.addActivity(follower[0], text, image)
+
+    def addActivity(self, receiver, text, image):
+
+        sql = "DELETE FROM activity WHERE user=%s AND text=%s"
+        val = (receiver, text)
+        self.cursor.execute(sql, val)
+
+        sql = "SELECT COUNT(text) FROM activity WHERE user=%s"
+        val = (receiver,)
+        self.cursor.execute(sql, val)
+        count = self.cursor.fetchone()[0]
+
+        if count > 7:
+            weekAgo = datetime.datetime.now() - datetime.timedelta(days=7)
+            sql = "DELETE FROM activity WHERE date<%s"
+            val = (weekAgo,)
+            self.cursor.execute(sql, val)
+
+        sql = "INSERT INTO activity (user, text, img, date) VALUES (%s, %s, %s, %s) "
+        val = (receiver, text, image, datetime.datetime.now())
+
+        self.cursor.execute(sql, val)
+        self.mydb.commit()
+
+    def getActivity(self, user):
+        userId = self.getUserId(user)
+        sql = "SELECT text, img FROM activity WHERE user =%s ORDER BY date DESC"
+        val = (userId,)
+
+        self.cursor.execute(sql, val)
+        result = self.cursor.fetchall()
+
+        return result
+
 def sortKey(e):
     return e[1]
 
@@ -628,3 +795,4 @@ def remakeDatabase():
 
 if __name__ == "__main__":
     db = Database()
+    db.createTables()

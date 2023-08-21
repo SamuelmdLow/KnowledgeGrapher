@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="main">
-    <h1>{{context.user.name}}</h1>
+    <h1>{{context.title}} - <a href="/{{context.user.slug}}">{{context.user.name}}</a></h1>
     <ul class="dirList">
     {% for graph in context.graphs %}
     <li>

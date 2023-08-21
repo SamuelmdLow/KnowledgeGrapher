@@ -13,10 +13,6 @@
     src: url("fonts/Adobe Garamond Pro Regular.ttf");
 }
 
-html {
-    background-color: #efefef;
-}
-
 h1, h2 {
     font-weight: 500;
     font-family: garamond;
@@ -136,6 +132,7 @@ nav > ul > li > p{
 
 .home-content {
     flex-grow: 1;
+    overflow-x: hidden;
 }
 
 .home-main-content {
@@ -143,17 +140,14 @@ nav > ul > li > p{
 }
 
 .main {
-    flex-grow: 1;
     padding: 15px;
-    max-width: 1000px;
+    width: 1100px;
+    max-width: 80%;
     margin: auto;
     margin-top: 0;
     margin-bottom: 50px;
-    width: -webkit-fill-available;
-}
-
-.main > h1 {
-    margin-left: 0.5em;
+    height: 100%;
+    overflow-x: hidden;
 }
 
 #dashboard-sidebar {
@@ -161,7 +155,7 @@ nav > ul > li > p{
     left: 0;
     top:0;
     margin: 0;
-    width: 350px;
+    width: 300px;
     height: 100vh;
     padding: 15px;
     padding-left: 30px;
@@ -264,6 +258,31 @@ input {
 
 .scrollList-container {
     position: relative;
+    margin-right: 1em;
+    margin-bottom: 3em;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  margin-left: 2em;
+  margin-right: 2em;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #aaa;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #888;
 }
 
 .fader-left {
@@ -271,7 +290,7 @@ input {
     left: -1px;
     width: 2em;
     height: 100%;
-    background-image: linear-gradient(to left, #efefef00, #efefef);
+    background-image: linear-gradient(to left, #ffffff00, #ffffff);
     top: 0;
 }
 
@@ -280,7 +299,7 @@ input {
     right: -1px;
     width: 2em;
     height: 100%;
-    background-image: linear-gradient(to right, #efefef00, #efefef);
+    background-image: linear-gradient(to right, #ffffff00, #ffffff);
     top: 0;
 }
 
@@ -314,6 +333,49 @@ input {
     display: flex;
 }
 
+.followList {
+    width: 100%;
+    border-top: 2px solid gray;
+    height: 100%;
+}
+
+.followList > ul {
+    list-style: none;
+    padding: 0;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.followList > ul > li {
+    border-top: 1px solid #eeeeee;
+    padding: 1em;
+}
+
+.exit {
+    position: relative;
+    left: -3em;
+    top: 20px;
+}
+
+.followbar > span {
+    margin-right: 1em;
+}
+
+input[type="submit" i] {
+    background: purple;
+    color: #ffffff;
+    border: #7c5695 1px solid;
+    border-radius: 9px;
+}
+
+input[type="submit" i]:hover {
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.orange {
+    color: orange;
+    font-size: large;
+}
 
 @media only screen and (max-width: 600px) {
     .content {
@@ -353,7 +415,13 @@ input {
 
 @media only screen and (min-width: 600px) {
     h1 {
-        font-size: xxx-large;
+        font-size: xx-large;
+        font-weight: 700;
+        font-family: 'garamond';
+    }
+    h2 {
+        font-size: xx-large;
+        font-family: 'garamond';
     }
 
     #dashboard-sidebar > h2 {

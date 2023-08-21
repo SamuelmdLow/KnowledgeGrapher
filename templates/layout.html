@@ -25,9 +25,9 @@
     <ul class="right">
         {% if current_user.is_authenticated %}
         <li><i class="fa-solid fa-bell"></i></li>
-        <li><a href="/bookmarks"><i class="fa-solid fa-bookmark"></i></a></li>
-        <li class="mobile-hidden"><a href="/new"><i class="fa-solid fa-plus"></i></a></li>
-        <li class="mobile-hidden"><a href="/{{ current_user.id }}/dir"><i class="fa-solid fa-folder"></i></a></li>
+        <li><a href="/bookmarks" title="Bookmarks"><i class="fa-solid fa-bookmark"></i></a></li>
+        <li class="mobile-hidden"><a href="/new" title="New Graph"><i class="fa-solid fa-plus"></i></a></li>
+        <li class="mobile-hidden"><a href="/{{ current_user.id }}/dir" title="Directory"><i class="fa-solid fa-folder"></i></a></li>
         <li class="dropdown">
             <a class="mobile-hidden" href="/{{ current_user.id }}">{{ current_user.id }}</a>
             <p class="desktop-hidden">{{ current_user.id }}</p>
@@ -63,8 +63,9 @@
 
 <div class="content">
 
+    {% if current_user.is_authenticated %}
     <div id="dashboard-sidebar" class="mobile-hidden {% block dashboard %}desktop-hidden{% endblock %}">
-    <h2>{{ current_user.id }}</h2>
+    <h1>{{ current_user.id }}</h1>
     <h2>Recently Viewed</h2>
     <ul>
         {% for graph in context.user_viewed %}
@@ -78,6 +79,7 @@
         {% endfor %}
     </ul>
     </div>
+    {% endif %}
 
     {% block content %}
     {% endblock %}

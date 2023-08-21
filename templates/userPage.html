@@ -8,6 +8,42 @@
 {% block content %}
 <div class="main">
     <h1>{{context.user.name}}</h1>
+    {% if context.user.name!=current_user.id %}
+    <form action='follow' method='POST'>
+    <input type='hidden' name='user' id='user' value="{{context.user.name}}"/>
+    <input type='submit' value='{% if context.isFollowing %}unfollow{% else %}follow{% endif %}'/>
+    </form>
+    {% endif %}
+
+    <p class="followbar">
+        <span><a href="?tab=followers">{{ context.followCount }} followers</a></span>
+        <span><a href="?tab=following">{{ context.followingCount }} following</a></span>
+    </p>
+
+{% if context.followers %}
+<div class="followList">
+    <h2><a href="/{{context.user.slug}}"><i class="fa-solid fa-circle-xmark"></i></a> Followers</h2>
+    <ul>
+        {% for user in context.followers %}
+        <li><a href="/{{user.slug}}">{{user.name}}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% elif context.following %}
+<div class="followList">
+    <h2><a href="/{{context.user.slug}}"><i class="fa-solid fa-circle-xmark"></i></a> Following</h2>
+    <ul>
+        {% for user in context.following %}
+        <li><a href="/{{user.slug}}">{{user.name}}</a></li>
+        {% endfor %}
+    </ul>
+</div>
+{% else %}
+
+    <h1><a href="?tab=graphs">Graphs</a></h1>
+    {% if context.graphs|length == 0 %}
+    <p>Nothing here...</p>
+    {% else %}
     <ul class="scrollList">
     {% for graph in context.graphs %}
     <li>
@@ -15,6 +51,21 @@
     </li>
     {% endfor %}
     </ul>
+    {% endif %}
+
+    <h1><a href="?tab=likes">Likes</a></h1>
+    {% if context.likes|length == 0 %}
+    <p>Nothing here...</p>
+    {% else %}
+    <ul class="scrollList">
+    {% for graph in context.likes %}
+    <li>
+        {% include "graph-thumb.html" %}
+    </li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+{% endif %}
 </div>
 
 {% endblock %}
