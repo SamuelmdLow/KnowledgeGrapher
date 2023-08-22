@@ -44,26 +44,37 @@
     {% if context.graphs|length == 0 %}
     <p>Nothing here...</p>
     {% else %}
-    <ul class="scrollList">
-    {% for graph in context.graphs %}
-    <li>
-        {% include "graph-thumb.html" %}
-    </li>
-    {% endfor %}
-    </ul>
+
+    <div class="scrollList-container">
+        <ul class="scrollList">
+            {% for graph in context.graphs %}
+            <li>
+                {% include "graph-thumb.html" %}
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="fader-left"></div>
+        <div class="fader-right"></div>
+    </div>
     {% endif %}
 
     <h1><a href="?tab=likes">Likes</a></h1>
     {% if context.likes|length == 0 %}
     <p>Nothing here...</p>
     {% else %}
-    <ul class="scrollList">
-    {% for graph in context.likes %}
-    <li>
-        {% include "graph-thumb.html" %}
-    </li>
-    {% endfor %}
-    </ul>
+
+
+    <div class="scrollList-container">
+        <ul class="scrollList">
+            {% for graph in context.likes %}
+            <li>
+                {% include "graph-thumb.html" %}
+            </li>
+            {% endfor %}
+        </ul>
+        <div class="fader-left"></div>
+        <div class="fader-right"></div>
+    </div>
     {% endif %}
 {% endif %}
 </div>

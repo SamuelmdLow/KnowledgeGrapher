@@ -1288,3 +1288,123 @@ function openInfo(){
     document.getElementById("info").classList.remove("hidden");
     document.getElementById("modal").classList.remove("hidden");
 }
+
+function separateChapters(chapters) {
+    var paths = [];
+    for (let c=0; c<chapters.length; c++) {
+        paths.push([chapters[c], []]);
+    }
+    paths.push([]);
+
+    for (let n=0; n<things.length; n++) {
+        var closest = null;
+        var shortest = null;
+        for (let c=0; c<chapters.length; c++) {
+            //find n's distance to c
+            var distance = getNodeDistance(things[n], chapters[c], []);
+            if (distance != null) {
+                if (shortest == null || distance < shortest) {
+                    closest = c;
+                    shortest = distance;
+                }
+            }
+        }
+
+        if (closest != null) {
+            paths[closest][1].push(things[n]);
+        }
+        else {
+            paths[paths.length-1].push(things[n]);
+        }
+    }
+
+    var path = [];
+    for (let c=0; c<chapters.length; c++) {
+        var guided = guidedNextNode(paths[c][0],paths[c][1]);
+        console.log(guided);
+        path = path.concat(guided[0]);
+    }
+    path.concat(paths[paths.length-1]);
+
+    // when showing
+    // Get direct children, if no direct children go back to parent
+    // Select node with least receiveFrom nodes
+    // repeat
+    return path
+}
+
+function getNodeDistance(a, b, met) {
+    if (a==b) {
+        return 0;
+    }
+
+    met.push(a);
+
+    if (a.sendTo.length > 0) {
+        var shortest = null;
+        for (let i=0; i<a.sendTo.length; i++) {
+            if (met.includes(a.sendTo[i].node) == false) {
+                var d = getNodeDistance(a.sendTo[i].node, b, met);
+                if (d != null) {
+                    if (shortest == null) {
+                        shortest = d;
+                    }
+                    if (d < shortest) {
+                        shortest = d;
+                    }
+                }
+            }
+        }
+        if (shortest != null) {
+            return shortest + 1
+        } else {
+            return null
+        }
+    } else {
+        return null
+    }
+}
+
+
+
+function guidedNextNode(node, candidates) {
+
+    var directReceive = [];
+
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        directReceive.push(node.receiveFrom[i].node);
+    }
+
+    var direct = [];
+
+
+    for (let i=0; i<candidates.length; i++) {
+        if (directReceive.includes(candidates[i])) {
+            direct.push(candidates[i]);
+        }
+    }
+    direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+
+    var path = [];
+    while (direct.length > 0) {
+        var newpath = []
+
+        candidates.splice(candidates.indexOf(direct[0]),1);
+        result = guidedNextNode(direct[0], candidates);
+
+        newpath = result[0];
+        candidates = result[1];
+
+        path = path.concat(newpath);
+        //console.log(direct[0]);
+        var direct = [];
+        for (let i=0; i<candidates.length; i++) {
+            if (directReceive.includes(candidates[i])) {
+                direct.push(candidates[i]);
+            }
+        }
+        direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+    }
+    path = [node].concat(path);
+    return [path, candidates];
+}
