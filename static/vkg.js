@@ -654,8 +654,9 @@ function separateChapters(chapters) {
         var guided = guidedNextNode(paths[c][0],paths[c][1]);
         path.push(guided[0]);
     }
-    path.concat(paths[paths.length-1]);
-
+    console.log(paths[paths.length-1]);
+    path = path.concat(paths[paths.length-1]);
+    console.log(path);
     // when showing
     // Get direct children, if no direct children go back to parent
     // Select node with least receiveFrom nodes
@@ -742,7 +743,7 @@ function getGuidedView(){
     var chapters = things.sort(function(a,b){return b.receiveFrom.length - a.receiveFrom.length}).slice(0,5);
 
     var path = separateChapters(chapters);
-    //console.log(path);
+    console.log(path);
     var gv = document.getElementById("guidedview");
     var text = "";
     text = "<h1>" + document.getElementById("titlename").innerHTML + "</h1><ul>";
@@ -755,36 +756,73 @@ function getGuidedView(){
     //text = text.replaceAll("\\\\)", "\\)");
     console.log(text);
     gv.innerHTML = text + "</ul>"
+
+    gv.offsetHeight;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    setTimeout(function(){
+
+    for (let i=0; i<things.length; i++) {
+        gsap.to("#" + things[i].id, {
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
+            display: "block",
+            opacity: 1
+        });
+
+        gsap.to(".line[target=" + things[i].id + "]", {
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
+            display: "block",
+            opacity: 0.2
+        });
+
+        gsap.to("#circles", {
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
+            immediateRender: false,
+            left: String(document.body.offsetWidth/3 - parseInt(document.getElementById(things[i].id).style.left.slice(0,-2))) + "px",
+            top: String(document.body.offsetHeight/3 - parseInt(document.getElementById(things[i].id).style.top.slice(0,-2))) + "px",
+        });
+
+    }
+    }, 1000);
 }
 
 function getGuidedViewNode(path, parent, heading) {
-    var node = "";
+    var text = "";
     if (path.length == 0) {
         return "";
     }
-    node = node + "<li>";
+    text = text + "<li>";
 
     if (parent != null) {
         for (let i=0; i<path[0].sendTo.length; i++) {
             if (path[0].sendTo[i].node == parent) {
-                console.log(path[0].sendTo[i].node.id);
-                node = node + "<p class='relation'>" + path[0].name + " " + path[0].sendTo[i].rel + " " + parent.name + "</p>";
+                text = text + "<p class='relation'>" + path[0].name + " " + path[0].sendTo[i].rel + " " + parent.name + "</p>";
                 break;
             }
         }
     }
 
-    node = node + "<h" + String(heading) + ">"+prepareText(path[0].name)+"</h" + String(heading) +">";
-    if (path[0].image != "null" && path[0].image != "") {
-        node = node + "<img src='" + path[0].image + "'>"
+    if (Array.isArray(path)) {
+        var node = path[0];
+    } else {
+        var node = path;
     }
-    node = node + "<p>"+prepareText(path[0].desc)+"</p></li>";
-    if (path[1].length > 0) {
-        node = node + "<ul>"
-        for (let i=0; i<path[1].length; i++) {
-            node = node + getGuidedViewNode(path[1][i], path[0], heading+1);
+
+    text = text + "<h" + String(heading) + " id='" + node.id + "-gv'>"+prepareText(node.name)+"</h" + String(heading) +">";
+    if (node.image != "null" && node.image != "") {
+        text = text + "<img src='" + node.image + "'>"
+    }
+    text = text + "<p>"+prepareText(node.desc)+"</p></li>";
+
+    if (Array.isArray(path)) {
+        if (path[1].length > 0) {
+            text = text + "<ul>"
+            for (let i=0; i<path[1].length; i++) {
+                text = text + getGuidedViewNode(path[1][i], node, heading+1);
+            }
+            text = text + "</ul>"
         }
-        node = node + "</ul>"
     }
-    return node;
+    return text;
 }
