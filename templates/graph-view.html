@@ -63,7 +63,7 @@
 
 {% block ui %}
 
-<div id="inspector" class="nodeDetails">
+<div id="inspector" class="nodeDetails gv-nodeDetails">
     <div id="inspector-info">
         <h1 id="inspector-name"></h1>
         <p id="inspector-id"></p>
@@ -74,9 +74,14 @@
     </div>
 </div>
 
+<a id="guided-view-button" class="graph-button close-guided-view-button" href="#">Toggle guided view</a>
+<div id="guidedview">
+</div>
+
 <script>
 initializeModal();
 initializeLikeButton();
 initializeBookmarkButton();
+initializeGuidedViewButton()
 </script>
 {% endblock %}

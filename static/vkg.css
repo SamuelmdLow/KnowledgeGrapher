@@ -177,6 +177,11 @@ a
     right: 25px;
 }
 
+.gv-nodeDetails {
+    right: auto;
+    left: 25px;
+}
+
 #inspector::-webkit-scrollbar {
   width: 10px;
 }
@@ -238,6 +243,69 @@ a
 #inspector-desc img {
     max-width: 75%;
     max-height: 250px;
+}
+
+.graph-button {
+    border-radius: 20px;
+    background-color: #6918A9;
+    color: white;
+    border: 2px black solid;
+    padding: 15px;
+}
+
+#guided-view-button {
+    position: absolute;
+    bottom: 20px;
+}
+
+.open-guided-view-button {
+    right: 25px;
+}
+
+.close-guided-view-button {
+    right: 635px
+}
+
+#guidedview {
+    background: white;
+    width: 500px;
+    bottom: 0;
+    top: 35px;
+    position: absolute;
+    right: 0;
+    border-left: 2px solid;
+    overflow: auto;
+    padding: 2em;
+    padding-right: 5em;
+    padding-top: 2em;
+}
+
+#guidedview ul {
+    list-style: none;
+    margin-left: 10px;
+    padding: 10px;
+    border-left: 1px solid #0000003b;
+}
+
+#guidedview > ul {
+    list-style: decimal;
+    padding-left: 0;
+    border: none;
+}
+
+#guidedview li {
+    padding: 1em;
+    border-bottom: 1px solid;
+}
+
+#guidedview img {
+    max-width: 100%;
+}
+
+.relation {
+ border-left: solid 1px red;
+ color: red;
+ padding-left: 1em;
 }
 
 @media only screen and (max-width: 600px) {

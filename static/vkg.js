@@ -12,6 +12,9 @@ function onload()
     window.setInterval(staticUpdate, 1);
     document.getElementById("graph").setAttribute("ondblclick", "document.getElementById('inspector').style.display = 'none'");
     document.getElementById("saved").remove();
+
+    getGuidedView();
+    MathJax.typesetPromise()
 }
 
 function staticUpdate()
@@ -605,4 +608,183 @@ function initializeBookmarkButton() {
        event.preventDefault();
        bookmarkGraph()
    });
+}
+
+function initializeGuidedViewButton() {
+    document.getElementById("guided-view-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       document.getElementById("guidedview").classList.toggle("hidden");
+       document.getElementById("guided-view-button").classList.toggle("close-guided-view-button");
+       document.getElementById("guided-view-button").classList.toggle("open-guided-view-button");
+       document.getElementById("inspector").classList.toggle("gv-nodeDetails");
+   });
+}
+
+function separateChapters(chapters) {
+    var paths = [];
+    for (let c=0; c<chapters.length; c++) {
+        paths.push([chapters[c], []]);
+    }
+    paths.push([]);
+
+    for (let n=0; n<things.length; n++) {
+        var closest = null;
+        var shortest = null;
+        for (let c=0; c<chapters.length; c++) {
+            //find n's distance to c
+            var distance = getNodeDistance(things[n], chapters[c], []);
+            if (distance != null) {
+                if (shortest == null || distance < shortest) {
+                    closest = c;
+                    shortest = distance;
+                }
+            }
+        }
+
+        if (closest != null) {
+            paths[closest][1].push(things[n]);
+        }
+        else {
+            paths[paths.length-1].push(things[n]);
+        }
+    }
+    console.log(paths);
+    var path = [];
+    for (let c=0; c<chapters.length; c++) {
+        var guided = guidedNextNode(paths[c][0],paths[c][1]);
+        path.push(guided[0]);
+    }
+    path.concat(paths[paths.length-1]);
+
+    // when showing
+    // Get direct children, if no direct children go back to parent
+    // Select node with least receiveFrom nodes
+    // repeat
+    return path
+}
+
+function getNodeDistance(a, b, met) {
+    if (a==b) {
+        return 0;
+    }
+
+    met.push(a);
+
+    if (a.sendTo.length > 0) {
+        var shortest = null;
+        for (let i=0; i<a.sendTo.length; i++) {
+            if (met.includes(a.sendTo[i].node) == false) {
+                var d = getNodeDistance(a.sendTo[i].node, b, met);
+                if (d != null) {
+                    if (shortest == null) {
+                        shortest = d;
+                    }
+                    if (d < shortest) {
+                        shortest = d;
+                    }
+                }
+            }
+        }
+        if (shortest != null) {
+            return shortest + 1
+        } else {
+            return null
+        }
+    } else {
+        return null
+    }
+}
+
+function guidedNextNode(node, candidates) {
+
+    var directReceive = [];
+
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        directReceive.push(node.receiveFrom[i].node);
+    }
+
+    var direct = [];
+
+
+    for (let i=0; i<candidates.length; i++) {
+        if (directReceive.includes(candidates[i])) {
+            direct.push(candidates[i]);
+        }
+    }
+    direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+
+    var path = [];
+    while (direct.length > 0) {
+        var newpath = []
+
+        candidates.splice(candidates.indexOf(direct[0]),1);
+        result = guidedNextNode(direct[0], candidates);
+
+        newpath = result[0];
+        candidates = result[1];
+
+        path.push(newpath);
+        //console.log(direct[0]);
+        var direct = [];
+        for (let i=0; i<candidates.length; i++) {
+            if (directReceive.includes(candidates[i])) {
+                direct.push(candidates[i]);
+            }
+        }
+        direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+    }
+    path = [node, path];
+    return [path, candidates];
+}
+
+function getGuidedView(){
+
+    var chapters = things.sort(function(a,b){return b.receiveFrom.length - a.receiveFrom.length}).slice(0,5);
+
+    var path = separateChapters(chapters);
+    //console.log(path);
+    var gv = document.getElementById("guidedview");
+    var text = "";
+    text = "<h1>" + document.getElementById("titlename").innerHTML + "</h1><ul>";
+
+    for (let i=0; i<path.length; i++) {
+        text = text + getGuidedViewNode(path[i], null, 2);
+    }
+
+    //text = text.replaceAll("\\\\(", "\\(");
+    //text = text.replaceAll("\\\\)", "\\)");
+    console.log(text);
+    gv.innerHTML = text + "</ul>"
+}
+
+function getGuidedViewNode(path, parent, heading) {
+    var node = "";
+    if (path.length == 0) {
+        return "";
+    }
+    node = node + "<li>";
+
+    if (parent != null) {
+        for (let i=0; i<path[0].sendTo.length; i++) {
+            if (path[0].sendTo[i].node == parent) {
+                console.log(path[0].sendTo[i].node.id);
+                node = node + "<p class='relation'>" + path[0].name + " " + path[0].sendTo[i].rel + " " + parent.name + "</p>";
+                break;
+            }
+        }
+    }
+
+    node = node + "<h" + String(heading) + ">"+prepareText(path[0].name)+"</h" + String(heading) +">";
+    if (path[0].image != "null" && path[0].image != "") {
+        node = node + "<img src='" + path[0].image + "'>"
+    }
+    node = node + "<p>"+prepareText(path[0].desc)+"</p></li>";
+    if (path[1].length > 0) {
+        node = node + "<ul>"
+        for (let i=0; i<path[1].length; i++) {
+            node = node + getGuidedViewNode(path[1][i], path[0], heading+1);
+        }
+        node = node + "</ul>"
+    }
+    return node;
 }

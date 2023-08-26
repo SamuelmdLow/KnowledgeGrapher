@@ -47,7 +47,7 @@
         </a></li>
         {% block left_nav %}{% endblock%}
     </ul>
-    <p class="mid mobile-hidden">{% block nav_mid %}{% endblock %}</p>
+    <p class="mid mobile-hidden" id="titlename">{% block nav_mid %}{% endblock %}</p>
     <ul class="right">
         {% block right_nav %}{% endblock %}
         {% if current_user.is_authenticated %}
