@@ -1,0 +1,22 @@
+{% extends "admin-layout.html" %}
+{% block title %}Admin Brambli{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="main">
+    <h1>Subjects</h1>
+
+    <form action='addSubject' method='POST'>
+        <input type='text' name='name' id='name' placeholder='name'/>
+        <input type='submit' name='submit'/>
+    </form>
+
+    {% for subject in context.subjects %}
+    <h2>{{subject.name}}</h2>
+    {% endfor %}
+
+</div>
+{% endblock %}

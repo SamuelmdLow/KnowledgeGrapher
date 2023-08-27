@@ -1,37 +1,26 @@
 var old = "";
+var things = [];
+var markup = "";
 
 function onload()
 {
     var saved = document.getElementById("saved").value;
-    setup(processInput(saved));
+    markup = saved;
+    console.log("type 'markup' to get the markup for this graph");
+    things = processInput(saved);
+    setup(things);
     window.setInterval(staticUpdate, 1);
+    document.getElementById("graph").setAttribute("ondblclick", "document.getElementById('inspector').style.display = 'none'");
+    document.getElementById("saved").remove();
+
+    getGuidedView();
+    MathJax.typesetPromise()
 }
 
 function staticUpdate()
 {
     panning();
     placein();
-}
-
-function convertToMarkUp(file)
-{
-    var things = processInput(file);
-
-    var complete = "";
-
-    for(let i=0; i<things.length; i++)
-    {
-        var thing = things[i];
-        complete = complete + thing.id + "{\nname:" + thing.name + "\nimage:" + thing.image + "\ndesc:" + thing.desc +"\n";
-        for(let x=0; x<thing.relations.length; x++)
-        {
-            complete = complete + thing.relations[x][0] + " -> " + thing.relations[x][1] + "\n";
-        }
-        complete = complete + "\n}\n";
-    }
-
-    return complete;
-
 }
 
 function uninspect(that)
@@ -42,15 +31,27 @@ function uninspect(that)
         var line = that.children[i];
         if(line.classList.contains("line"))
         {
-            line.classList.toggle("inspected-line");
+            line.classList.remove("inspected-line");
         }
     }
 
     document.getElementById("graph").setAttribute("inspected", "none");
 }
 
+function cleanText(plainText) {
+    return DOMPurify.sanitize(plainText, {USE_PROFILES: {html: true}});
+}
+
+function prepareText(plainText)
+{
+    let clean = DOMPurify.sanitize(plainText, {USE_PROFILES: {html: true}});
+    return marked.parse(clean);
+}
+
 function showInspector(that)
 {
+    var thing = getThingsFromId(that.id);
+
     var graph = document.getElementById("graph");
     if(graph.getAttribute("inspected")!="none")
     {
@@ -59,33 +60,44 @@ function showInspector(that)
     that.classList.toggle("inspected-circle");
     graph.setAttribute("inspected", that.id);
     var inspector = document.getElementById("inspector");
-    document.getElementById("inspector-name").innerHTML = that.getAttribute("name");
+    inspector.style.display = "block";
+    document.getElementById("inspector-name").innerHTML = cleanText(thing.name);
     document.getElementById("inspector-id").innerHTML = that.id;
-    document.getElementById("inspector-image").src = that.style.backgroundImage.slice(5,-2);
-    document.getElementById("inspector-desc").innerHTML = that.getAttribute("desc");
+    if (thing.image != "null") {
+        document.getElementById("inspector-image").style.display = "block";
+        document.getElementById("inspector-image").src = thing.image;
+    } else {
+        document.getElementById("inspector-image").style.display = "none";
+    }
+    document.getElementById("inspector-desc").innerHTML = prepareText(thing.desc);
+
+
     var rels = document.getElementById("inspector-rels");
     rels.innerHTML = '';
+
     for(let i=0; i<that.children.length; i++)
     {
         var line = that.children[i];
         if(line.classList.contains("line"))
         {
-            line.classList.toggle("inspected-line");
-            var relations = line.getAttribute("rel").split(",");
-            for(let x=0; x<relations.length; x++)
-            {
-                var li = document.createElement("li");
-                li.innerHTML = "<p>"+that.getAttribute("name") + " <strong>" + relations[x] + "</strong> " + document.getElementById(line.getAttribute("target")).getAttribute("name") + "</p>";
-                rels.appendChild(li);
-            }
+            line.classList.add("inspected-line");
         }
     }
-    MathJax.typesetPromise();
+
+    for(let i=0; i<thing.sendTo.length; i++)
+    {
+        var receiver = thing.sendTo[i].node;
+        var li = document.createElement("li");
+        li.innerHTML = "<p>"+ thing.name + " <strong>" + thing.sendTo[i].rel + "</strong> " + receiver.name + "</p>";
+        rels.appendChild(li);
+    }
+    setTimeout(MathJax.typesetPromise(), 1);
 }
 
 function setup(things)
 {
     var graph = document.getElementById("graph");
+    graph.addEventListener("contextmenu", (e) => {e.preventDefault()});
     var scale = parseFloat(graph.getAttribute("scale"));
     for(let i=0; i<things.length; i++)
     {
@@ -93,33 +105,31 @@ function setup(things)
         const circle = document.createElement("DIV");
         circle.classList.add("circle");
         circle.id = thing.id;
-        circle.setAttribute("x", thing.x);
-        circle.setAttribute("y", thing.y);
-        circle.setAttribute("velx", 0);
-        circle.setAttribute("vely", 0);
         circle.setAttribute("onclick", "showInspector(this)");
-        circle.setAttribute("mass", thing.mass);
-        circle.setAttribute("name", thing.name);
-        circle.setAttribute("desc", thing.desc);
         circle.style.backgroundImage = "url('"+thing.image+"')";
-        if(thing.image!="null")
-        {
-            circle.style.color = "white";
-            circle.style.textShadow = "2px 2px 4px #000000";
-        }
+
+        circle.addEventListener("wheel", function(e) {
+            initializeZooming(e);
+        },{passive:false});
 
         const name = document.createElement("p");
         name.innerHTML = thing.name;
         name.classList.add("name");
+
+        if(thing.image!="null")
+        {
+            name.classList.add("imageText");
+        }
+
         name.style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
 
         circle.appendChild(name);
 
         var friends = [];
         var attracts = [];
-        for(let x=0;x<thing.relations.length; x++)
+        for(let x=0;x<thing.sendTo.length; x++)
         {
-            var themId = thing.relations[x][1];
+            var themId = thing.sendTo[x].node.id;
             attracts.push(themId);
 
             if(friends.includes(themId) == false)
@@ -128,7 +138,6 @@ function setup(things)
                 var line = document.createElement("DIV");
                 line.classList.add("line");
                 line.setAttribute("target", themId);
-                line.setAttribute("rel",thing.relations[x][0])
                 line.setAttribute("count", 1);
 
                 circle.appendChild(line);
@@ -140,7 +149,6 @@ function setup(things)
                     if(circle.children[n].getAttribute("target")==themId)
                     {
                         var thick = parseInt(circle.children[n].getAttribute("count"))+1;
-                        line.setAttribute("rel", line.getAttribute("rel") + "," + thing.relations[x][0])
                         circle.children[n].setAttribute("count",thick);
                         break;
                     }
@@ -148,35 +156,31 @@ function setup(things)
             }
 
         }
-        circle.setAttribute("relations", attracts.join(","))
-
-        graph.appendChild(circle);
+        var circles = document.getElementById("circles");
+        circles.appendChild(circle);
     }
 
-    var children = graph.children;
-    for(let a=0; a<children.length; a++)
+    for(let a=0; a<things.length; a++)
     {
-        var thingA = children[a];
-        thingA.setAttribute("mass",1);
-        for(let b=0; b<children.length; b++)
+        var thingA = things[a];
+        thingA.mass = 1;
+        for(let b=0; b<things.length; b++)
         {
             if (a != b)
             {
-                var thingB = children[b];
-                var attractB = thingB.getAttribute("relations").split(",");
-                for(let i=0; i<attractB.length; i++)
+                var thingB = things[b];
+                for(let i=0; i<thingB.sendTo.length; i++)
                 {
-                    if(attractB[i]==thingA.id)
+                    if(thingB.sendTo[i].node==thingA)
                     {
-                        thingA.setAttribute("mass", parseFloat(thingA.getAttribute("mass"))+0.5);
+                        thingA.mass = thingA.mass + 0.5;
                     }
                 }
             }
         }
-        thingA.style.width = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
-        thingA.style.height = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
+        document.getElementById(thingA.id).style.width = String(2*scale*parseFloat(thingA.mass))+"px";
+        document.getElementById(thingA.id).style.height = String(2*scale*parseFloat(thingA.mass))+"px";
     }
-    //MathJax.typesetPromise();
 }
 
 function panning()
@@ -195,129 +199,37 @@ function panning()
 
         graph.setAttribute("panx", panx);
         graph.setAttribute("pany", pany);
+
+        graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+        graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
     }
 }
 
-
-
-function placein()
-{
-    var graph = document.getElementById("graph");
-    var scale = parseFloat(graph.getAttribute("scale"));
-    var panx = parseFloat(graph.getAttribute("panx"));
-    var pany = parseFloat(graph.getAttribute("pany"));
-    var children = graph.children;
-
-    for (let i=0; i<children.length; i++)
-    {
-        thingA = children[i]
-
-        var mass = parseFloat(thingA.getAttribute("mass"));
-        var x = parseFloat(thingA.getAttribute("x"));
-        var y = parseFloat(thingA.getAttribute("y"));
-
-        thingA.children[0].style.fontSize = String(Math.ceil(scale*mass/4)) + "px";
-
-        thingA.style.width = String(2*scale*mass)+"px";
-        thingA.style.height = String(2*scale*mass)+"px";
-
-        thingA.style.left = String(panx + scale*x - scale*mass) + "px";
-        thingA.style.top = String(pany + scale*y - scale*mass) + "px";
-        thingA.style.borderRadius = String(scale*mass*2) + "px";
-    }
-
-    for (let a=0; a<children.length; a++)
-    {
-        var thingA = children[a];
-        var x = parseFloat(thingA.getAttribute("x"));
-        var y = parseFloat(thingA.getAttribute("y"));
-
-        for(let b=0; b<thingA.children.length; b++)
-        {
-            var line = thingA.children[b];
-            if(line.classList.contains("line"))
-            {
-                var thingB = document.getElementById(line.getAttribute("target"));
-                if (thingB!= null)
-                {
-                    var dX = parseFloat(thingB.getAttribute("x")) - x;
-                    var dY = parseFloat(thingB.getAttribute("y")) - y;
-
-                    var d = Math.sqrt((dX*dX) + (dY*dY));
-                    var thick = parseInt(line.getAttribute("count"));
-
-                    var m = parseFloat(thingA.getAttribute("mass"));
-                    var mb = parseFloat(thingB.getAttribute("mass"));
-
-                    var length = d-m-mb;
-                    var xoff = (dX/d)*(m+length/2);
-                    var yoff = (dY/d)*(m+length/2);
-
-                    line.style.transform = "rotate(0deg)";
-                    line.style.width = String(length*scale)+"px";
-                    line.style.height = "0.1px";
-                    line.style.left = String((m-length/2)*scale) + "px";
-                    line.style.top = String((m)*scale) + "px";
-                    line.style.transform = "rotate(" + String((180/Math.PI)*Math.atan(dY/dX)) + "deg)";
-                    line.style.left = String((m-length/2+xoff)*scale) + "px";
-                    line.style.top = String((m+yoff)*scale) + "px";
-                    line.style.height = String(thick*scale*0.1)+"px";
-                }
-            }
-        }
-    }
-}
-
-function Thing(id, name, image, desc, relations, mass, x, y)
+function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y)
 {
     this.id = id;
     this.name = name;
     this.image = image;
     this.desc = desc;
-    this.relations = relations;
+    this.sendTo = sendTo;
+    this.receiveFrom = receiveFrom;
     this.mass = mass;
     this.x = x;
     this.y = y;
+    this.velx = 0;
+    this.vely = 0;
 }
 
-
-function update()
+function Relation(rel, node)
 {
-    var input = document.getElementById("input").value;
-    if (old != input)
-    {
-        old = input;
-        redraw();
-    }
-
-    physics();
-
-    var graph = document.getElementById("graph");
-    var savebutton = document.getElementById("saveButton");
-    if(parseFloat(graph.getAttribute("energy")) > 0.0001)
-    {
-        if(graph.getAttribute("saved") == "1")
-        {
-            graph.setAttribute("saved", 0);
-            savebutton.innerHTML = "Not Saved";
-            savebutton.style.backgroundColor = "#cfcfcf";
-        }
-    }
-    else
-    {
-        if(graph.getAttribute("saved") == "0")
-        {
-            saveGraph();
-            graph.setAttribute("saved", 1);
-            savebutton.innerHTML = "Saved";
-            savebutton.style.backgroundColor = "#98bdfb";
-        }
-    }
+    this.rel = rel;
+    this.node = node;
 }
 
 function processInput(input)
 {
     var things = []
+    input = input + "\n";
     input = input.split("}\n");
     input.pop();
 
@@ -364,8 +276,12 @@ function processInput(input)
                 {
                     var xstr = thing.slice(thing.indexOf("x:"));
                     var xstr = xstr.slice(0, xstr.indexOf("\n"));
-                    var x = parseFloat(xstr.slice(2).trim());
                     thing = thing.replace(xstr, "");
+                    if (xstr=="NaN") {
+                        var x = null
+                    } else {
+                        var x = parseFloat(xstr.slice(2).trim());
+                    }
                 }
                 else
                 {
@@ -376,8 +292,12 @@ function processInput(input)
                 {
                     var ystr = thing.slice(thing.indexOf("y:"));
                     var ystr = ystr.slice(0, ystr.indexOf("\n"));
-                    var y = parseFloat(ystr.slice(2).trim());
                     thing = thing.replace(ystr, "");
+                    if (ystr=="NaN") {
+                        y = null
+                    } else {
+                        var y = parseFloat(ystr.slice(2).trim());
+                    }
                 }
                 else
                 {
@@ -387,10 +307,15 @@ function processInput(input)
                 if(thing.includes("desc:"))
                 {
                     var desc = thing.slice(thing.indexOf("desc:")+5);
-                    desc = desc.slice(0, desc.indexOf("\n")).trim();
+                    var descSep = "\n---\n";
+                    if(desc.includes(descSep)){
+                        desc = desc.slice(0, desc.indexOf(descSep)).trim();
+                    } else {
+                        desc = desc.slice(0, desc.indexOf("\n")).trim();
+                    }
 
                     thing = thing.replace("desc:", "");
-                    thing = thing.replace(desc, "");
+                    thing = thing.replace(desc+descSep, "");
                 }
                 else
                 {
@@ -399,454 +324,66 @@ function processInput(input)
 
                 while(thing.includes("\n\n"))
                 {
-                    thing = thing.replace("\n\n", "");
+                    thing = thing.replace("\n\n", "\n");
                 }
 
                 var rawrelations = thing.split("\n");
 
                 var relations = [];
 
-                for(let x = 0; x<rawrelations.length; x++)
+                for(let n = 0; n<rawrelations.length; n++)
                 {
-                    if (rawrelations[x].includes("->") && rawrelations[x].length > 1)
+                    if (rawrelations[n].includes("->") && rawrelations[n].length > 1)
                     {
-                        var rel = rawrelations[x].split("->");
-                        relations.push([rel[0].trim(), rel[1].trim()]);
+                        var rel = rawrelations[n].split("->");
+                        relations.push(new Relation(rel[0].trim(), rel[1].trim()));
                     }
                 }
 
-                things.push(new Thing(id, name, image, desc, relations, 1,x,y));
+                oldThing = getThingsFromId(id);
+                if(oldThing != null) {
+                    x = oldThing.x;
+                    y = oldThing.y;
+                }
+
+                things.push(new Thing(id, name, image, desc, relations,[], 1, x, y));
             }
         }
     }
 
-    return things
+    for (let b=0; b<things.length; b++){
+        //alert(thing.sendTo);
+        var newSendTo = [];
+        for (let a=0; a< things[b].sendTo.length; a++) {
+            var connection = null;
+            for(let i=0; i < things.length; i++) {
+                if(things[i].id == things[b].sendTo[a].node) {
+                    connection = things[i];
+                    break;
+                }
+            }
+            if (connection != null) {
+                newSendTo.push(new Relation(things[b].sendTo[a].rel, connection));
+                connection.receiveFrom.push(new Relation(things[b].sendTo[a].rel, things[b]));
+            }
+        }
+
+        things[b].sendTo = newSendTo;
+
+    }
+
+    return things;
 }
 
-function trickleUp(node, worklist, visited)
-{
-    //oops
-}
+function getThingsFromId(id) {
 
-function redraw()
-{
-    things = processInput(document.getElementById("input").value);
-    var graph = document.getElementById("graph");
-    var scale = parseFloat(graph.getAttribute("scale"));
-
-    var children = graph.children;
-    var existing = [];
-
-    for (let i=0; i<children.length; i++)
-    {
-        existing.push(children[i].id);
-    }
-
-    for (let i=0; i<things.length; i++)
-    {
-        thing = things[i];
-
-        if (existing.includes(thing.id))
-        {
-            var circle = document.getElementById(thing.id);
-            circle.children[0].innerHTML = thing.name;
-            var mass = parseFloat(circle.getAttribute("mass"));
-            circle.children[0].style.fontSize = String(Math.ceil(scale*mass/4)) + "px";
-            var lines = circle.children;
-
-            for(let n=1; n<lines.length; n++)
-            {
-                lines[n].setAttribute("count",0);
-            }
-
-            var attracts = [];
-            for(let x=0;x<thing.relations.length; x++)
-            {
-                attracts.push(thing.relations[x][1]);
-
-                var lineexists = false;
-                for(let n=1; n<lines.length; n++)
-                {
-                    if(lines[n].getAttribute("target")==thing.relations[x][1])
-                    {
-                        lines[n].setAttribute("count",parseInt(lines[n].getAttribute("count"))+1);
-                        lineexists = true;
-                    }
-                }
-
-                if(lineexists==false)
-                {
-                    var line = document.createElement("DIV");
-                    line.classList.add("line");
-                    line.setAttribute("target", thing.relations[x][1]);
-                    line.setAttribute("count", 1);
-                    circle.appendChild(line);
-                }
-            }
-
-            for(let n=1; n<lines.length; n++)
-            {
-                if(lines[n].getAttribute("count")=="0")
-                {
-                    lines[n].remove();
-                }
-            }
-
-            circle.setAttribute("relations", attracts.join(","))
-            circle.style.backgroundImage = "url('"+thing.image+"')";
-            existing.splice(existing.indexOf(thing.id),1);
-
-
-        }
-        else
-        {
-
-            const circle = document.createElement("DIV");
-            circle.classList.add("circle");
-            circle.id = thing.id;
-            if(thing.x!=null)
-            {
-                circle.setAttribute("x", thing.x);
-            }
-            else
-            {
-                circle.setAttribute("x", Math.random());
-            }
-
-            if(thing.y!=null)
-            {
-                circle.setAttribute("y", thing.y);
-            }
-            else
-            {
-                circle.setAttribute("y", Math.random());
-            }
-            circle.setAttribute("velx", 0);
-            circle.setAttribute("vely", 0);
-            circle.setAttribute("onmousedown", "this.setAttribute('clicked', 1);");
-            circle.setAttribute("onmouseup", "releasegrab(this);");
-            circle.setAttribute("mass", thing.mass);
-            circle.style.backgroundImage = "url('"+thing.image+"')";
-
-            const name = document.createElement("p");
-            name.innerHTML = thing.name;
-            name.classList.add("name");
-            name.style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
-
-            circle.appendChild(name);
-
-            var friends = [];
-            var attracts = [];
-            for(let x=0;x<thing.relations.length; x++)
-            {
-                var themId = thing.relations[x][1];
-                attracts.push(themId);
-
-                if(friends.includes(themId) == false)
-                {
-                    friends.push(themId);
-                    var line = document.createElement("DIV");
-                    line.classList.add("line");
-                    line.setAttribute("target", themId);
-                    line.setAttribute("count", 1);
-
-                    circle.appendChild(line);
-                }
-                else
-                {
-                    for(let n=0;n<circle.children.length;n++)
-                    {
-                        if(circle.children[n].getAttribute("target")==themId)
-                        {
-                            var thick = parseInt(circle.children[n].getAttribute("count"))+1;
-                            circle.children[n].setAttribute("count",thick);
-                            break;
-                        }
-                    }
-                }
-
-            }
-            circle.setAttribute("relations", attracts.join(","))
-
-            graph.appendChild(circle);
+    for(let i=0; i < things.length; i++) {
+        if(things[i].id == id) {
+            return things[i];
         }
     }
 
-    for (let i=0;i<existing.length; i++)
-    {
-        document.getElementById(existing[i]).remove();
-    }
-
-    var graph = document.getElementById("graph");
-    var children = graph.children;
-
-    for(let a=0; a<children.length; a++)
-    {
-        var thingA = children[a];
-        thingA.setAttribute("mass",1);
-        for(let b=0; b<children.length; b++)
-        {
-            if (a != b)
-            {
-                var thingB = children[b];
-                var attractB = thingB.getAttribute("relations").split(",");
-                for(let i=0; i<attractB.length; i++)
-                {
-                    if(attractB[i]==thingA.id)
-                    {
-                        thingA.setAttribute("mass", parseFloat(thingA.getAttribute("mass"))+1);
-                    }
-                }
-            }
-        }
-        thingA.style.width = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
-        thingA.style.height = String(2*scale*parseFloat(thingA.getAttribute("mass")))+"px";
-    }
-}
-
-function physics()
-{
-    var graph = document.getElementById("graph");
-    var children = graph.children;
-    var friction = parseFloat(graph.getAttribute("energy"));
-
-    var repel = parseFloat(graph.getAttribute("repel"));
-    var attract = parseFloat(graph.getAttribute("attract"));
-
-    var scale = parseFloat(graph.getAttribute("scale"));
-    var panx = parseFloat(graph.getAttribute("panx"));
-    var pany = parseFloat(graph.getAttribute("pany"));
-
-    var commands = []
-
-    var grabbed = false;
-
-    var energy = 0;
-
-    for(let a=0; a<children.length; a++)
-    {
-        var thingA = children[a];
-        var x = parseFloat(thingA.getAttribute("x"));
-        var y = parseFloat(thingA.getAttribute("y"));
-        var accX = 0;
-        var accY = 0;
-        var m = parseFloat(thingA.getAttribute("mass"));
-
-        var attracts = thingA.getAttribute("relations").split(",");
-
-        if(thingA.getAttribute("clicked")=="1")
-        {
-            var body = document.getElementsByTagName("BODY")[0];
-            x = (parseInt(body.getAttribute("x")) - panx)/ scale;
-            y = (parseInt(body.getAttribute("y")) - pany)/ scale;
-
-            commands.push([thingA,x,y,0,0]);
-            grabbed =  true;
-        }
-        else
-        {
-            for(let b=0; b<children.length; b++)
-            {
-                if (a != b)
-                {
-                    var thingB = children[b];
-
-                    var mb = parseFloat(thingB.getAttribute("mass"));
-
-                    var odX = parseFloat(thingB.getAttribute("x")) - x;
-                    var odY = parseFloat(thingB.getAttribute("y")) - y;
-                    var od = Math.sqrt((odX * odX) + (odY * odY));
-
-                    var barrier = (parseFloat(thingA.getAttribute("mass")) + parseFloat(thingB.getAttribute("mass")));
-
-                    var d = od - barrier;
-
-                    if (od!=0)
-                    {
-                        var dX = odX * (Math.abs(d)/od);
-                        var dY = odY * (Math.abs(d)/od);
-                    }
-                    else
-                    {
-                        var dX = 0;
-                        var dY = 0;
-                    }
-                    if (0>= d)
-                    {
-                        var col = [thingA.id,thingB.id].sort();
-                        if(odX==0)
-                        {
-                            accX = accX - (100*parseFloat(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
-                        }
-                        else
-                        {
-                            accX = accX - 20*(repel*(mb/od)*(odX/od));
-                        }
-
-                        if(odY==0)
-                        {
-                            accY = accY - (100*parseFloat(thingB.getAttribute("mass"))*(Math.round(Math.random()) -0.5))*m;
-                        }
-                        else
-                        {
-                            accY = accY - 20*(repel*(mb/od)*(odY/od));
-                        }
-                    }
-                    else
-                    {
-
-                        accX = accX - (repel*(mb/d)*(dX/d));
-                        accY = accY - (repel*(mb/d)*(dY/d));
-                    }
-
-                    //attracts
-                    var count = 0;
-                    for(let i=0; i<attracts.length; i++)
-                    {
-                        if(attracts[i]==thingB.id)
-                        {
-                            count=count+1;
-                        }
-                    }
-
-                    var attractB = thingB.getAttribute("relations").split(",");
-                    for(let i=0; i<attractB.length; i++)
-                    {
-                        if(attractB[i]==thingA.id)
-                        {
-                            count=count+1;
-                        }
-                    }
-
-                    var accX = accX + (count*(attract*dX))/m;
-                    var accY = accY + (count*(attract*dY))/m;
-                }
-            }
-
-            var velx = parseFloat(thingA.getAttribute("velx")) + accX;
-            var vely = parseFloat(thingA.getAttribute("vely")) + accY;
-
-            var vel = Math.sqrt((velx*velx) + (vely*vely));
-
-            if(friction > 0.0001)
-            {
-                if (Math.abs(vel) < friction || vel==0)
-                {
-                    var fricvel = 0;
-                }
-                else
-                {
-                    var fricvel = vel - friction*(vel/Math.abs(vel));
-                }
-            }
-            else
-            {
-                if (Math.abs(vel) < 0.0001 || vel==0)
-                {
-                    var fricvel = 0;
-                }
-                else
-                {
-                    var fricvel = vel - 0.0001*(vel/Math.abs(vel));
-                }
-            }
-
-            energy = energy + 0.5 * m * fricvel * fricvel;
-
-            if (vel==0)
-            {
-                velx = 0;
-                vely = 0;
-            }
-            else
-            {
-                velx = velx * (fricvel/vel);
-                vely = vely * (fricvel/vel);
-                x = x + velx;
-                y = y + vely;
-            }
-
-            commands.push([thingA,x,y,velx,vely]);
-        }
-
-    }
-
-    graph.setAttribute("energy", energy);
-
-    if(graph.getAttribute("anchor")=="1" && grabbed==false)
-    {
-        var body = document.getElementsByTagName("BODY")[0];
-        panx = panx + (parseInt(body.getAttribute("x")) - parseInt(graph.getAttribute("anchorx")));
-        pany = pany + (parseInt(body.getAttribute("y")) - parseInt(graph.getAttribute("anchory")));
-
-        graph.setAttribute("anchorx", body.getAttribute("x"));
-        graph.setAttribute("anchory", body.getAttribute("y"));
-
-        graph.setAttribute("panx", panx);
-        graph.setAttribute("pany", pany);
-    }
-
-    for (let i=0; i<commands.length; i++)
-    {
-        thingA = commands[i][0]
-
-        var mass = parseFloat(thingA.getAttribute("mass"));
-        thingA.setAttribute("x", commands[i][1]);
-        thingA.setAttribute("y", commands[i][2]);
-
-        thingA.setAttribute("velx", commands[i][3]);
-        thingA.setAttribute("vely", commands[i][4]);
-
-        thingA.children[0].style.fontSize = String(Math.ceil(scale*mass/4)) + "px";
-
-        thingA.style.width = String(2*scale*mass)+"px";
-        thingA.style.height = String(2*scale*mass)+"px";
-
-        thingA.style.left = String(panx + scale*commands[i][1] - scale*mass) + "px";
-        thingA.style.top = String(pany + scale*commands[i][2] - scale*mass) + "px";
-        thingA.style.borderRadius = String(scale*mass*2) + "px";
-    }
-
-    for (let a=0; a<children.length; a++)
-    {
-        var thingA = children[a];
-        var x = parseFloat(thingA.getAttribute("x"));
-        var y = parseFloat(thingA.getAttribute("y"));
-
-        for(let b=0; b<thingA.children.length; b++)
-        {
-            var line = thingA.children[b];
-            if(line.classList.contains("line"))
-            {
-                var thingB = document.getElementById(line.getAttribute("target"));
-                if (thingB!= null)
-                {
-                    var dX = parseFloat(thingB.getAttribute("x")) - x;
-                    var dY = parseFloat(thingB.getAttribute("y")) - y;
-
-                    var d = Math.sqrt((dX*dX) + (dY*dY));
-                    var thick = parseInt(line.getAttribute("count"));
-
-                    var m = parseFloat(thingA.getAttribute("mass"));
-                    var mb = parseFloat(thingB.getAttribute("mass"));
-
-                    var length = d-m-mb;
-                    var xoff = (dX/d)*(m+length/2);
-                    var yoff = (dY/d)*(m+length/2);
-
-                    line.style.transform = "rotate(0deg)";
-                    line.style.width = String(length*scale)+"px";
-                    line.style.height = "0.1px";
-                    line.style.left = String((m-length/2)*scale) + "px";
-                    line.style.top = String((m)*scale) + "px";
-                    line.style.transform = "rotate(" + String((180/Math.PI)*Math.atan(dY/dX)) + "deg)";
-                    line.style.left = String((m-length/2+xoff)*scale) + "px";
-                    line.style.top = String((m+yoff)*scale) + "px";
-                    line.style.height = String(thick*scale*0.1)+"px";
-                }
-            }
-        }
-    }
+    return null;
 }
 
 function hovering(that)
@@ -859,7 +396,7 @@ function nothovering(that)
     that.setAttribute("hovering", "0");
 }
 
-function setanchor(that)
+function setanchor(event, that)
 {
     var body = document.getElementsByTagName("BODY")[0];
 
@@ -899,74 +436,414 @@ function releasegrab(that)
     that.setAttribute('vely',50*(mousey-parseFloat(that.getAttribute('y')))/scale);
 }
 
-window.addEventListener("wheel", function(e) {
-    var body = document.getElementsByTagName("BODY")[0];
-    var graph = document.getElementById("graph");
-    if(graph.getAttribute("hovering")=="1")
-    {
-        var x = parseInt(body.getAttribute("x"));
-        var y = parseInt(body.getAttribute("y"));
-        var panx = parseFloat(graph.getAttribute("panx"));
-        var pany = parseFloat(graph.getAttribute("pany"));
-
-        var dir = Math.sign(e.deltaY);
-        var scale = parseFloat(graph.getAttribute("scale"));
-        if(dir == 1)
-        {
-            var newscale = scale*0.9;
-        }
-        else
-        {
-            var newscale = scale/0.9;
-        }
-        graph.setAttribute("scale", newscale);
-
-        graph.setAttribute("panx", x - ((x-panx)/scale)*newscale);
-        graph.setAttribute("pany", y - ((y-pany)/scale)*newscale);
-    }
-});
-
-function getComplete()
-{
-    var things = processInput(document.getElementById("input").value);
-
-
-    for(let i=0; i<things.length; i++)
-    {
-        var thing = document.getElementById(things[i].id);
-        things[i].x = String(parseFloat(thing.getAttribute("x")));
-        things[i].y = String(parseFloat(thing.getAttribute("y")));
-    }
-
-    var complete = "";
-
-    for(let i=0; i<things.length; i++)
-    {
-        var thing = things[i];
-        complete = complete + thing.id + "{\nname:" + thing.name + "\nimage:" + thing.image + "\ndesc:" + thing.desc + "\nx:" + thing.x + "\ny:" + thing.y + "\n";
-        console.log(thing.relations);
-        for(let x=0; x<thing.relations.length; x++)
-        {
-            complete = complete + thing.relations[x][0] + " -> " + thing.relations[x][1] + "\n";
-        }
-        complete = complete + "\n}\n";
-    }
-    console.log(complete);
-    return complete;
+function initializeInfoButton(){
+    document.getElementById("info-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       openInfo();
+   });
 }
 
-function saveGraph()
+function openInfo(){
+    document.getElementById("info").classList.remove("hidden");
+    document.getElementById("modal").classList.remove("hidden");
+}
+
+function clearPanels() {
+    var panels = document.getElementsByClassName("circlePanel");
+    while(0<panels.length) {
+        document.getElementsByClassName("circlePanel")[0].remove();
+    }
+}
+
+function initializeZooming(e){
+    e.preventDefault();
+    var body = document.getElementsByTagName("BODY")[0];
+    var graph = document.getElementById("graph");
+    clearPanels();
+    var x = parseInt(body.getAttribute("x"));
+    var y = parseInt(body.getAttribute("y"));
+    var panx = parseFloat(graph.getAttribute("panx"));
+    var pany = parseFloat(graph.getAttribute("pany"));
+
+    var dir = Math.sign(e.deltaY);
+    var scale = parseFloat(graph.getAttribute("scale"));
+    if(dir == 1)
+    {
+        var newscale = scale*0.9;
+    }
+    else
+    {
+        var newscale = scale/0.9;
+    }
+    graph.setAttribute("scale", newscale);
+
+    var panx = x - ((x-panx)/scale)*newscale;
+    var pany = y - ((y-pany)/scale)*newscale;
+
+    graph.setAttribute("panx", panx);
+    graph.setAttribute("pany", pany);
+
+    graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+    graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
+    graph.style.backgroundSize = String(Math.floor(newscale*25)) + "px";
+}
+
+function placein()
 {
-    console.log("save graph");
-    var id = window.location.href.split("edit/")[1];
-    var save = getComplete();
+    var graph = document.getElementById("graph");
+    var circles = document.getElementById("circles");
+    var children = circles.children;
+
+    var scale = parseFloat(graph.getAttribute("scale"));
+    var panx = parseFloat(graph.getAttribute("panx"));
+    var pany = parseFloat(graph.getAttribute("pany"));
+
+    var body = document.body;
+
+    for (let i=0; i<things.length; i++) {
+        var thing = things[i];
+        var circle = document.getElementById(thing.id);
+
+        circle.children[0].style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
+
+        circle.style.width = String(2*scale*thing.mass)+"px";
+        circle.style.height = String(2*scale*thing.mass)+"px";
+
+        circle.style.left = String(panx + scale*thing.x - scale*thing.mass) + "px";
+        circle.style.top = String(pany + scale*thing.y - scale*thing.mass) + "px";
+        circle.style.borderRadius = String(scale*thing.mass*2) + "px";
+    }
+
+    for (let a=0; a<things.length; a++)
+    {
+        var thingA = things[a];
+
+        for(let b=0; b<document.getElementById(thingA.id).children.length; b++)
+        {
+            var line = document.getElementById(thingA.id).children[b];
+            if(line.classList.contains("line"))
+            {
+                thingB = getThingsFromId(line.getAttribute("target"));
+
+                if (thingB!= null)
+                {
+                    var dX = thingB.x - thingA.x;
+                    var dY = thingB.y - thingA.y;
+
+                    var d = Math.sqrt((dX*dX) + (dY*dY));
+                    var thick = parseInt(line.getAttribute("count"));
+
+
+                    var length = d-thingA.mass-thingB.mass;
+                    var xoff = (dX/d)*(thingA.mass+length/2);
+                    var yoff = (dY/d)*(thingA.mass+length/2);
+
+                    line.style.transform = "rotate(0deg)";
+                    line.style.width = String(length*scale)+"px";
+                    line.style.height = "0.1px";
+                    line.style.left = String((thingA.mass-length/2)*scale) + "px";
+                    line.style.top = String((thingA.mass)*scale) + "px";
+                    line.style.transform = "rotate(" + String((180/Math.PI)*Math.atan(dY/dX)) + "deg)";
+                    line.style.left = String((thingA.mass-length/2+xoff)*scale) + "px";
+                    line.style.top = String((thingA.mass+yoff)*scale) + "px";
+                    line.style.height = String(thick*scale*0.1)+"px";
+                }
+            }
+        }
+    }
+}
+
+function likeGraph()
+{
+    var urlParts = window.location.href.split("/");
+    urlParts[5] = "like";
+    var url = urlParts.join("/");
     $.ajax({
         type: 'POST',
-        url: "/save",
-        data: {id: id, data: save},
+        url: url,
+        data: {},
         dataType: "text",
         success: function(data){
-                 console.log("Saved");
-               }
+             console.log(data);
+             if (data=="like") {
+                document.getElementById('like-count').innerHTML = parseInt(document.getElementById('like-count').innerHTML)+1;
+             } else {
+                document.getElementById('like-count').innerHTML = parseInt(document.getElementById('like-count').innerHTML)-1;
+             }
+
+             document.getElementById("like-button").classList.toggle("active");
+             document.getElementById("like-button").classList.toggle("inactive");
+       }
     });
+}
+
+function bookmarkGraph()
+{
+    var urlParts = window.location.href.split("/");
+    urlParts[5] = "bookmark";
+    var url = urlParts.join("/");
+    $.ajax({
+        type: 'POST',
+        url: url,
+        data: {},
+        dataType: "text",
+        success: function(data){
+             console.log(data);
+
+            document.getElementById("bookmark-button").classList.toggle("active");
+            document.getElementById("bookmark-button").classList.toggle("inactive");
+       }
+    });
+}
+
+function initializeLikeButton() {
+    document.getElementById("like-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       likeGraph();
+   });
+}
+
+function initializeBookmarkButton() {
+    document.getElementById("bookmark-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       bookmarkGraph()
+   });
+}
+
+function initializeGuidedViewButton() {
+    document.getElementById("guided-view-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       document.getElementById("guidedview").classList.toggle("hidden");
+       document.getElementById("guided-view-button").classList.toggle("close-guided-view-button");
+       document.getElementById("guided-view-button").classList.toggle("open-guided-view-button");
+       document.getElementById("inspector").classList.toggle("gv-nodeDetails");
+   });
+}
+
+function separateChapters(chapters) {
+    var paths = [];
+    for (let c=0; c<chapters.length; c++) {
+        paths.push([chapters[c], []]);
+    }
+    paths.push([]);
+
+    for (let n=0; n<things.length; n++) {
+        var closest = null;
+        var shortest = null;
+        for (let c=0; c<chapters.length; c++) {
+            //find n's distance to c
+            var distance = getNodeDistance(things[n], chapters[c], []);
+            if (distance != null) {
+                if (shortest == null || distance < shortest) {
+                    closest = c;
+                    shortest = distance;
+                }
+            }
+        }
+
+        if (closest != null) {
+            paths[closest][1].push(things[n]);
+        }
+        else {
+            paths[paths.length-1].push(things[n]);
+        }
+    }
+    console.log(paths);
+    var path = [];
+    for (let c=0; c<chapters.length; c++) {
+        var guided = guidedNextNode(paths[c][0],paths[c][1]);
+        path.push(guided[0]);
+    }
+    console.log(paths[paths.length-1]);
+    path = path.concat(paths[paths.length-1]);
+    console.log(path);
+    // when showing
+    // Get direct children, if no direct children go back to parent
+    // Select node with least receiveFrom nodes
+    // repeat
+    return path
+}
+
+function getNodeDistance(a, b, met) {
+    if (a==b) {
+        return 0;
+    }
+
+    met.push(a);
+
+    if (a.sendTo.length > 0) {
+        var shortest = null;
+        for (let i=0; i<a.sendTo.length; i++) {
+            if (met.includes(a.sendTo[i].node) == false) {
+                var d = getNodeDistance(a.sendTo[i].node, b, met);
+                if (d != null) {
+                    if (shortest == null) {
+                        shortest = d;
+                    }
+                    if (d < shortest) {
+                        shortest = d;
+                    }
+                }
+            }
+        }
+        if (shortest != null) {
+            return shortest + 1
+        } else {
+            return null
+        }
+    } else {
+        return null
+    }
+}
+
+function guidedNextNode(node, candidates) {
+
+    var directReceive = [];
+
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        directReceive.push(node.receiveFrom[i].node);
+    }
+
+    var direct = [];
+
+
+    for (let i=0; i<candidates.length; i++) {
+        if (directReceive.includes(candidates[i])) {
+            direct.push(candidates[i]);
+        }
+    }
+    //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+
+    var path = [];
+    while (direct.length > 0) {
+        var newpath = []
+
+        candidates.splice(candidates.indexOf(direct[0]),1);
+        result = guidedNextNode(direct[0], candidates);
+
+        newpath = result[0];
+        candidates = result[1];
+
+        path.push(newpath);
+        //console.log(direct[0]);
+        var direct = [];
+        for (let i=0; i<candidates.length; i++) {
+            if (directReceive.includes(candidates[i])) {
+                direct.push(candidates[i]);
+            }
+        }
+        //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+    }
+    path = [node, path];
+    return [path, candidates];
+}
+
+function getGuidedView(){
+
+    var chapters = things.sort(function(a,b){return b.receiveFrom.length - a.receiveFrom.length}).slice(0,5);
+
+    var path = separateChapters(chapters);
+    console.log(path);
+    var gv = document.getElementById("guidedview");
+    var text = "";
+    text = "<h1>" + document.getElementById("titlename").innerHTML + "</h1><ul>";
+
+    for (let i=0; i<path.length; i++) {
+        text = text + getGuidedViewNode(path[i], null, 2);
+    }
+
+    //text = text.replaceAll("\\\\(", "\\(");
+    //text = text.replaceAll("\\\\)", "\\)");
+    console.log(text);
+    gv.innerHTML = text + "</ul>"
+
+    gv.offsetHeight;
+
+    gsap.registerPlugin(ScrollTrigger);
+
+    setTimeout(function(){
+
+    for (let i=0; i<things.length; i++) {
+        gsap.to("#" + things[i].id, {
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
+            display: "block",
+            opacity: 1
+        });
+
+        gsap.to(".line[target=" + things[i].id + "]", {
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
+            display: "block",
+            opacity: 0.2
+        });
+
+        gsap.to("#circles", {
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "center center", end:"+=200", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
+            immediateRender: false,
+        });
+    }
+    }, 500);
+}
+
+function gvpan(focus, progress) {
+    var graph = document.getElementById("graph");
+    var currentScale = parseInt(graph.getAttribute("scale"));
+    var targetScale = 75/focus.mass;
+
+    var scale = currentScale + (targetScale - currentScale) * progress;
+
+    var targetX = document.body.offsetWidth/3 - targetScale*focus.x;
+    var currentX = parseInt(graph.getAttribute("panx"));
+    var targetY = document.body.offsetHeight/3 - targetScale*focus.y;
+    var currentY = parseInt(graph.getAttribute("pany"));
+
+    var panx = currentX + (targetX - currentX) * progress;
+    var pany = currentY + (targetY - currentY) * progress;
+
+    graph.setAttribute("panx", panx);
+    graph.setAttribute("pany", pany);
+    graph.setAttribute("scale", scale);
+
+    graph.style.backgroundPositionX = String(panx) + "px";
+    graph.style.backgroundPositionY = String(pany) + "px";
+    graph.style.backgroundSize = String(scale*25) + "px";
+}
+
+function getGuidedViewNode(path, parent, heading) {
+    var text = "";
+    if (path.length == 0) {
+        return "";
+    }
+    text = text + "<li class='gv-item'>";
+
+    if (parent != null) {
+        for (let i=0; i<path[0].sendTo.length; i++) {
+            if (path[0].sendTo[i].node == parent) {
+                text = text + "<p class='relation'>" + path[0].name + " " + path[0].sendTo[i].rel + " " + parent.name + "</p>";
+                break;
+            }
+        }
+    }
+
+    if (Array.isArray(path)) {
+        var node = path[0];
+    } else {
+        var node = path;
+    }
+
+    text = text + "<h" + String(heading) + " id='" + node.id + "-gv'>"+prepareText(node.name)+"</h" + String(heading) +">";
+    if (node.image != "null" && node.image != "") {
+        text = text + "<img src='" + node.image + "'>"
+    }
+    text = text + "<p>"+prepareText(node.desc)+"</p></li>";
+
+    if (Array.isArray(path)) {
+        if (path[1].length > 0) {
+            text = text + "<ul class='gv-list'>"
+            for (let i=0; i<path[1].length; i++) {
+                text = text + getGuidedViewNode(path[1][i], node, heading+1);
+            }
+            text = text + "</ul>"
+        }
+    }
+    return text;
 }

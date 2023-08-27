@@ -2,6 +2,7 @@ var old = "";
 var things = [];
 var nodeEdit = false;
 var edittedNode;
+var simplemde;
 
 function onload()
 {
@@ -9,7 +10,24 @@ function onload()
     things = processInput(saved);
     document.getElementById("input").value = convertToMarkUp(things);
     setup(processInput(saved));
-    window.setInterval(update, 1);
+    setInterval(update, 1);
+    setInterval(checkSave, 1000);
+    simplemde = new SimpleMDE({ toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "guide"],
+    element: document.getElementById("nodeEditor-desc"),
+    previewRender: function(plainText) {
+        let clean = DOMPurify.sanitize(plainText, {USE_PROFILES: {html: true}});
+        setTimeout(showMath, 1);
+        return marked.parse(clean);
+    },
+    status: false,});
+
+    document.getElementById("graph").setAttribute("ondblclick", "closeNodeEdit(); closeMarkup();");
+}
+
+function showMath()
+{
+MathJax.typesetPromise();
+//alert("math shown?");
 }
 
 function convertToMarkUp(things)
@@ -23,7 +41,7 @@ function convertToMarkUp(things)
          if (thing.image != "null" && thing.image != ""){
             complete = complete + "\nimage:" + thing.image;
          }
-         complete = complete + "\ndesc:" + thing.desc +"\n";
+        complete = complete + "\ndesc:" + thing.desc +"\n---\n";
         for(let x=0; x<thing.sendTo.length; x++)
         {
             complete = complete + thing.sendTo[x].rel + " -> " + thing.sendTo[x].node.id + "\n";
@@ -64,15 +82,17 @@ function setup(things)
             graph.setAttribute("hovered", parseInt(graph.getAttribute("hovered"))-1);
         });
 
-        if(thing.image!="null")
-        {
-            circle.style.color = "white";
-            circle.style.textShadow = "2px 2px 4px #000000";
-        }
+        circle.addEventListener("wheel", function(e) {
+            initializeZooming(e);
+        },{passive:false});
 
         const name = document.createElement("p");
         name.innerHTML = thing.name;
         name.classList.add("name");
+        if(thing.image!="null")
+        {
+            name.classList.add("imageText");
+        }
         name.style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
 
         circle.appendChild(name);
@@ -146,7 +166,7 @@ function circleMouseDown(event, that) {
             line.classList.add("line");
             line.setAttribute("owner", that.id)
             line.setAttribute("count", 1);
-            document.getElementById("graph").appendChild(line);
+            document.getElementById("panels").appendChild(line);
         }
     } else if (event.button == 0) {
         that.setAttribute('clicked', 1);
@@ -166,7 +186,7 @@ function circleOptionPanel(that) {
     panel.style.top = String(parseInt(body.getAttribute("y"))-60) + "px";
     panel.innerHTML = "<p class='panelButton' onclick='deleteNode(" + '"' + that.id + '",this' + ")'>Delete node</p><p class='panelButton' onclick='editNode(" + '"' + that.id + '"' + ");this.parentNode.remove();'>Edit node</p>";
     panel.addEventListener("contextmenu", (e) => {e.preventDefault()});
-    graph.appendChild(panel);
+    document.getElementById("panels").appendChild(panel);
 }
 
 function editNode(id) {
@@ -183,40 +203,61 @@ function editNode(id) {
     }
 
     document.getElementById("nodeEditor-name").value = edittedNode.name;
-    document.getElementById("nodeEditor-desc").value = edittedNode.desc;
+    //document.getElementById("nodeEditor-desc").value = edittedNode.desc;
+    simplemde.value(edittedNode.desc);
     document.getElementById("nodeEditor-id").innerHTML = id;
 
+    var rels = document.getElementById("nodeEditor-rels");
+    rels.innerHTML = "";
+    for(let i=0; i<edittedNode.sendTo.length; i++)
+    {
+        var receiver = edittedNode.sendTo[i].node;
+        var li = document.createElement("li");
+        li.innerHTML = "<p>"+ edittedNode.name + " <strong>" + edittedNode.sendTo[i].rel + "</strong> " + receiver.name + "</p>";
+        rels.appendChild(li);
+    }
     //that.parentNode.remove();
 }
 
 function openNodeEdit() {
-    var nodeEditor = document.getElementById("nodeEditor");
-    nodeEditor.style.opacity = "1";
-    nodeEditor.style.right = "10px";
+    var nodeEditor = document.getElementById("inspector");
+    nodeEditor.classList.add("show-nodeEditor");
+    nodeEditor.classList.remove("hidden-nodeEditor");
     nodeEdit = true;
 }
 
 function closeNodeEdit() {
-    var nodeEdit = document.getElementById("nodeEditor");
-    nodeEdit.style.opacity = "0";
-    nodeEdit.style.right = "-750px";
+    var nodeEditor = document.getElementById("inspector");
+    nodeEditor.classList.remove("show-nodeEditor");
+    nodeEditor.classList.add("hidden-nodeEditor");
     nodeEdit = false;
 }
 
 function closeMarkup() {
     var markup = document.getElementById("input");
-    markup.style.opacity = "0";
-    markup.style.left = "-750px";
+    markup.classList.add("hidden-markup");
+    markup.classList.remove("show-markup");
+    document.getElementById("markup-button").innerHTML = "Open Markup";
 }
 
 function openMarkup() {
     var markup = document.getElementById("input");
-    markup.style.opacity = "1";
-    markup.style.left = "10px";
+    document.getElementById("markup-button").innerHTML = "Close Markup";
+    markup.classList.remove("hidden-markup");
+    markup.classList.add("show-markup");
     markup.value = convertToMarkUp(things);
     old = convertToMarkUp(things);
     closeNodeEdit();
     nodeEdit = false;
+}
+
+function toggleMarkup() {
+    var markup = document.getElementById("input");
+    if (markup.classList.contains("hidden-markup")) {
+        openMarkup();
+    } else {
+        closeMarkup();
+    }
 }
 
 function deleteNode(id, that) {
@@ -292,7 +333,8 @@ function update()
         }
     } else {
         var name = document.getElementById("nodeEditor-name").value;
-        var desc = document.getElementById("nodeEditor-desc").value;
+        //var desc = document.getElementById("nodeEditor-desc").value;
+        var desc = simplemde.value();
         var id = document.getElementById("nodeEditor-id").innerHTML;
 
         if (things.includes(edittedNode)) {
@@ -312,17 +354,23 @@ function update()
     }
 
     physics();
-    var savebutton = document.getElementById("saveButton");
-    if(parseFloat(graph.getAttribute("energy")) > 0.0001)
+
+    if(parseFloat(graph.getAttribute("energy")) > 0.0001 && graph.getAttribute("saved") == "1")
     {
-        if(graph.getAttribute("saved") == "1")
-        {
-            graph.setAttribute("saved", 0);
-            savebutton.innerHTML = "Not Saved";
-            savebutton.style.backgroundColor = "#cfcfcf";
-        }
+        var savebutton = document.getElementById("saveButton");
+        graph.setAttribute("saved", 0);
+        savebutton.innerHTML = "Unsaved";
+        //savebutton.style.backgroundColor = "#cfcfcf";
     }
-    else
+
+}
+
+function checkSave(){
+    var savebutton = document.getElementById("saveButton");
+    var input = document.getElementById("input").value;
+    var graph = document.getElementById("graph");
+
+    if(parseFloat(graph.getAttribute("energy")) < 0.0001)
     {
         if(graph.getAttribute("saved") == "0")
         {
@@ -413,10 +461,15 @@ function processInput(input)
                 if(thing.includes("desc:"))
                 {
                     var desc = thing.slice(thing.indexOf("desc:")+5);
-                    desc = desc.slice(0, desc.indexOf("\n")).trim();
+                    var descSep = "\n---\n";
+                    if(desc.includes(descSep)){
+                        desc = desc.slice(0, desc.indexOf(descSep)).trim();
+                    } else {
+                        desc = desc.slice(0, desc.indexOf("\n")).trim();
+                    }
 
                     thing = thing.replace("desc:", "");
-                    thing = thing.replace(desc, "");
+                    thing = thing.replace(desc+descSep, "");
                 }
                 else
                 {
@@ -425,7 +478,7 @@ function processInput(input)
 
                 while(thing.includes("\n\n"))
                 {
-                    thing = thing.replace("\n\n", "");
+                    thing = thing.replace("\n\n", "\n");
                 }
 
                 var rawrelations = thing.split("\n");
@@ -604,6 +657,9 @@ function redraw()
                 graph.setAttribute("hovered", parseInt(graph.getAttribute("hovered"))-1);
             });
 
+            circle.addEventListener("wheel", function(e) {
+                initializeZooming(e);
+            },{passive:false});
 
             const name = document.createElement("p");
             name.innerHTML = thing.name;
@@ -972,6 +1028,9 @@ function physics()
 
         graph.setAttribute("panx", panx);
         graph.setAttribute("pany", pany);
+
+        graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+        graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
     }
 
     for (let a=0; a<things.length; a++)
@@ -1033,9 +1092,9 @@ function setanchor(event, that)
 {
     console.log("anchor set")
     var body = document.getElementsByTagName("BODY")[0];
-
+    clearPanels();
     if (event.ctrlKey == false) {
-        if (event.button == 0) {
+        if (event.button == 0 || event.type=='touchstart') {
             that.setAttribute("anchorx", body.getAttribute("x"));
             that.setAttribute("anchory", body.getAttribute("y"));
             that.setAttribute("anchor", "1");
@@ -1050,7 +1109,7 @@ function setanchor(event, that)
                 panel.innerHTML = "<p class='panelButton' onclick='createNode(" +body.getAttribute("x") +","
                  + body.getAttribute("y") + ", this)'>Create node</p>";
                 panel.addEventListener("contextmenu", (e) => {e.preventDefault()});
-                graph.appendChild(panel);
+                document.getElementById("panels").appendChild(panel);
             }
         }
     }
@@ -1115,34 +1174,38 @@ window.addEventListener("mousemove", function(event) {
     }
 });
 
-window.addEventListener("wheel", function(e) {
+function initializeZooming(e){
+    e.preventDefault();
     var body = document.getElementsByTagName("BODY")[0];
     var graph = document.getElementById("graph");
-    if(graph.getAttribute("hovering") == "1")
+    clearPanels();
+    var x = parseInt(body.getAttribute("x"));
+    var y = parseInt(body.getAttribute("y"));
+    var panx = parseFloat(graph.getAttribute("panx"));
+    var pany = parseFloat(graph.getAttribute("pany"));
+
+    var dir = Math.sign(e.deltaY);
+    var scale = parseFloat(graph.getAttribute("scale"));
+    if(dir == 1)
     {
-        clearPanels();
-        var x = parseInt(body.getAttribute("x"));
-        var y = parseInt(body.getAttribute("y"));
-        var panx = parseFloat(graph.getAttribute("panx"));
-        var pany = parseFloat(graph.getAttribute("pany"));
-
-        var dir = Math.sign(e.deltaY);
-        var scale = parseFloat(graph.getAttribute("scale"));
-        if(dir == 1)
-        {
-            var newscale = scale*0.9;
-        }
-        else
-        {
-            var newscale = scale/0.9;
-        }
-        graph.setAttribute("scale", newscale);
-
-        graph.setAttribute("panx", x - ((x-panx)/scale)*newscale);
-        graph.setAttribute("pany", y - ((y-pany)/scale)*newscale);
+        var newscale = scale*0.9;
     }
-});
+    else
+    {
+        var newscale = scale/0.9;
+    }
+    graph.setAttribute("scale", newscale);
 
+    var panx = x - ((x-panx)/scale)*newscale;
+    var pany = y - ((y-pany)/scale)*newscale;
+
+    graph.setAttribute("panx", panx);
+    graph.setAttribute("pany", pany);
+
+    graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+    graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
+    graph.style.backgroundSize = String(Math.floor(newscale*25)) + "px";
+}
 
 function getComplete(things)
 {
@@ -1151,7 +1214,7 @@ function getComplete(things)
     for(let i=0; i<things.length; i++)
     {
         var thing = things[i];
-        complete = complete + thing.id + "{\nname:" + thing.name + "\nimage:" + thing.image + "\ndesc:" + thing.desc;
+        complete = complete + thing.id + "{\nname:" + thing.name + "\nimage:" + thing.image + "\ndesc:" + thing.desc + "\n---\n";
         if (Number.isNaN(thing.x)) {
             complete = complete + "\nx: 0";
         } else {
@@ -1177,18 +1240,171 @@ function saveGraph()
 {
     var savebutton = document.getElementById("saveButton");
     savebutton.innerHTML = "Saved";
-    savebutton.style.backgroundColor = "#98bdfb";
+    //savebutton.style.backgroundColor = "#98bdfb";
 
-
-    var id = window.location.href.split("edit/")[1];
+    var urlParts = window.location.href.split("/");
+    console.log(urlParts);
+    urlParts[5] = "save";
+    var url = urlParts.join("/");
     var save = getComplete(things);
     $.ajax({
         type: 'POST',
-        url: "/save",
-        data: {id: id, data: save},
+        url: url,
+        data: {data: save},
         dataType: "text",
         success: function(data){
                  console.log("Saved");
                }
     });
+
+    var wordcloud = "";
+    for (let i=0; i<things.length; i++) {
+        var node = "";
+        for (let a=0; a<things[i].receiveFrom.length; a++) {
+            node = node + "," + things[i].name;
+        }
+        wordcloud = wordcloud + node;
+    }
+
+    console.log(wordcloud);
+    document.getElementById("wordcloud").value = wordcloud;
+}
+
+function initializeMarkupButton(){
+    document.getElementById("markup-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       toggleMarkup();
+   });
+}
+
+function initializeInfoButton(){
+    document.getElementById("info-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       openInfo();
+   });
+}
+
+function openInfo(){
+    document.getElementById("info").classList.remove("hidden");
+    document.getElementById("modal").classList.remove("hidden");
+}
+
+function separateChapters(chapters) {
+    var paths = [];
+    for (let c=0; c<chapters.length; c++) {
+        paths.push([chapters[c], []]);
+    }
+    paths.push([]);
+
+    for (let n=0; n<things.length; n++) {
+        var closest = null;
+        var shortest = null;
+        for (let c=0; c<chapters.length; c++) {
+            //find n's distance to c
+            var distance = getNodeDistance(things[n], chapters[c], []);
+            if (distance != null) {
+                if (shortest == null || distance < shortest) {
+                    closest = c;
+                    shortest = distance;
+                }
+            }
+        }
+
+        if (closest != null) {
+            paths[closest][1].push(things[n]);
+        }
+        else {
+            paths[paths.length-1].push(things[n]);
+        }
+    }
+
+    var path = [];
+    for (let c=0; c<chapters.length; c++) {
+        var guided = guidedNextNode(paths[c][0],paths[c][1]);
+        console.log(guided);
+        path = path.concat(guided[0]);
+    }
+    path.concat(paths[paths.length-1]);
+
+    // when showing
+    // Get direct children, if no direct children go back to parent
+    // Select node with least receiveFrom nodes
+    // repeat
+    return path
+}
+
+function getNodeDistance(a, b, met) {
+    if (a==b) {
+        return 0;
+    }
+
+    met.push(a);
+
+    if (a.sendTo.length > 0) {
+        var shortest = null;
+        for (let i=0; i<a.sendTo.length; i++) {
+            if (met.includes(a.sendTo[i].node) == false) {
+                var d = getNodeDistance(a.sendTo[i].node, b, met);
+                if (d != null) {
+                    if (shortest == null) {
+                        shortest = d;
+                    }
+                    if (d < shortest) {
+                        shortest = d;
+                    }
+                }
+            }
+        }
+        if (shortest != null) {
+            return shortest + 1
+        } else {
+            return null
+        }
+    } else {
+        return null
+    }
+}
+
+
+
+function guidedNextNode(node, candidates) {
+
+    var directReceive = [];
+
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        directReceive.push(node.receiveFrom[i].node);
+    }
+
+    var direct = [];
+
+
+    for (let i=0; i<candidates.length; i++) {
+        if (directReceive.includes(candidates[i])) {
+            direct.push(candidates[i]);
+        }
+    }
+    direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+
+    var path = [];
+    while (direct.length > 0) {
+        var newpath = []
+
+        candidates.splice(candidates.indexOf(direct[0]),1);
+        result = guidedNextNode(direct[0], candidates);
+
+        newpath = result[0];
+        candidates = result[1];
+
+        path = path.concat(newpath);
+        //console.log(direct[0]);
+        var direct = [];
+        for (let i=0; i<candidates.length; i++) {
+            if (directReceive.includes(candidates[i])) {
+                direct.push(candidates[i]);
+            }
+        }
+        direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+    }
+    path = [node].concat(path);
+    return [path, candidates];
 }

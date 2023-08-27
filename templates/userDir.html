@@ -1,0 +1,20 @@
+{% extends "layout.html" %}
+{% block title %}{{context.user.name}}{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="main">
+    <h1>{{context.title}} - <a href="/{{context.user.slug}}">{{context.user.name}}</a></h1>
+    <ul class="dirList">
+    {% for graph in context.graphs %}
+    <li>
+        {% include "graph-thumb-dir.html" %}
+    </li>
+    {% endfor %}
+    </ul>
+</div>
+
+{% endblock %}

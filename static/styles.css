@@ -1,0 +1,444 @@
+@font-face {
+    font-family: lora;
+    src: url("fonts/Lora-VariableFont_wght.ttf");
+}
+
+@font-face {
+    font-family: atkinson;
+    src: url("fonts/AtkinsonHyperlegible-Regular.ttf");
+}
+
+@font-face {
+    font-family: garamond;
+    src: url("fonts/Adobe Garamond Pro Regular.ttf");
+}
+
+h1, h2 {
+    font-weight: 500;
+    font-family: garamond;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+a:hover {
+    opacity: 0.8;
+}
+
+
+body {
+    margin: 0;
+}
+
+.logo {
+    width: 70px;
+    background-color: #7c5695;
+    height: 100%;
+}
+
+nav {
+    border-bottom: 3px solid #e1e1e1;
+    position: relative;
+    left:0;
+    right:0;
+    display: flex;
+    z-index: 100;
+    height: 35px;
+    font-family: atkinson;
+    background-color: #efefef;
+}
+
+nav > ul {
+    position: relative;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    padding: 0;
+    width: 50%;
+}
+
+nav > ul > li {
+    display: inline-block;
+    padding-left: 15px;
+    padding-right: 15px;
+    font-size: 1.2em;
+    line-height: 2em;
+}
+
+nav > ul > li > p{
+    margin: 0;
+}
+
+.mid {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%,0);
+    margin: 0;
+    font-size: 1.2em;
+    line-height: 2.2em;
+    color: #4d4d4d;
+    font-family: lora;
+}
+
+.right {
+    justify-content: right;
+}
+
+.profile-dropdown {
+    position: absolute;
+    right: 25px;
+    top: 35px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 0 0 20px 20px;
+    border: 2px black solid;
+    border-top: none;
+    filter: drop-shadow(2px 4px 6px grey);
+}
+
+.profile-dropdown > ul {
+    list-style: none;
+    padding: 0;
+}
+
+.dropdown-content {
+    display: none;
+}
+
+.dropdown:hover .dropdown-content {
+  display: block;
+}
+
+.dropdown:focus-within .dropdown-content {
+  display: block;
+}
+
+.content {
+    display: flex;
+    min-height: 80vh;
+}
+
+
+
+.banner {
+    width: 100%;
+    height: 200px;
+    background-color: #7c5695;
+}
+
+.home-content {
+    flex-grow: 1;
+    overflow-x: hidden;
+}
+
+.home-main-content {
+    display: flex;
+}
+
+.main {
+    padding: 15px;
+    width: 1100px;
+    margin: auto;
+    margin-top: 0;
+    margin-bottom: 50px;
+    height: 100%;
+    overflow-x: hidden;
+}
+
+#dashboard-sidebar {
+    position: sticky;
+    left: 0;
+    top:0;
+    margin: 0;
+    width: 300px;
+    height: 100vh;
+    padding: 15px;
+    padding-left: 30px;
+    border-right: 3px solid #e1e1e1;
+}
+
+#dashboard-sidebar > ul {
+ font-family: atkinson;
+}
+
+footer {
+    background-color: black;
+    color: white;
+    margin: 0;
+    position: sticky;
+    bottom: 0;
+    top: 100%;
+}
+
+.footer-content > p > a {
+    color: white;
+}
+
+.footer-content {
+    max-width: 1000px;
+    margin: auto;
+    padding: 15px;
+}
+
+#modal {
+    position: fixed;
+    z-index: 500;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.modal-overlay {
+    background-color: #00000060;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+
+input {
+    display: block;
+}
+
+
+
+
+
+.hidden {
+    display: none;
+}
+
+.shown {
+    display: block;
+}
+
+.invisible {
+    visibility: hidden;
+}
+
+.scrollList {
+    list-style: none;
+    padding: 0;
+    padding-left: 2em;
+    padding-right: 2em;
+    overflow: auto;
+    height: auto;
+    white-space: nowrap;
+}
+
+.scrollList > li {
+    display: inline-block;
+    margin: 0.5em;
+    margin-left: 0;
+}
+
+.scrollList > li > .graph-thumb {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
+}
+
+.scrollList > li > .graph-thumb > .graph-thumb-desc > h3 {
+    margin-top: 0.8em;
+    margin-bottom: 0.5em;
+    font-family: lora;
+}
+
+.scrollList > li > .graph-thumb > .graph-thumb-desc > p {
+    margin: 0;
+    font-family: atkinson;
+}
+
+.scrollList-container {
+    position: relative;
+    margin-right: 1em;
+    margin-bottom: 3em;
+    margin-left: -2em;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  margin-left: 2em;
+  margin-right: 2em;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #aaa;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #888;
+}
+
+.fader-left {
+    position: absolute;
+    left: -1px;
+    width: 2em;
+    height: 100%;
+    background-image: linear-gradient(to left, #ffffff00, #ffffff);
+    top: 0;
+}
+
+.fader-right {
+    position: absolute;
+    right: -1px;
+    width: 2em;
+    height: 100%;
+    background-image: linear-gradient(to right, #ffffff00, #ffffff);
+    top: 0;
+}
+
+.graph-thumb-img {
+    height: 200px;
+    width: 250px;
+    background-size: contain;
+    background-position: center;
+    border-radius: 10px;
+    border: 3px solid #e1e1e1;
+    background-color: #ffffff;
+}
+
+.graph-thumb-desc {
+    padding-left: 1.2em;
+    padding-right: 1.2em;
+    overflow: hidden;
+}
+
+.dirList {
+    list-style: none;
+    padding: 0;
+}
+
+.dirList > li {
+    margin: 2em;
+    margin-left: 0;
+}
+
+.dirList > li > .graph-thumb {
+    display: flex;
+}
+
+.followList {
+    width: 100%;
+    border-top: 2px solid gray;
+    height: 100%;
+}
+
+.followList > ul {
+    list-style: none;
+    padding: 0;
+    border-bottom: 1px solid #eeeeee;
+}
+
+.followList > ul > li {
+    border-top: 1px solid #eeeeee;
+    padding: 1em;
+}
+
+.exit {
+    position: relative;
+    left: -3em;
+    top: 20px;
+}
+
+.followbar > span {
+    margin-right: 1em;
+}
+
+input[type="submit" i] {
+    background: purple;
+    color: #ffffff;
+    border: #7c5695 1px solid;
+    border-radius: 9px;
+}
+
+input[type="submit" i]:hover {
+    cursor: pointer;
+    opacity: 0.8;
+}
+
+.orange {
+    color: orange;
+    font-size: large;
+}
+
+@media only screen and (max-width: 600px) {
+    .content {
+    display: block;
+    }
+    .mobile-hidden {
+        display: none;
+    }
+
+    .logo-li {
+        padding-left: 0;
+    }
+
+    #dashboard-sidebar {
+        position: fixed;
+        width: 66%;
+        z-index: 50;
+        padding-top: 35px;
+        background-color: #efefef;
+    }
+
+    .scrollList {
+        height: auto;
+    }
+    .dirList > li {
+        margin-left: auto;
+        margin-right: auto;
+    }
+    .dirList > li > .graph-thumb {
+        flex-direction: column;
+    }
+}
+
+#ui {
+    font-family: atkinson;
+}
+
+@media only screen and (min-width: 600px) {
+    h1 {
+        font-size: xx-large;
+        font-weight: 700;
+        font-family: 'garamond';
+    }
+    h2 {
+        font-size: xx-large;
+        font-family: 'garamond';
+    }
+
+    #dashboard-sidebar > h2 {
+        font-size: xx-large;
+    }
+
+    .desktop-hidden {
+        display: none;
+    }
+
+    nav > ul > li:first-child {
+        padding-left: 30px;
+    }
+
+    .logo-li {
+        padding-left: 30px;
+    }
+
+    nav > ul > li:last-child {
+        padding-right: 30px;
+    }
+}

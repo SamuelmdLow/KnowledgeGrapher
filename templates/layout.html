@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://kit.fontawesome.com/28a7c2be96.js" crossorigin="anonymous"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/icon.png') }}">
+    {% block head %}{% endblock %}
+</head>
+<body>
+{% block nav %}
+<nav>
+    <ul class="left">
+        <li class="desktop-hidden"><a href="#" id="toggle-dashboard" ><i class="fa-solid fa-bars"></i></a></li>
+        <li class="logo-li">
+            <a href="/"><img class="logo" src="{{ url_for('static', filename='images/icon.svg') }}"></a>
+        </li>
+        <li class="mobile-hidden"><a href="/">Home</a></li>
+        <li class="mobile-hidden">Search</li>
+    </ul>
+    <p class="mid mobile-hidden">Brambli</p>
+    <ul class="right">
+        {% if current_user.is_authenticated %}
+        <li><i class="fa-solid fa-bell"></i></li>
+        <li><a href="/bookmarks" title="Bookmarks"><i class="fa-solid fa-bookmark"></i></a></li>
+        <li class="mobile-hidden"><a href="/new" title="New Graph"><i class="fa-solid fa-plus"></i></a></li>
+        <li class="mobile-hidden"><a href="/{{ current_user.id }}/dir" title="Directory"><i class="fa-solid fa-folder"></i></a></li>
+        <li class="dropdown">
+            <a class="mobile-hidden" href="/{{ current_user.id }}">{{ current_user.id }}</a>
+            <p class="desktop-hidden">{{ current_user.id }}</p>
+            <div class="profile-dropdown dropdown-content">
+                <ul>
+                    <li><a href="/{{ current_user.id }}">Profile</a></li>
+                    <li><a href="/{{ current_user.id }}/dir">Directory</a></li>
+                    <li><a href="/logout">Sign out</a></li>
+                </ul>
+            </div>
+        </li>
+        {% else %}
+        <li class="dropdown">
+            <a href="/login">Signed out</a>
+            <div class="profile-dropdown dropdown-content">
+                <ul>
+                    <li>
+                        <p>Login</p>
+                       <form action='login' method='POST'>
+                        <input type='text' name='username' id='username' placeholder='username'/>
+                        <input type='password' name='password' id='password' placeholder='password'/>
+                        <input type='submit' name='submit'/>
+                       </form>
+                    </li>
+                    <li><a href="/register">Sign up</a></li>
+                </ul>
+            </div>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endblock %}
+
+<div class="content">
+
+    {% if current_user.is_authenticated %}
+    <div id="dashboard-sidebar" class="mobile-hidden {% block dashboard %}desktop-hidden{% endblock %}">
+    <h1>{{ current_user.id }}</h1>
+    <h2>Recently Viewed</h2>
+    <ul>
+        {% for graph in context.user_viewed %}
+            <p><a href="/{{graph.user}}/{{graph.slug}}">{{graph.name}}</a> {% if graph.user == current_user.id %}<a href="/{{graph.user}}/{{graph.slug}}/edit"><i class="fa-solid fa-pencil"></i></a>{% endif %}</p>
+        {% endfor %}
+    </ul>
+    <h2>Recent Edits</h2>
+    <ul>
+        {% for graph in context.user_recent %}
+            <p><a href="/{{graph.user}}/{{graph.slug}}">{{graph.name}}</a> <a href="/{{graph.user}}/{{graph.slug}}/edit"><i class="fa-solid fa-pencil"></i></a></p>
+        {% endfor %}
+    </ul>
+    </div>
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+</div>
+
+{% block footer %}
+<footer>
+    <div class="footer-content">
+        <p>© 2023 Brambli</p>
+        <p>Created by <a href="https://www.tubbdoose.com/">Sam Low</a></p>
+        <p>Thank you to Ryan Zhang and Jason Ye for feedback and advice!</p>
+        <p>
+            Brabmli combines force-directed graphs (a data visualization technique), knowledge graphs
+            (a concept in information science), and the interactive Web to allow it’s users to easily
+            organize information in a way that more effectively represents relationships between
+            concepts than a traditional notebook or textbook can. This is important due to the
+            associative nature of human memory.
+        </p>
+    </div>
+</footer>
+{% endblock %}
+
+</body>
+</html>

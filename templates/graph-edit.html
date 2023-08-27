@@ -1,0 +1,66 @@
+{% extends "graph-layout.html" %}
+
+{% block title %}{{context.graph.name}}{% endblock %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='kg.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='kg.css') }}">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+{% endblock %}
+
+{% block info %}
+<div class="info-content">
+    <form action='saveInfo' method='POST'>
+    <input type='text' value="{{context.graph.name}}" name='name' id='name' placeholder='name'/>
+     <select name="privacy" id="privacy">
+        <option value="0">Private</option>
+        <option value="1">Unlisted</option>
+        <option value="2">Public</option>
+    </select>
+    <input type='text' value="{{context.graph.desc}}" name='desc' id='desc' placeholder='desc'/>
+    <input type="hidden" value="" id="wordcloud" name="wordcloud" />
+    <input type='submit' name='submit'/>
+    </form>
+</div>
+{% endblock %}
+
+{% block left_nav %}
+<li><a id="info-button" href="#">Info</a></li>
+<li>
+    <a href="/{{context.graph.user}}/{{context.graph.slug}}" >View</a>
+</li>
+{% endblock %}
+
+{% block nav_mid %}
+{{context.graph.name}}
+{% endblock %}
+
+{% block right_nav %}
+<li id="saveButton" onclick="saveGraph()">
+    Saved
+</li>
+{% endblock %}
+
+{% block ui %}
+<textarea id="input" class="hidden-markup"></textarea>
+
+<a id="markup-button" class="graph-button mobile-hidden" href="#">Open Markup</a>
+<a id="guided-view-button" class="graph-button" href="#">Guided View</a>
+
+<div id="inspector" class="nodeDetails hidden-nodeEditor">
+    <div id="nodeEditor-info">
+        <p id="nodeEditor-id"></p>
+        <input type="text" id="nodeEditor-name" name="nodeEditor-name">
+        <img id="nodeEditor-image">
+        <textarea id="nodeEditor-desc"></textarea>
+        <ul id="nodeEditor-rels"></ul>
+    </div>
+</div>
+
+<script>
+initializeMarkupButton();
+initializeModal();
+</script>
+{% endblock %}

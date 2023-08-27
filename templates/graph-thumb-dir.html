@@ -1,0 +1,10 @@
+<div class="graph-thumb">
+    <a href="/{{graph.user}}/{{graph.slug}}{% if edit %}/edit{% endif %}">
+        <div class="graph-thumb-img" style="background-image: url('{{ url_for('static', filename='images/thumbnails/' + graph.user + '-' + graph.slug + '.png') }}')"></div>
+    </a>
+    <div class="graph-thumb-desc">
+        <h2><a href="/{{graph.user}}/{{graph.slug}}{% if edit %}/edit{% endif %}">{{graph.name}}</a></h2>
+        <p>{{graph.desc}}</p>
+        <p>{{graph.lastEdit}}</p>
+    </div>
+</div>

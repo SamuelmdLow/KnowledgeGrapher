@@ -1,20 +1,58 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<h1>Knowledge grapher</h1>
+{% extends "layout.html" %}
+{% block title %}Brambli{% endblock %}
 
-<p><a href="/new">new</a></p>
-<ul>
-{% for graph in graphs %}
-<li>
-    <p>{{graph}} <a href="/edit/{{graph}}">edit</a> <a href="/view/{{graph}}">view</a></p>
-</li>
-{% endfor %}
-</ul>
+{% block head %}
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
+{% endblock %}
 
-</body>
-</html>
+{% block dashboard %}
+{% endblock %}
+
+{% block content %}
+<div class="home-content">
+    <div class="banner"></div>
+    <div class="home-main-content">
+        <div class="main">
+            <h1>Popular</h1>
+            <div class="scrollList-container">
+                <ul class="scrollList">
+                {% for graph in context.popular %}
+                <li>
+                    {% include "graph-thumb.html" %}
+                </li>
+                {% endfor %}
+                </ul>
+                <div class="fader-left"></div>
+                <div class="fader-right"></div>
+            </div>
+
+            <h1>Newest</h1>
+            <div class="scrollList-container">
+                <ul class="scrollList">
+                {% for graph in context.newest %}
+                <li>
+                    {% include "graph-thumb.html" %}
+                </li>
+                {% endfor %}
+                </ul>
+                <div class="fader-left"></div>
+                <div class="fader-right"></div>
+            </div>
+        </div>
+
+        {% if current_user.is_authenticated %}
+        <div class="mobile-hidden">
+            <div class="activity-sidebar">
+                <h1>Activity</h1>
+                <ul>
+                    {% for activity in context.activity %}
+                    <li>{{activity[0]|safe}}</li>
+                    {% endfor %}
+                </ul>
+                <p><a href="/rss/{{context.user.rssCode}}"><i class="fa-solid fa-square-rss orange"></i> Rss feed</a></p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

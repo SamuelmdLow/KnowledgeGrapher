@@ -1,6 +1,22 @@
+html {
+background-color: white;
+overflow: hidden;
+}
+html, body {
+    overscroll-behavior-x: none;
+}
+
+nav {
+    background-color: #d5d5d5;
+}
+
 body
 {
     margin:0;
+    overflow: hidden;
+    height: 100vh;
+    clip-path: inset(0 0 0 0);
+    position: relative;
 }
 
 #input
@@ -29,11 +45,20 @@ body
     overflow: hidden;
     top:0;
     z-index: -1;
+    background-image: url('images/grid.svg');
+    opacity: 0.05;
+    background-size: 250px;
 }
 
 #graph:active
 {
      cursor:move;
+}
+
+#circles {
+    position: relative;
+    left: 0;
+    top: 0;
 }
 
 .circle
@@ -50,11 +75,30 @@ body
     border-style: solid;
     z-index: 2;
     background-size:cover;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    font-family: atkinson;
+    background-color: #ffffff75;
+    opacity: 0;
+    display: none;
+}
+
+.imageText {
+    color: white;
+    text-shadow:
+        black -2px  2px 4px,
+        black -2px -2px 4px,
+        black  2px  2px 4px,
+        black  2px -2px 4px;
 }
 
 .inspected-circle
 {
     border-color: red;
+    border-width: 3px;
+    transform: translate(-2px,-2px);
+    font-weight: bold;
 }
 
 .circle:hover
@@ -82,15 +126,17 @@ body
 .line
 {
     position:absolute;
-    background-color: grey;
+    background-color: red;
     z-index: 1;
-    opacity:0.2;
+    /*opacity:0.2;*/
+    opacity: 0;
+    display: none;
 }
 
 .inspected-line
 {
     background-color: red;
-    opacity: 1;
+    opacity: 1 !important;
 }
 
 .button
@@ -122,26 +168,28 @@ a
     width:100px;
 }
 
-#inspector
+.nodeDetails
 {
-    width: 300px;
-    height: 89vh;
+    display: none;
+    width: 400px;
     position: absolute;
     background-color: white;
-    border: black;
-    border-style: solid;
+    border: black 2px solid;
     padding-left: 1%;
     padding-right: 1%;
-    padding-bottom: 5%;
-    overflow-y: scroll;
-    direction: rtl;
-    max-height: 89vh;
+    overflow-y: auto;
+    height: 80%;
     max-width: 600px;
-    right: 10px;
-    top:20px;
-    border-radius:10px;
-    border-width: 1px;
-    resize: both;
+    top: 4em;
+    border-radius: 10px;
+    transition-property: right, opacity;
+    transition-duration: 0.5s;
+    right: 25px;
+}
+
+.gv-nodeDetails {
+    right: auto;
+    left: 25px;
 }
 
 #inspector::-webkit-scrollbar {
@@ -159,6 +207,10 @@ a
   border-radius: 10px;
 }
 
+#inspector-name {
+    margin-bottom: 0.2em;
+}
+
 #inspector-image
 {
     width:100%;
@@ -174,9 +226,133 @@ a
 #inspector-desc
 {
     max-width: 400px;
+    font-family: atkinson;
 }
 
-img
-{
-width:100%
+#info {
+    height: 100%;
+}
+
+.info-box {
+    background-color: white;
+    padding: 15px;
+    position: relative;
+    top: 20%;
+    height: 60%;
+    width: 60%;
+    max-width: 800px;
+    margin: auto;
+}
+
+.info-content {
+    margin: auto;
+    width: 75%;
+    text-align: center;
+}
+
+#inspector-desc img {
+    max-width: 75%;
+    max-height: 250px;
+}
+
+.graph-button {
+    border-radius: 20px;
+    background-color: #6918A9;
+    color: white;
+    border: 2px black solid;
+    padding: 15px;
+}
+
+#guided-view-button {
+    position: absolute;
+    bottom: 20px;
+}
+
+.open-guided-view-button {
+    right: 25px;
+}
+
+.close-guided-view-button {
+    right: 635px
+}
+
+#guidedview {
+    background: white;
+    width: 500px;
+    bottom: 0;
+    top: 35px;
+    position: absolute;
+    right: 0;
+    border-left: 2px solid;
+    overflow: auto;
+    padding: 2em;
+    padding-right: 5em;
+    padding-top: 2em;
+    padding-bottom: 55vh;
+}
+
+#guidedview ul.gv-list {
+    list-style: none;
+    margin-left: 10px;
+    padding: 10px;
+    border-left: 1px solid #0000003b;
+}
+
+#guidedview > ul {
+    list-style: decimal;
+    padding-left: 0;
+    border: none;
+}
+
+#guidedview li.gv-item {
+    padding: 1em;
+    border-bottom: 1px solid;
+    min-height: 200px;
+}
+
+#guidedview img {
+    max-width: 100%;
+}
+
+.relation {
+ border-left: solid 1px red;
+ color: red;
+ padding-left: 1em;
+}
+
+@media only screen and (max-width: 600px) {
+    .nodeDetails {
+        bottom: 0;
+        margin: auto;
+        width: 100%;
+        border-radius: 0;
+        height: 40%;
+        overflow-y: scroll;
+        border: none;
+        border-top: solid;
+        bottom: 0;
+        max-width: none;
+        right: auto;
+        top: auto;
+    }
+}
+
+#ui > div {
+    z-index: 10;
+}
+
+#ui > a {
+    z-index: 10;
+}
+
+nav-icon {
+    display: inline;
+}
+
+.active > .inactive {
+    display: none;
+}
+
+.inactive > .active {
+    display: none;
 }
