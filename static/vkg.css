@@ -136,7 +136,7 @@ body
 .inspected-line
 {
     background-color: red;
-    opacity: 1;
+    opacity: 1 !important;
 }
 
 .button
@@ -288,7 +288,7 @@ a
     padding: 2em;
     padding-right: 5em;
     padding-top: 2em;
-    padding-bottom: 15em
+    padding-bottom: 55vh;
 }
 
 #guidedview ul.gv-list {

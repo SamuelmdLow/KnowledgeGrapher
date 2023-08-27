@@ -712,7 +712,7 @@ function guidedNextNode(node, candidates) {
             direct.push(candidates[i]);
         }
     }
-    direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+    //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
 
     var path = [];
     while (direct.length > 0) {
@@ -732,7 +732,7 @@ function guidedNextNode(node, candidates) {
                 direct.push(candidates[i]);
             }
         }
-        direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+        //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
     }
     path = [node, path];
     return [path, candidates];
