@@ -1,10 +1,7 @@
 flask
 requests
 pathlib
-os
 flask_login
-datetime
 mysql.connector
 bcrypt
-secrets
 html_sanitizer
