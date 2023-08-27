@@ -777,14 +777,35 @@ function getGuidedView(){
         });
 
         gsap.to("#circles", {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "center center", end:"+=200", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
             immediateRender: false,
-            left: String(document.body.offsetWidth/3 - parseInt(document.getElementById(things[i].id).style.left.slice(0,-2))) + "px",
-            top: String(document.body.offsetHeight/3 - parseInt(document.getElementById(things[i].id).style.top.slice(0,-2))) + "px",
         });
-
     }
-    }, 1000);
+    }, 500);
+}
+
+function gvpan(focus, progress) {
+    var graph = document.getElementById("graph");
+    var currentScale = parseInt(graph.getAttribute("scale"));
+    var targetScale = 75/focus.mass;
+
+    var scale = currentScale + (targetScale - currentScale) * progress;
+
+    var targetX = document.body.offsetWidth/3 - targetScale*focus.x;
+    var currentX = parseInt(graph.getAttribute("panx"));
+    var targetY = document.body.offsetHeight/3 - targetScale*focus.y;
+    var currentY = parseInt(graph.getAttribute("pany"));
+
+    var panx = currentX + (targetX - currentX) * progress;
+    var pany = currentY + (targetY - currentY) * progress;
+
+    graph.setAttribute("panx", panx);
+    graph.setAttribute("pany", pany);
+    graph.setAttribute("scale", scale);
+
+    graph.style.backgroundPositionX = String(panx) + "px";
+    graph.style.backgroundPositionY = String(pany) + "px";
+    graph.style.backgroundSize = String(scale*25) + "px";
 }
 
 function getGuidedViewNode(path, parent, heading) {
@@ -792,7 +813,7 @@ function getGuidedViewNode(path, parent, heading) {
     if (path.length == 0) {
         return "";
     }
-    text = text + "<li>";
+    text = text + "<li class='gv-item'>";
 
     if (parent != null) {
         for (let i=0; i<path[0].sendTo.length; i++) {
@@ -817,7 +838,7 @@ function getGuidedViewNode(path, parent, heading) {
 
     if (Array.isArray(path)) {
         if (path[1].length > 0) {
-            text = text + "<ul>"
+            text = text + "<ul class='gv-list'>"
             for (let i=0; i<path[1].length; i++) {
                 text = text + getGuidedViewNode(path[1][i], node, heading+1);
             }
