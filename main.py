@@ -101,7 +101,9 @@ def unauthorized_handler():
 
 @app.route('/')
 def index():
+    print("index")
     db = Database()
+    print("got database")
     context = db.setupContext()
     context["popular"] = db.getGraphsPopular()
     context["newest"] = db.getGraphs(orderby="newest")
@@ -383,4 +385,6 @@ def page_not_found(e):
     return render_template('404.html'), 404
 
 if __name__ == "__main__":
+    print("run app")
     app.run(debug=True, host="0.0.0.0")
+    print("app ran (epic)")

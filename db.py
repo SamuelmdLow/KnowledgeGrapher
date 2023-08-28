@@ -6,6 +6,7 @@ import bcrypt
 class Database:
 
     def __init__(self):
+        print("import os")
         import os
         print("get env variables")
 
