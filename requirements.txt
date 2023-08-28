@@ -2,6 +2,6 @@ flask
 requests
 pathlib
 flask_login
-mysql.connector
+mysql-connector-python
 bcrypt
 html_sanitizer
