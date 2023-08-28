@@ -7,6 +7,7 @@ class Database:
 
     def __init__(self):
         import os
+        print("get env variables")
 
         host = "localhost"
         if "DATABASE_HOST" in os.environ:
@@ -16,6 +17,7 @@ class Database:
         if "DATABASE_PASSWORD" in os.environ:
             password = os.environ["DATABASE_PASSWORD"]
 
+        print("connect")
         sql = mysql.connector.connect(
             host=host,
             user="root",
@@ -23,8 +25,8 @@ class Database:
         )
         mycursor = sql.cursor()
         mycursor.execute("SHOW DATABASES")
-
-        print(mycursor)
+        print("made connection")
+        #print(mycursor)
         if ('mydatabase',) not in mycursor:
             sql.cursor().execute("CREATE DATABASE mydatabase")
             self.mydb = mysql.connector.connect(
