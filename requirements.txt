@@ -1,5 +1,5 @@
 flask
-requests
+requests===2.0.0
 pathlib
 flask_login
 mysql-connector-python
