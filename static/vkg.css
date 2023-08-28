@@ -84,9 +84,9 @@ body
     display: none;
 }
 
-.gv-circles .circle {
-    display: block;
-    opacity: 1;
+.not-gv .circle {
+    display: block !important;
+    opacity: 1 !important;
 }
 
 .imageText {
