@@ -617,6 +617,7 @@ function initializeGuidedViewButton() {
        document.getElementById("guided-view-button").classList.toggle("close-guided-view-button");
        document.getElementById("guided-view-button").classList.toggle("open-guided-view-button");
        document.getElementById("inspector").classList.toggle("gv-nodeDetails");
+       document.getElementById("circles").classList.toggle("gv-circles");
    });
 }
 

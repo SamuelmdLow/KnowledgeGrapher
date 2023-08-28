@@ -84,6 +84,11 @@ body
     display: none;
 }
 
+.gv-circles .circle {
+    display: block;
+    opacity: 1;
+}
+
 .imageText {
     color: white;
     text-shadow:
@@ -351,7 +356,12 @@ a
         max-width: none;
         right: auto;
         top: auto;
-        padding-bottom: inherit;
+        padding-bottom: 1em;
+    }
+
+    #guidedview li.gv-item {
+        padding: 0;
+        border-bottom: none;
     }
 }
 
