@@ -1,5 +1,4 @@
 import flask
-import requests
 from flask import Response, Flask, flash, session, render_template, redirect, url_for, request, send_from_directory, jsonify
 import flask_login
 from db import Database
@@ -346,6 +345,7 @@ def saveInfo(ownerSlug, graphSlug):
                </form>
                '''
     elif flask_login.current_user.id == ownerSlug:
+        import requests
         db = Database()
         from html_sanitizer import Sanitizer
         sanitizer = Sanitizer()
