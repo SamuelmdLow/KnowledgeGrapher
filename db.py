@@ -6,10 +6,20 @@ import bcrypt
 class Database:
 
     def __init__(self):
+        import os
+
+        host = "localhost"
+        if "DATABASE_HOST" in os.environ:
+            host = os.environ["DATABASE_HOST"]
+
+        password = "root"
+        if "DATABASE_PASSWORD" in os.environ:
+            password = os.environ["DATABASE_PASSWORD"]
+
         sql = mysql.connector.connect(
-            host="localhost",
+            host=host,
             user="root",
-            password="root"
+            password=password
         )
         mycursor = sql.cursor()
         mycursor.execute("SHOW DATABASES")
@@ -18,9 +28,9 @@ class Database:
         if ('mydatabase',) not in mycursor:
             sql.cursor().execute("CREATE DATABASE mydatabase")
             self.mydb = mysql.connector.connect(
-                host="localhost",
+                host=host,
                 user="root",
-                password="root",
+                password=password,
                 database="mydatabase"
             )
             self.cursor = self.mydb.cursor()
@@ -28,9 +38,9 @@ class Database:
             self.createTables()
         else:
             self.mydb = mysql.connector.connect(
-                host="localhost",
+                host=host,
                 user="root",
-                password="root",
+                password=password,
                 database="mydatabase"
             )
             self.cursor = self.mydb.cursor()
