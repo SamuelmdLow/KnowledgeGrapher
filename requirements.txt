@@ -1,5 +1,4 @@
 flask
-urllib3
 requests
 pathlib
 flask_login

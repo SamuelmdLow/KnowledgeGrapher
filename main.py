@@ -345,7 +345,7 @@ def saveInfo(ownerSlug, graphSlug):
                </form>
                '''
     elif flask_login.current_user.id == ownerSlug:
-        import requests
+        from requests import post
         db = Database()
         from html_sanitizer import Sanitizer
         sanitizer = Sanitizer()
@@ -355,7 +355,7 @@ def saveInfo(ownerSlug, graphSlug):
         wordcloud = request.form.get("wordcloud")
         db.saveGraphInfo(ownerSlug, graphSlug, name, privacy, desc)
 
-        resp = requests.post('https://quickchart.io/wordcloud', json={
+        resp = post('https://quickchart.io/wordcloud', json={
             'format': 'png',
             'width': 300,
             'height': 200,
