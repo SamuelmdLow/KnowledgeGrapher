@@ -8,9 +8,9 @@
 {% block content %}
 <div class="main">
     <h1>{{context.user.name}}</h1>
-    {% if context.user.name!=current_user.id %}
+    {% if context.user.slug!=current_user.id %}
     <form action='follow' method='POST'>
-    <input type='hidden' name='user' id='user' value="{{context.user.name}}"/>
+    <input type='hidden' name='user' id='user' value="{{context.user.slug}}"/>
     <input type='submit' value='{% if context.isFollowing %}unfollow{% else %}follow{% endif %}'/>
     </form>
     {% endif %}
