@@ -215,10 +215,8 @@ class Database:
     def createUser(self, slug, email, password):
         passhash = bcrypt.hashpw(password.encode('ASCII'), bcrypt.gensalt())
 
-        print(passhash)
-
         sql = "INSERT INTO users (slug, email, name, bio, creationdate, passhash) VALUES (%s, %s, %s, %s, %s, %s)"
-        val = (slug, email, slug, "", datetime.datetime.now(), passhash)
+        val = (slug.lower(), email, slug, "", datetime.datetime.now(), passhash)
 
         self.cursor.execute(sql, val)
 

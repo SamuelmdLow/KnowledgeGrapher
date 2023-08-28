@@ -58,7 +58,7 @@ def login():
                </form>
                '''
     db = Database()
-    slug = flask.request.form['username']
+    slug = flask.request.form['username'].lower()
     password = flask.request.form['password']
     result = db.checkUserCredentials(slug, password)
     if result == "Success":
@@ -183,6 +183,7 @@ def addSubject():
 
 @app.route('/<userSlug>')
 def userPage(userSlug):
+    userSlug = userSlug.lower()
     db = Database()
     context = db.setupContext()
     user = db.getUser(userSlug)
@@ -229,6 +230,7 @@ def userPage(userSlug):
 @app.route('/<userSlug>/dir')
 @flask_login.login_required
 def userDir(userSlug):
+    userSlug = userSlug.lower()
     db = Database()
     context = db.setupContext()
     user = db.getUser(userSlug)
@@ -260,6 +262,7 @@ def bookmarks():
 @app.route('/<ownerSlug>/<graphSlug>/edit')
 @flask_login.login_required
 def edit(ownerSlug, graphSlug):
+    ownerSlug = ownerSlug.lower()
     if flask_login.current_user.id == ownerSlug:
         db = Database()
         context = db.setupContext()
@@ -274,6 +277,7 @@ def edit(ownerSlug, graphSlug):
 
 @app.route('/<ownerSlug>/<graphSlug>')
 def view(ownerSlug, graphSlug):
+    ownerSlug = ownerSlug.lower()
     db = Database()
     context = db.setupContext()
 
@@ -318,6 +322,7 @@ def follow():
 @app.route('/<ownerSlug>/<graphSlug>/like', methods=['GET', 'POST'])
 @flask_login.login_required
 def like(ownerSlug, graphSlug):
+    ownerSlug = ownerSlug.lower()
     db = Database()
     state = db.toggleLike(flask_login.current_user.id, ownerSlug, graphSlug)
     return state
@@ -325,6 +330,7 @@ def like(ownerSlug, graphSlug):
 @app.route('/<ownerSlug>/<graphSlug>/bookmark', methods=['GET', 'POST'])
 @flask_login.login_required
 def bookmark(ownerSlug, graphSlug):
+    ownerSlug = ownerSlug.lower()
     db = Database()
     state = db.toggleBookmark(flask_login.current_user.id, ownerSlug, graphSlug)
     return state
@@ -332,6 +338,7 @@ def bookmark(ownerSlug, graphSlug):
 @app.route('/<ownerSlug>/<graphSlug>/save', methods=['GET', 'POST'])
 @flask_login.login_required
 def save(ownerSlug, graphSlug):
+    ownerSlug = ownerSlug.lower()
     if flask_login.current_user.id == ownerSlug:
         db = Database()
         data = request.form.get("data")
@@ -343,6 +350,7 @@ def save(ownerSlug, graphSlug):
 @app.route('/<ownerSlug>/<graphSlug>/saveInfo', methods=['GET', 'POST'])
 @flask_login.login_required
 def saveInfo(ownerSlug, graphSlug):
+    ownerSlug = ownerSlug.lower()
     if flask.request.method == 'GET':
         return '''
                <form action='saveInfo' method='POST'>
