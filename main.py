@@ -2,9 +2,15 @@ import flask
 from flask import Response, Flask, flash, session, render_template, redirect, url_for, request, send_from_directory, jsonify
 import flask_login
 from db import Database
+import os
 
 app = Flask(__name__)
-app.secret_key = b'temp'  # not real
+
+secretKey = "secret"
+if "SECRET_KEY" in os.environ:
+    secretKey = os.environ["SECRET_KEY"]
+
+app.secret_key = secretKey
 
 login_manager = flask_login.LoginManager()
 login_manager.init_app(app)
