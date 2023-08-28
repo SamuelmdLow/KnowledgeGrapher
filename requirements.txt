@@ -1,6 +1,6 @@
 flask
-urllib3===1.26
-requests===2.28
+urllib3
+requests
 pathlib
 flask_login
 mysql.connector
