@@ -6,9 +6,9 @@ import os
 
 app = Flask(__name__)
 
-secretKey = "secret"
+secretKey = b'secret'
 if "SECRET_KEY" in os.environ:
-    secretKey = os.environ["SECRET_KEY"]
+    secretKey = bytes(os.environ["SECRET_KEY"], 'utf-8')
 
 app.secret_key = secretKey
 
