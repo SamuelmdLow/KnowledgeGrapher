@@ -1,8 +1,6 @@
 import flask
 import requests
 from flask import Response, Flask, flash, session, render_template, redirect, url_for, request, send_from_directory, jsonify
-from pathlib import Path
-import os
 import flask_login
 from db import Database
 
