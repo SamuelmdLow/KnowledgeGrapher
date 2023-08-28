@@ -167,9 +167,6 @@ footer {
     background-color: black;
     color: white;
     margin: 0;
-    position: sticky;
-    bottom: 0;
-    top: 100%;
 }
 
 .footer-content > p > a {

@@ -322,7 +322,6 @@ a
 
 @media only screen and (max-width: 600px) {
     .nodeDetails {
-        bottom: 0;
         margin: auto;
         width: 100%;
         border-radius: 0;
@@ -334,6 +333,25 @@ a
         max-width: none;
         right: auto;
         top: auto;
+    }
+
+    .gv-nodeDetails {
+        display: none;
+    }
+
+    #guidedview {
+        margin: auto;
+        width: 100%;
+        border-radius: 0;
+        height: 40%;
+        overflow-y: scroll;
+        border: none;
+        border-top: solid;
+        bottom: 0;
+        max-width: none;
+        right: auto;
+        top: auto;
+        padding-bottom: inherit;
     }
 }
 
