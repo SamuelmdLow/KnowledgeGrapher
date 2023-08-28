@@ -17,7 +17,9 @@ class User(flask_login.UserMixin):
 
 @login_manager.user_loader
 def user_loader(slug):
+    print("user loader")
     db = Database()
+    print("got db")
     if db.getUserId(slug) is None:
         return
 
@@ -28,7 +30,9 @@ def user_loader(slug):
 
 @login_manager.request_loader
 def request_loader(request):
+    print("request loader")
     db = Database()
+    print("got db")
     slug = request.form.get('username')
     if db.getUserId(slug) is None:
         return
@@ -387,4 +391,3 @@ def page_not_found(e):
 if __name__ == "__main__":
     print("run app")
     app.run(debug=True, host="0.0.0.0")
-    print("app ran (epic)")
