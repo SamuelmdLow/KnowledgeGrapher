@@ -200,8 +200,8 @@ function panning()
         graph.setAttribute("panx", panx);
         graph.setAttribute("pany", pany);
 
-        graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
-        graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
+        graph.style.backgroundPositionX = String(panx) + "px";
+        graph.style.backgroundPositionY = String(pany) + "px";
     }
 }
 
@@ -483,9 +483,9 @@ function initializeZooming(e){
     graph.setAttribute("panx", panx);
     graph.setAttribute("pany", pany);
 
-    graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
-    graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
-    graph.style.backgroundSize = String(Math.floor(newscale*25)) + "px";
+    graph.style.backgroundPositionX = String(panx) + "px";
+    graph.style.backgroundPositionY = String(pany) + "px";
+    graph.style.backgroundSize = String(newscale*25) + "px";
 }
 
 function placein()
@@ -613,11 +613,13 @@ function initializeBookmarkButton() {
 function initializeGuidedViewButton() {
     document.getElementById("guided-view-button").addEventListener("click", function(event) {
        event.preventDefault();
-       document.getElementById("guidedview").classList.toggle("hidden");
-       document.getElementById("guided-view-button").classList.toggle("close-guided-view-button");
-       document.getElementById("guided-view-button").classList.toggle("open-guided-view-button");
-       document.getElementById("inspector").classList.toggle("gv-nodeDetails");
-       document.getElementById("circles").classList.toggle("not-gv");
+       document.body.classList.toggle("gv");
+       document.body.classList.toggle("full");
+       //document.getElementById("guidedview").classList.toggle("hidden");
+       //document.getElementById("guided-view-button").classList.toggle("close-guided-view-button");
+       //document.getElementById("guided-view-button").classList.toggle("open-guided-view-button");
+       //document.getElementById("inspector").classList.toggle("gv-nodeDetails");
+       //document.getElementById("circles").classList.toggle("not-gv");
    });
 }
 
@@ -764,6 +766,11 @@ function getGuidedView(){
 
     setTimeout(function(){
 
+    gsap.to("#circles", {
+        scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[0].id + "-gv", start: "start start", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[0], self.progress)},
+        immediateRender: false,
+    });
+
     for (let i=0; i<things.length; i++) {
         gsap.to("#" + things[i].id, {
             scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
@@ -778,24 +785,31 @@ function getGuidedView(){
         });
 
         gsap.to("#circles", {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "center center", end:"+=200", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "center center", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
             immediateRender: false,
         });
     }
     }, 500);
 }
 
-function gvpan(focus, progress) {
+function gvpan(focus, timeline) {
+    console.log(focus.id);
+    var progress = timeline*timeline;
     var graph = document.getElementById("graph");
     var currentScale = parseInt(graph.getAttribute("scale"));
     var targetScale = 75/focus.mass;
 
     var scale = currentScale + (targetScale - currentScale) * progress;
 
-    var targetX = document.body.offsetWidth/3 - targetScale*focus.x;
-    var currentX = parseInt(graph.getAttribute("panx"));
-    var targetY = document.body.offsetHeight/3 - targetScale*focus.y;
-    var currentY = parseInt(graph.getAttribute("pany"));
+    if (document.body.offsetWidth > 720) {
+        var targetX = document.body.offsetWidth/3 - targetScale*focus.x;
+        var targetY = document.body.offsetHeight/3 - targetScale*focus.y;
+    } else {
+        var targetX = document.body.offsetWidth/2 - targetScale*focus.x;
+        var targetY = document.body.offsetHeight/4 - targetScale*focus.y;
+    }
+    var currentX = parseFloat(graph.getAttribute("panx"));
+    var currentY = parseFloat(graph.getAttribute("pany"));
 
     var panx = currentX + (targetX - currentX) * progress;
     var pany = currentY + (targetY - currentY) * progress;

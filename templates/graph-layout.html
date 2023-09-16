@@ -23,7 +23,7 @@
     {% block head %}{% endblock %}
 </head>
 <body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);"
-      onload="onload()">
+      onload="onload()" class="{% block bodyClass %}{% endblock %}">
 
 <div id="modal" class="hidden">
 
