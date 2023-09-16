@@ -23,7 +23,7 @@
     {% block head %}{% endblock %}
 </head>
 <body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);"
-      onload="onload()">
+      onload="onload()" class="{% block bodyClass %}{% endblock %}">
 
 <div id="modal" class="hidden">
 
@@ -68,7 +68,7 @@
                 <ul>
                     <li>
                         <p>Login</p>
-                       <form action='login' method='POST'>
+                       <form action='/login' method='POST'>
                         <input type='text' name='username' id='username' placeholder='username'/>
                         <input type='password' name='password' id='password' placeholder='password'/>
                         <input type='submit' name='submit'/>

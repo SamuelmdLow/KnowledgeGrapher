@@ -230,6 +230,7 @@ function closeNodeEdit() {
     var nodeEditor = document.getElementById("inspector");
     nodeEditor.classList.remove("show-nodeEditor");
     nodeEditor.classList.add("hidden-nodeEditor");
+    document.getElementById("input").value = convertToMarkUp(things);
     nodeEdit = false;
 }
 
@@ -349,7 +350,6 @@ function update()
             }
         } else {
             closeNodeEdit();
-            openMarkup();
         }
     }
 

@@ -29,13 +29,12 @@ body
     margin:0;
     padding:10px;
     width: 20%;
-    height: 80%;
     min-width:10%;
     max-width: 750px;
     z-index: 3;
     position: absolute;
     top:50px;
-    bottom:20px;
+    bottom:100px;
     border-radius:10px;
     border-top-width:0;
     border-bottom-width:0;
@@ -253,17 +252,16 @@ a
     color: white;
     border: 2px black solid;
     padding: 15px;
+    bottom: 20px;
 }
 
 #markup-button {
     position: absolute;
-    bottom: 50px;
     left: 25px;
 }
 
 #guided-view-button {
     position: absolute;
-    bottom: 50px;
     right: 25px;
 }
 

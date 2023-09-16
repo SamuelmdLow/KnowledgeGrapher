@@ -72,14 +72,7 @@ def login():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if flask.request.method == 'GET':
-        return '''
-               <form action='register' method='POST'>
-                <input type='text' name='username' id='username' placeholder='username'/>
-                <input type='text' name='email' id='email' placeholder='email'/>
-                <input type='password' name='password' id='password' placeholder='password'/>
-                <input type='submit' name='submit'/>
-               </form>
-               '''
+        return render_template('register.html')
 
     db = Database()
     slug = flask.request.form['username']
