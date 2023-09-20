@@ -757,7 +757,7 @@ function getDependants(node) {
         var next = [];
         for (let i=0; i<newDependants.length; i++) {
             for (let a=0; a<newDependants[i].receiveFrom.length; a++) {
-                if(dependants.includes(newDependants[i].receiveFrom[a].node) == false && newDependants.includes(newDependants[i].receiveFrom[a].node) == false) {
+                if(dependants.includes(newDependants[i].receiveFrom[a].node) == false && newDependants.includes(newDependants[i].receiveFrom[a].node) == false && next.includes(newDependants[i].receiveFrom[a].node) == false) {
                     next.push(newDependants[i].receiveFrom[a].node);
                 }
             }
