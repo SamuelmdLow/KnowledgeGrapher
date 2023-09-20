@@ -631,6 +631,9 @@ function separateChapters(chapters) {
     paths.push([]);
 
     for (let n=0; n<things.length; n++) {
+        if (chapters.includes(things[n])) {
+            continue;
+        }
         var closest = null;
         var shortest = null;
         for (let c=0; c<chapters.length; c++) {
@@ -741,9 +744,54 @@ function guidedNextNode(node, candidates) {
     return [path, candidates];
 }
 
+function getDependants(node) {
+    var dependants = [node];
+    var newDependants = [];
+
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        newDependants.push(node.receiveFrom[i].node);
+    }
+
+    while (newDependants.length > 0) {
+        console.log(newDependants);
+        var next = [];
+        for (let i=0; i<newDependants.length; i++) {
+            for (let a=0; a<newDependants[i].receiveFrom.length; a++) {
+                if(dependants.includes(newDependants[i].receiveFrom[a].node) == false && newDependants.includes(newDependants[i].receiveFrom[a].node) == false) {
+                    next.push(newDependants[i].receiveFrom[a].node);
+                }
+            }
+        }
+        dependants = dependants.concat(newDependants);
+        newDependants = next;
+    }
+
+    return dependants;
+}
+
+function getChapters(chapters, nodes) {
+    var chapter = nodes.sort(function(a,b){return getDependants(b).length - getDependants(a).length})[0];
+    chapters.push(chapter);
+
+    var taken = getDependants(chapter);
+
+    var left = []
+    for (let i=0; i<nodes.length; i++) {
+        if(taken.includes(nodes[i]) == false) {
+            left.push(nodes[i]);
+        }
+    }
+
+    if(left.length == 0) {
+        return chapters
+    } else {
+        return getChapters(chapters, left)
+    }
+}
+
 function getGuidedView(){
 
-    var chapters = things.sort(function(a,b){return b.receiveFrom.length - a.receiveFrom.length}).slice(0,5);
+    var chapters = getChapters([], things)
 
     var path = separateChapters(chapters);
     console.log(path);
