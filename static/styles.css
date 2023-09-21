@@ -152,7 +152,7 @@ nav > ul > li > p{
     left: 0;
     top:0;
     margin: 0;
-    width: 300px;
+    min-width: 230px;
     height: 100vh;
     padding: 15px;
     padding-left: 30px;
@@ -160,22 +160,26 @@ nav > ul > li > p{
 }
 
 #dashboard-sidebar > ul {
- font-family: atkinson;
+    font-family: atkinson;
+    padding-left: 20px;
+    padding-right: 10px;
 }
 
 footer {
-    background-color: black;
-    color: white;
+    background-color: white;
+    color: black;
     margin: 0;
+    font-family: atkinson;
+    border-top: #e1e1e1 3px solid;
 }
 
 .footer-content > p > a {
-    color: white;
+    color: black;
 }
 
 .footer-content {
-    max-width: 1000px;
-    margin: auto;
+    margin-left: 30px;
+    margin-right: 30px;
     padding: 15px;
 }
 
@@ -252,9 +256,9 @@ input {
 
 .scrollList-container {
     position: relative;
-    margin-right: 1em;
+    margin-right: -1em;
     margin-bottom: 3em;
-    margin-left: -2em;
+    margin-left: -1em;
 }
 
 /* width */
@@ -266,8 +270,8 @@ input {
 /* Track */
 ::-webkit-scrollbar-track {
   background: #f1f1f1;
-  margin-left: 2em;
-  margin-right: 2em;
+  margin-left: 1em;
+  margin-right: 1em;
 }
 
 /* Handle */
@@ -283,7 +287,7 @@ input {
 .fader-left {
     position: absolute;
     left: -1px;
-    width: 2em;
+    width: 1em;
     height: 100%;
     background-image: linear-gradient(to left, #ffffff00, #ffffff);
     top: 0;
@@ -292,7 +296,7 @@ input {
 .fader-right {
     position: absolute;
     right: -1px;
-    width: 2em;
+    width: 1em;
     height: 100%;
     background-image: linear-gradient(to right, #ffffff00, #ffffff);
     top: 0;
@@ -388,6 +392,7 @@ input[type="submit" i]:hover {
 @media only screen and (max-width: 600px) {
     .content {
     display: block;
+    overflow-x: hidden;
     }
     .mobile-hidden {
         display: none;
@@ -433,7 +438,7 @@ input[type="submit" i]:hover {
     }
 
     #dashboard-sidebar > h2 {
-        font-size: xx-large;
+        font-size: x-large;
     }
 
     .desktop-hidden {

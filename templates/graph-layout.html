@@ -53,7 +53,7 @@
         {% if current_user.is_authenticated %}
                 <li class="mobile-hidden"><a href="/{{ current_user.id }}/dir" title="Directory"><i class="fa-solid fa-folder"></i></a></li>
         <li class="dropdown mobile-hidden">
-            <a href="/{{ current_user.id }}">{{ current_user.id }}</a>
+            <a href="/{{ current_user.id }}">{{ current_user.name }}</a>
             <div class="profile-dropdown dropdown-content">
                 <ul>
                     <li><a href="/{{ current_user.id }}">Profile</a></li>

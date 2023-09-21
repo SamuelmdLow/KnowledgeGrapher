@@ -29,7 +29,7 @@
         <li class="mobile-hidden"><a href="/new" title="New Graph"><i class="fa-solid fa-plus"></i></a></li>
         <li class="mobile-hidden"><a href="/{{ current_user.id }}/dir" title="Directory"><i class="fa-solid fa-folder"></i></a></li>
         <li class="dropdown">
-            <a class="mobile-hidden" href="/{{ current_user.id }}">{{ current_user.id }}</a>
+            <a class="mobile-hidden" href="/{{ current_user.id }}">{{ current_user.name }}</a>
             <p class="desktop-hidden">{{ current_user.id }}</p>
             <div class="profile-dropdown dropdown-content">
                 <ul>
@@ -65,7 +65,7 @@
 
     {% if current_user.is_authenticated %}
     <div id="dashboard-sidebar" class="mobile-hidden {% block dashboard %}desktop-hidden{% endblock %}">
-    <h1>{{ current_user.id }}</h1>
+    <h1>{{ current_user.name }}</h1>
     <h2>Recently Viewed</h2>
     <ul>
         {% for graph in context.user_viewed %}
@@ -95,8 +95,7 @@
             Brabmli combines force-directed graphs (a data visualization technique), knowledge graphs
             (a concept in information science), and the interactive Web to allow it’s users to easily
             organize information in a way that more effectively represents relationships between
-            concepts than a traditional notebook or textbook can. This is important due to the
-            associative nature of human memory.
+            concepts than a traditional notebook or textbook can.
         </p>
     </div>
 </footer>

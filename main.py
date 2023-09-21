@@ -18,7 +18,8 @@ login_manager.init_app(app)
 users = {'foobar': {'password': 'secret'}}
 
 class User(flask_login.UserMixin):
-    pass
+    def __init__(self):
+        self.name = "Name missing"
 
 
 @login_manager.user_loader
@@ -31,6 +32,7 @@ def user_loader(slug):
 
     user = User()
     user.id = slug
+    user.name = db.getUser(slug).name
     return user
 
 
