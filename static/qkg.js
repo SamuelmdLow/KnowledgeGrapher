@@ -93,7 +93,7 @@ function selectThis(that)
     var thing = getThingsFromId(that.id);
     var graph = document.getElementById("graph");
 
-    if(selected.includes(thing)) {
+    if(selected.includes(thing.id)) {
         selected.splice(selected.indexOf(thing.id), 1);
     } else {
         selected.push(thing.id);
