@@ -296,6 +296,33 @@ def view(ownerSlug, graphSlug):
 
     return "Page not found", 404
 
+@app.route('/<ownerSlug>/<graphSlug>/quiz')
+def quiz(ownerSlug, graphSlug):
+    ownerSlug = ownerSlug.lower()
+    db = Database()
+    context = db.setupContext()
+
+    graph = db.getGraph(ownerSlug, graphSlug)
+
+    if not graph:
+        return redirect('/404')
+    context["graph"] = graph
+
+    if flask_login.current_user.is_authenticated:
+        context["liked"] = db.userLiked(flask_login.current_user.id, ownerSlug, graphSlug)
+        context["bookmarked"] = db.userBookmarked(flask_login.current_user.id, ownerSlug, graphSlug)
+        db.viewGraph(flask_login.current_user.id, ownerSlug, graphSlug)
+    else:
+        context["liked"] = False
+
+    if graph.privacy == 2 or graph.privacy == 1:
+        return render_template('graph-quiz.html', context=context)
+    elif graph.user == flask_login.current_user.id:
+        return render_template('graph-quiz.html', context=context)
+
+    return "Page not found", 404
+
+
 @app.route('/new')
 @flask_login.login_required
 def new():

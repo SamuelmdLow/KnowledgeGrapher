@@ -3,7 +3,7 @@
 {% block title %}{{context.graph.name}} - Brambli{% endblock %}
 
 {% block head %}
-<script src="{{ url_for('static', filename='vkg.js') }}"></script>
+<script src="{{ url_for('static', filename='qkg.js') }}"></script>
 <link rel="stylesheet" href="{{ url_for('static', filename='vkg.css') }}">
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
@@ -18,7 +18,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 {% endblock %}
 
-{% block bodyClass %}gv{% endblock %}
+{% block bodyClass %}quiz{% endblock %}
 
 {% block info %}
 <div class="info-content">
@@ -44,7 +44,7 @@
 </li>
 {% endif %}
 <li>
-    <a href="/{{context.graph.user}}/{{context.graph.slug}}/quiz" >Quiz</a>
+    <a href="/{{context.graph.user}}/{{context.graph.slug}}" >View</a>
 </li>
 {% endblock %}
 
@@ -70,25 +70,28 @@
 
 {% block ui %}
 
+<comment>
 <div id="inspector" class="nodeDetails">
     <div id="inspector-info">
-        <h1 id="inspector-name"></h1>
-        <p id="inspector-id"></p>
-        <img id="inspector-image">
         <p id="inspector-desc"></p>
-        <hr>
-        <ul id="inspector-rels"></ul>
     </div>
 </div>
+</comment>
 
-<a id="guided-view-button" class="graph-button" href="#">Toggle guided view</a>
-<div id="guidedview">
+<div id="question-box">
+    <div class="question-text">
+        <h1 id="question">What node is it</h1>
+        <p id="question-small">Select the node which satisfies the relationship</p>
+    </div>
+    <div>
+        <a href="#" class="graph-button" id="quiz-submit">submit</a>
+    </div>
 </div>
 
 <script>
 initializeModal();
 initializeLikeButton();
 initializeBookmarkButton();
-initializeGuidedViewButton()
+initializeSubmitButton();
 </script>
 {% endblock %}
