@@ -1,0 +1,97 @@
+{% extends "graph-layout.html" %}
+
+{% block title %}{{context.graph.name}} - Brambli{% endblock %}
+
+{% block head %}
+<script src="{{ url_for('static', filename='qkg.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='vkg.css') }}">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css">
+<script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+{% endblock %}
+
+{% block bodyClass %}quiz{% endblock %}
+
+{% block info %}
+<div class="info-content">
+    <h1>{{context.graph.name}}</h1>
+    <img src="{{ url_for('static', filename='images/thumbnails/' + context.graph.user + '-' + context.graph.slug + '.png') }}">
+    {% if context.graph.privacy == 0 %}
+        <p>Private</p>
+    {% elif context.graph.privacy == 1 %}
+        <p>Unlisted</p>
+    {% else %}
+        <p>Public</p>
+    {% endif %}
+
+    <p>{{context.graph.desc}}</p>
+</div>
+{% endblock %}
+
+{% block left_nav %}
+<li><a id="info-button" href="#">Info</a></li>
+{% if context.graph.user == current_user.id %}
+<li>
+    <a href="/{{context.graph.user}}/{{context.graph.slug}}/edit" >Edit</a>
+</li>
+{% endif %}
+<li>
+    <a href="/{{context.graph.user}}/{{context.graph.slug}}" >View</a>
+</li>
+{% endblock %}
+
+{% block nav_mid %}
+{{context.graph.name}}
+{% endblock %}
+
+{% block right_nav %}
+<li>
+    <a id="like-button" title="Like" class="{% if context.liked %}active{% else %}inactive{% endif %}" href="/#">
+        <i class="inactive nav-icon fa-regular fa-heart"></i>
+        <i class="active nav-icon fa-solid fa-heart"></i>
+        <span id="like-count">{{context.graph.likes}}</span>
+    </a>
+</li>
+<li>
+    <a id="bookmark-button" title="Bookmark" class="{% if context.bookmarked %}active{% else %}inactive{% endif %}" href="/#">
+        <i class="inactive nav-icon fa-regular fa-bookmark"></i>
+        <i class="active nav-icon fa-solid fa-bookmark"></i>
+    </a>
+</li>
+{% endblock %}
+
+{% block ui %}
+
+<comment>
+<div id="inspector" class="nodeDetails">
+    <div id="inspector-info">
+        <p id="inspector-desc"></p>
+    </div>
+</div>
+</comment>
+
+<div id="question-box">
+    <div class="question-text">
+        <h1 id="question">What node is it</h1>
+        <p id="question-small">Select the node which satisfies the relationship</p>
+    </div>
+    <div>
+        <a href="#" class="graph-button" id="quiz-submit">submit</a>
+    </div>
+</div>
+
+<script>
+initializeModal();
+initializeLikeButton();
+initializeBookmarkButton();
+initializeSubmitButton();
+</script>
+{% endblock %}

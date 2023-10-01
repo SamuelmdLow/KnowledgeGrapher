@@ -12,8 +12,8 @@ function onload()
     window.setInterval(staticUpdate, 1);
     document.getElementById("graph").setAttribute("ondblclick", "deselect()");
     document.getElementById("saved").remove();
+    testRel();
 
-    getGuidedView();
     MathJax.typesetPromise()
 }
 
@@ -23,24 +23,11 @@ function staticUpdate()
     placein();
 }
 
-function uninspect(that)
-{
-    that.classList.toggle("inspected-circle");
-    for(let i=0; i<that.children.length; i++)
-    {
-        var line = that.children[i];
-        if(line.classList.contains("line"))
-        {
-            line.classList.remove("inspected-line");
-        }
-    }
-
-    document.getElementById("graph").setAttribute("inspected", "none");
-}
-
 function deselect() {
-    document.getElementById('inspector').style.display = 'none';
-    uninspect(document.getElementById(graph.getAttribute("inspected")));
+    for(let i=0; i<selected.length; i++) {
+        document.getElementById(selected[i]).classList.toggle("inspected-circle");
+    }
+    selected = [];
 }
 
 function cleanText(plainText) {
@@ -99,6 +86,21 @@ function showInspector(that)
     setTimeout(MathJax.typesetPromise(), 1);
 }
 
+var selected = []
+
+function selectThis(that)
+{
+    var thing = getThingsFromId(that.id);
+    var graph = document.getElementById("graph");
+
+    if(selected.includes(thing)) {
+        selected.splice(selected.indexOf(thing.id), 1);
+    } else {
+        selected.push(thing.id);
+    }
+    that.classList.toggle("inspected-circle");
+}
+
 function setup(things)
 {
     var graph = document.getElementById("graph");
@@ -110,7 +112,7 @@ function setup(things)
         const circle = document.createElement("DIV");
         circle.classList.add("circle");
         circle.id = thing.id;
-        circle.setAttribute("onclick", "showInspector(this)");
+        circle.setAttribute("onclick", "selectThis(this)");
         circle.style.backgroundImage = "url('"+thing.image+"')";
 
         circle.addEventListener("wheel", function(e) {
@@ -183,8 +185,15 @@ function setup(things)
                 }
             }
         }
-        document.getElementById(thingA.id).style.width = String(2*scale*parseFloat(thingA.mass))+"px";
-        document.getElementById(thingA.id).style.height = String(2*scale*parseFloat(thingA.mass))+"px";
+        if($(document.getElementById(thingA.id)).is(':hover')) {
+            console.log("hovering");
+            document.getElementById(thingA.id).style.width = "500px";
+            document.getElementById(thingA.id).style.height = "500px";
+        } else {
+            console.log("not");
+            document.getElementById(thingA.id).style.width = String(2*scale*parseFloat(thingA.mass))+"px";
+            document.getElementById(thingA.id).style.height = String(2*scale*parseFloat(thingA.mass))+"px";
+        }
     }
 }
 
@@ -509,8 +518,6 @@ function placein()
         var thing = things[i];
         var circle = document.getElementById(thing.id);
 
-        circle.children[0].style.fontSize = String(Math.ceil(scale*thing.mass/4)) + "px";
-
         var size = 2*scale*thing.mass;
         if($(circle).is(':hover')) {
             if(2*scale*thing.mass < 100) {
@@ -524,7 +531,6 @@ function placein()
             circle.children[0].classList.remove("tooSmall");
             circle.children[0].style.fontSize = String(Math.ceil(size/8)) + "px";
         }
-
 
         circle.style.width = String(size) + "px";
         circle.style.height = String(size) + "px";
@@ -616,6 +622,13 @@ function bookmarkGraph()
     });
 }
 
+function initializeSubmitButton() {
+    document.getElementById("quiz-submit").addEventListener("click", function(event) {
+       event.preventDefault();
+       nextQuestion();
+   });
+}
+
 function initializeLikeButton() {
     document.getElementById("like-button").addEventListener("click", function(event) {
        event.preventDefault();
@@ -628,66 +641,6 @@ function initializeBookmarkButton() {
        event.preventDefault();
        bookmarkGraph()
    });
-}
-
-function initializeGuidedViewButton() {
-    document.getElementById("guided-view-button").addEventListener("click", function(event) {
-       event.preventDefault();
-       document.body.classList.toggle("gv");
-       document.body.classList.toggle("full");
-       //document.getElementById("guidedview").classList.toggle("hidden");
-       //document.getElementById("guided-view-button").classList.toggle("close-guided-view-button");
-       //document.getElementById("guided-view-button").classList.toggle("open-guided-view-button");
-       //document.getElementById("inspector").classList.toggle("gv-nodeDetails");
-       //document.getElementById("circles").classList.toggle("not-gv");
-   });
-}
-
-function separateChapters(chapters) {
-    var paths = [];
-    for (let c=0; c<chapters.length; c++) {
-        paths.push([chapters[c], []]);
-    }
-    paths.push([]);
-
-    for (let n=0; n<things.length; n++) {
-        if (chapters.includes(things[n])) {
-            continue;
-        }
-        var closest = null;
-        var shortest = null;
-        for (let c=0; c<chapters.length; c++) {
-            //find n's distance to c
-            var distance = getNodeDistance(things[n], chapters[c], []);
-            if (distance != null) {
-                if (shortest == null || distance < shortest) {
-                    closest = c;
-                    shortest = distance;
-                }
-            }
-        }
-
-        if (closest != null) {
-            paths[closest][1].push(things[n]);
-        }
-        else {
-            paths[paths.length-1].push(things[n]);
-        }
-    }
-    console.log(paths);
-    var path = [];
-    for (let c=0; c<chapters.length; c++) {
-        var guided = guidedNextNode(paths[c][0],paths[c][1]);
-        path.push(guided[0]);
-    }
-    console.log(paths[paths.length-1]);
-    path = path.concat(paths[paths.length-1]);
-    console.log(path);
-    // when showing
-    // Get direct children, if no direct children go back to parent
-    // Select node with least receiveFrom nodes
-    // repeat
-    return path
 }
 
 function getNodeDistance(a, b, met) {
@@ -722,48 +675,6 @@ function getNodeDistance(a, b, met) {
     }
 }
 
-function guidedNextNode(node, candidates) {
-
-    var directReceive = [];
-
-    for (let i=0; i<node.receiveFrom.length; i++) {
-        directReceive.push(node.receiveFrom[i].node);
-    }
-
-    var direct = [];
-
-
-    for (let i=0; i<candidates.length; i++) {
-        if (directReceive.includes(candidates[i])) {
-            direct.push(candidates[i]);
-        }
-    }
-    //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
-
-    var path = [];
-    while (direct.length > 0) {
-        var newpath = []
-
-        candidates.splice(candidates.indexOf(direct[0]),1);
-        result = guidedNextNode(direct[0], candidates);
-
-        newpath = result[0];
-        candidates = result[1];
-
-        path.push(newpath);
-        //console.log(direct[0]);
-        var direct = [];
-        for (let i=0; i<candidates.length; i++) {
-            if (directReceive.includes(candidates[i])) {
-                direct.push(candidates[i]);
-            }
-        }
-        //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
-    }
-    path = [node, path];
-    return [path, candidates];
-}
-
 function getDependants(node) {
     var dependants = [node];
     var newDependants = [];
@@ -789,79 +700,8 @@ function getDependants(node) {
     return dependants;
 }
 
-function getChapters(chapters, nodes) {
-    var chapter = nodes.sort(function(a,b){return getDependants(b).length - getDependants(a).length})[0];
-    chapters.push(chapter);
 
-    var taken = getDependants(chapter);
-
-    var left = []
-    for (let i=0; i<nodes.length; i++) {
-        if(taken.includes(nodes[i]) == false) {
-            left.push(nodes[i]);
-        }
-    }
-
-    if(left.length == 0) {
-        return chapters
-    } else {
-        return getChapters(chapters, left)
-    }
-}
-
-function getGuidedView(){
-
-    var chapters = getChapters([], things)
-
-    var path = separateChapters(chapters);
-    console.log(path);
-    var gv = document.getElementById("guidedview");
-    var text = "";
-    text = "<h1>" + document.getElementById("titlename").innerHTML + "</h1><ul>";
-
-    for (let i=0; i<path.length; i++) {
-        text = text + getGuidedViewNode(path[i], null, 2);
-    }
-
-    //text = text.replaceAll("\\\\(", "\\(");
-    //text = text.replaceAll("\\\\)", "\\)");
-    console.log(text);
-    gv.innerHTML = text + "</ul>"
-
-    gv.offsetHeight;
-
-    gsap.registerPlugin(ScrollTrigger);
-
-    setTimeout(function(){
-
-    gsap.to("#circles", {
-        scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[0].id + "-gv", start: "start start", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[0], self.progress)},
-        immediateRender: false,
-    });
-
-    for (let i=0; i<things.length; i++) {
-        gsap.to("#" + things[i].id, {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
-            display: "block",
-            opacity: 1
-        });
-
-        gsap.to(".line[target=" + things[i].id + "]", {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
-            display: "block",
-            opacity: 0.2
-        });
-
-        gsap.to("#circles", {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "center center", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
-            immediateRender: false,
-        });
-    }
-    }, 500);
-}
-
-function gvpan(focus, timeline) {
-    console.log(focus.id);
+function gvpan(focus, timeline) {;
     var progress = timeline*timeline;
     var graph = document.getElementById("graph");
     var currentScale = parseFloat(graph.getAttribute("scale"));
@@ -870,7 +710,7 @@ function gvpan(focus, timeline) {
     var scale = currentScale + (targetScale - currentScale) * progress;
 
     if (document.body.offsetWidth > 720) {
-        var targetX = document.body.offsetWidth/3 - targetScale*focus.x;
+        var targetX = document.body.offsetWidth/2 - targetScale*focus.x;
         var targetY = document.body.offsetHeight/3 - targetScale*focus.y;
     } else {
         var targetX = document.body.offsetWidth/2 - targetScale*focus.x;
@@ -891,42 +731,62 @@ function gvpan(focus, timeline) {
     graph.style.backgroundSize = String(scale*25) + "px";
 }
 
-function getGuidedViewNode(path, parent, heading) {
-    var text = "";
-    if (path.length == 0) {
-        return "";
-    }
-    text = text + "<li class='gv-item'>";
+var questionNode;
 
-    if (parent != null) {
-        for (let i=0; i<path[0].sendTo.length; i++) {
-            if (path[0].sendTo[i].node == parent) {
-                text = text + "<p class='relation'>" + path[0].name + " " + path[0].sendTo[i].rel + " " + parent.name + "</p>";
-                break;
-            }
+function getRandomRel() {
+    var node = things[Math.floor(Math.random()*things.length)];
+    while(node.sendTo.length < 1) {
+        var node = things[Math.floor(Math.random()*things.length)];
+    }
+    var rel = node.sendTo[Math.floor(Math.random()*node.sendTo.length)].rel;
+
+    return [node, rel];
+}
+
+answer = []
+
+function testRel() {
+    answer = []
+    var q = getRandomRel();
+    questionNode = q[0];
+    document.getElementById(questionNode.id).classList.toggle("inspected-circle");
+
+    for (let i=0; i<q[0].sendTo.length; i++) {
+        if (q[0].sendTo[i].rel == q[1]) {
+            answer.push(q[0].sendTo[i].node.id);
         }
     }
 
-    if (Array.isArray(path)) {
-        var node = path[0];
+    var question = "<b>" + q[0].name + "</b> " + q[1] + " <span class='unknown'>?????</span>";
+
+    document.getElementById("question").innerHTML = question;
+
+    var zoomToIndex = 0;
+    var time = 200;
+    var zoomTo = setInterval(function () {
+        gvpan(questionNode, zoomToIndex/time);
+        zoomToIndex += 1;
+
+        if(zoomToIndex > time) {
+            clearInterval(zoomTo);
+        }
+    }, 0.1);
+}
+
+function checkAnswer() {
+    if(answer.sort().toString() == selected.sort().toString()) {
+        return true;
+    }
+    return false;
+}
+
+function nextQuestion() {
+    if(checkAnswer()) {
+        alert("True");
     } else {
-        var node = path;
+        alert(answer);
     }
-
-    text = text + "<h" + String(heading) + " id='" + node.id + "-gv'>"+prepareText(node.name)+"</h" + String(heading) +">";
-    if (node.image != "null" && node.image != "") {
-        text = text + "<img src='" + node.image + "'>"
-    }
-    text = text + "<p>"+prepareText(node.desc)+"</p></li>";
-
-    if (Array.isArray(path)) {
-        if (path[1].length > 0) {
-            text = text + "<ul class='gv-list'>"
-            for (let i=0; i<path[1].length; i++) {
-                text = text + getGuidedViewNode(path[1][i], node, heading+1);
-            }
-            text = text + "</ul>"
-        }
-    }
-    return text;
+    deselect();
+    document.getElementById(questionNode.id).classList.toggle("inspected-circle");
+    testRel();
 }
