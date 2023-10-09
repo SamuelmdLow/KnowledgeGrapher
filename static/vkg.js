@@ -867,19 +867,19 @@ function getGuidedView(){
         });
 
         gsap.to("#circles", {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "center center", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", end: "+=300", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
             immediateRender: false,
         });
 
         gsap.to("#circles", {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "center center", onToggle: self => gvSelectNode(things[i])},
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", onToggle: self => gvSelectNode(things[i])},
         });
     }
     }, 500);
 }
 
 function gvSelectNode(focus) {
-    document.getElementById(focus.id).classList.toggle("inspected");
+    document.getElementById(focus.id).classList.toggle("gv-inspected");
 }
 
 function gvpan(focus, timeline) {
@@ -918,7 +918,14 @@ function getGuidedViewNode(path, parent, heading) {
     if (path.length == 0) {
         return "";
     }
-    text = text + "<li class='gv-item'>";
+
+    if (Array.isArray(path)) {
+        var node = path[0];
+    } else {
+        var node = path;
+    }
+
+    text = text + "<li class='gv-item' id='" + node.id + "-gv'>";
 
     if (parent != null) {
         for (let i=0; i<path[0].sendTo.length; i++) {
@@ -929,13 +936,7 @@ function getGuidedViewNode(path, parent, heading) {
         }
     }
 
-    if (Array.isArray(path)) {
-        var node = path[0];
-    } else {
-        var node = path;
-    }
-
-    text = text + "<h" + String(heading) + " id='" + node.id + "-gv'>"+prepareText(node.name)+"</h" + String(heading) +">";
+    text = text + "<h" + String(heading) + ">"+prepareText(node.name)+"</h" + String(heading) +">";
     if (node.image != "null" && node.image != "") {
         text = text + "<img src='" + node.image + "'>"
     }
