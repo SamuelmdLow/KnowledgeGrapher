@@ -38,14 +38,14 @@
 
 {% block left_nav %}
 <li><a id="info-button" href="#">Info</a></li>
+<li>
+    <a href="/{{context.graph.user}}/{{context.graph.slug}}/quiz" >Quiz</a>
+</li>
 {% if context.graph.user == current_user.id %}
 <li>
     <a href="/{{context.graph.user}}/{{context.graph.slug}}/edit" >Edit</a>
 </li>
 {% endif %}
-<li>
-    <a href="/{{context.graph.user}}/{{context.graph.slug}}/quiz" >Quiz</a>
-</li>
 {% endblock %}
 
 {% block nav_mid %}

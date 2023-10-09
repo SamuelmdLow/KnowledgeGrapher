@@ -112,6 +112,11 @@ function setup(things)
                 line.setAttribute("target", themId);
                 line.setAttribute("count", 1);
 
+                var arrowhead = document.createElement("DIV");
+                arrowhead.classList.add("arrowhead");
+
+                line.appendChild(arrowhead);
+
                 circle.appendChild(line);
             }
             else
@@ -1066,6 +1071,28 @@ function physics()
                     line.style.left = String((thingA.mass-length/2+xoff)*scale) + "px";
                     line.style.top = String((thingA.mass+yoff)*scale) + "px";
                     line.style.height = String(thick*scale*0.1)+"px";
+
+                    for (let c=0; c<line.children.length; c++) {
+                        if (line.children[c].classList.contains("arrowhead")) {
+                            var arrow = line.children[c];
+
+                            arrow.style.borderTopWidth = String(scale/4) + "px";
+                            arrow.style.borderBottomWidth = String(scale/4) + "px";
+                            arrow.style.top = String(thick*scale*0.1/2+scale/-4) + "px";
+
+                            if(dX > 0) {
+                                arrow.style.left = "0";
+                                arrow.style.right = "auto"
+                                arrow.style.borderLeftWidth = String(scale/2) + "px";
+                                arrow.style.borderRightWidth = "0";
+                            } else {
+                                arrow.style.left = "auto";
+                                arrow.style.right = "0"
+                                arrow.style.borderRightWidth = String(scale/2) + "px";
+                                arrow.style.borderLeftWidth = "0";
+                            }
+                        }
+                    }
                 }
             }
         }

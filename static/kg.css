@@ -164,6 +164,19 @@ body
     opacity: 0.8;
 }
 
+.arrowhead {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+
+	border-left-color: #e233af;
+	border-right-color: #e233af;
+}
+
 .button
 {
     position: relative;

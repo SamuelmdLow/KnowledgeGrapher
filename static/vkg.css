@@ -101,7 +101,7 @@ body
         black  2px -2px 4px;
 }
 
-.inspected-circle
+.inspected
 {
     border-color: red;
     border-width: 3px;
@@ -141,7 +141,30 @@ body
     opacity:0.2;
 }
 
-.full .line:not(.inspected-line) {
+.line p {
+    display: none;
+    opacity: 0;
+}
+
+.arrowhead {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+
+    border-top-color: transparent;
+    border-bottom-color: transparent;
+
+	border-left-color: red;
+	border-right-color: red;
+}
+
+.inspected .line p {
+    display: block;
+    opacity: 1;
+}
+
+.full .line {
     opacity:0.2 !important;
     display: block !important;
 }
@@ -151,11 +174,16 @@ body
     display: none;
 }
 
-.inspected-line
+.inspected .line
 {
     background-color: red;
     opacity: 1 !important;
-    display: block !important;
+}
+
+.full .inspected .line
+{
+    background-color: red;
+    opacity: 1 !important;
 }
 
 .button

@@ -25,15 +25,7 @@ function staticUpdate()
 
 function uninspect(that)
 {
-    that.classList.toggle("inspected-circle");
-    for(let i=0; i<that.children.length; i++)
-    {
-        var line = that.children[i];
-        if(line.classList.contains("line"))
-        {
-            line.classList.remove("inspected-line");
-        }
-    }
+    that.classList.toggle("inspected");
 
     document.getElementById("graph").setAttribute("inspected", "none");
 }
@@ -62,7 +54,7 @@ function showInspector(that)
     {
         uninspect(document.getElementById(graph.getAttribute("inspected")));
     }
-    that.classList.toggle("inspected-circle");
+    that.classList.toggle("inspected");
     graph.setAttribute("inspected", that.id);
     var inspector = document.getElementById("inspector");
     inspector.style.display = "block";
@@ -79,15 +71,6 @@ function showInspector(that)
 
     var rels = document.getElementById("inspector-rels");
     rels.innerHTML = '';
-
-    for(let i=0; i<that.children.length; i++)
-    {
-        var line = that.children[i];
-        if(line.classList.contains("line"))
-        {
-            line.classList.add("inspected-line");
-        }
-    }
 
     for(let i=0; i<thing.sendTo.length; i++)
     {
@@ -144,6 +127,15 @@ function setup(things)
                 line.classList.add("line");
                 line.setAttribute("target", themId);
                 line.setAttribute("count", 1);
+
+                var reltext = document.createElement("p");
+                reltext.innerHTML = thing.sendTo[x].rel;
+
+                var arrowhead = document.createElement("DIV");
+                arrowhead.classList.add("arrowhead");
+
+                line.appendChild(arrowhead);
+                line.appendChild(reltext);
 
                 circle.appendChild(line);
             }
@@ -567,6 +559,28 @@ function placein()
                     line.style.left = String((thingA.mass-length/2+xoff)*scale) + "px";
                     line.style.top = String((thingA.mass+yoff)*scale) + "px";
                     line.style.height = String(thick*scale*0.1)+"px";
+
+                    for (let c=0; c<line.children.length; c++) {
+                        if (line.children[c].classList.contains("arrowhead")) {
+                            var arrow = line.children[c];
+
+                            arrow.style.borderTopWidth = String(scale/4) + "px";
+                            arrow.style.borderBottomWidth = String(scale/4) + "px";
+                            arrow.style.top = String(thick*scale*0.1/2+scale/-4) + "px";
+
+                            if(dX > 0) {
+                                arrow.style.left = "0";
+                                arrow.style.right = "auto"
+                                arrow.style.borderLeftWidth = String(scale/2) + "px";
+                                arrow.style.borderRightWidth = "0";
+                            } else {
+                                arrow.style.left = "auto";
+                                arrow.style.right = "0"
+                                arrow.style.borderRightWidth = String(scale/2) + "px";
+                                arrow.style.borderLeftWidth = "0";
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -856,8 +870,16 @@ function getGuidedView(){
             scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "center center", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
             immediateRender: false,
         });
+
+        gsap.to("#circles", {
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "center center", onToggle: self => gvSelectNode(things[i])},
+        });
     }
     }, 500);
+}
+
+function gvSelectNode(focus) {
+    document.getElementById(focus.id).classList.toggle("inspected");
 }
 
 function gvpan(focus, timeline) {
