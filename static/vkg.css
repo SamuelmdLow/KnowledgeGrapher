@@ -191,7 +191,7 @@ body
 	border-right-color: red;
 }
 
-.gv-inspected .arrowhead {
+.gv .gv-inspected .arrowhead {
 	border-left-color: red;
 	border-right-color: red;
 }
