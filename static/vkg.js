@@ -549,16 +549,26 @@ function placein()
                     var length = d-thingA.mass-thingB.mass;
                     var xoff = (dX/d)*(thingA.mass+length/2);
                     var yoff = (dY/d)*(thingA.mass+length/2);
+                    var deg = (180/Math.PI)*Math.atan(dY/dX);
 
                     line.style.transform = "rotate(0deg)";
                     line.style.width = String(length*scale)+"px";
                     line.style.height = "0.1px";
                     line.style.left = String((thingA.mass-length/2)*scale) + "px";
                     line.style.top = String((thingA.mass)*scale) + "px";
-                    line.style.transform = "rotate(" + String((180/Math.PI)*Math.atan(dY/dX)) + "deg)";
+                    line.style.transform = "rotate(" + String(deg) + "deg)";
                     line.style.left = String((thingA.mass-length/2+xoff)*scale) + "px";
                     line.style.top = String((thingA.mass+yoff)*scale) + "px";
                     line.style.height = String(thick*scale*0.1)+"px";
+
+                    if(dX > 0) {
+                        line.classList.remove("left")
+                        line.classList.add("right");
+                    } else {
+                        line.classList.remove("right")
+                        line.classList.add("left");
+                    }
+
 
                     for (let c=0; c<line.children.length; c++) {
                         if (line.children[c].classList.contains("arrowhead")) {
@@ -569,15 +579,9 @@ function placein()
                             arrow.style.top = String(thick*scale*0.1/2+scale/-4) + "px";
 
                             if(dX > 0) {
-                                arrow.style.left = "0";
-                                arrow.style.right = "auto"
                                 arrow.style.borderLeftWidth = String(scale/2) + "px";
-                                arrow.style.borderRightWidth = "0";
                             } else {
-                                arrow.style.left = "auto";
-                                arrow.style.right = "0"
                                 arrow.style.borderRightWidth = String(scale/2) + "px";
-                                arrow.style.borderLeftWidth = "0";
                             }
                         }
                     }
@@ -831,7 +835,8 @@ function getGuidedView(){
     console.log(path);
     var gv = document.getElementById("guidedview");
     var text = "";
-    text = "<h1>" + document.getElementById("titlename").innerHTML + "</h1><ul>";
+    text = gv.innerHTML;
+    text = text + "<ul>";
 
     for (let i=0; i<path.length; i++) {
         text = text + getGuidedViewNode(path[i], null, 2);
@@ -863,7 +868,7 @@ function getGuidedView(){
         gsap.to(".line[target=" + things[i].id + "]", {
             scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
             display: "block",
-            opacity: 0.2
+            opacity: 0.5
         });
 
         gsap.to("#circles", {
@@ -872,7 +877,7 @@ function getGuidedView(){
         });
 
         gsap.to("#circles", {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", onToggle: self => gvSelectNode(things[i])},
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", end: "bottom center", onToggle: self => gvSelectNode(things[i])},
         });
     }
     }, 500);
@@ -887,7 +892,7 @@ function gvpan(focus, timeline) {
     var progress = timeline*timeline;
     var graph = document.getElementById("graph");
     var currentScale = parseFloat(graph.getAttribute("scale"));
-    var targetScale = 75/focus.mass;
+    var targetScale = 50/focus.mass;
 
     var scale = currentScale + (targetScale - currentScale) * progress;
 
@@ -935,12 +940,13 @@ function getGuidedViewNode(path, parent, heading) {
             }
         }
     }
-
-    text = text + "<h" + String(heading) + ">"+prepareText(node.name)+"</h" + String(heading) +">";
+    text = text + "<div class='nodeCard'>";
+    text = text + "<h" + String(heading) + "><a href='#"+node.id+"-gv'>"+prepareText(node.name)+"</a></h" + String(heading) +">";
     if (node.image != "null" && node.image != "") {
         text = text + "<img src='" + node.image + "'>"
     }
     text = text + "<p>"+prepareText(node.desc)+"</p></li>";
+    text = text + "</div>";
 
     if (Array.isArray(path)) {
         if (path[1].length > 0) {

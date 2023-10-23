@@ -143,9 +143,29 @@ body
 .line
 {
     position:absolute;
-    background-color: red;
+    background: linear-gradient(to right, #e233af, transparent);
     z-index: 1;
-    opacity:0.2;
+    opacity:1;
+}
+
+.line.right {
+    background-image: linear-gradient(to right, #e233af, transparent);
+}
+
+.line.left {
+    background-image: linear-gradient(to left, #e233af, transparent);
+}
+
+.right>.arrowhead {
+    left: 0;
+    right: auto;
+    border-right-width: 0;
+}
+
+.left>.arrowhead {
+    left: auto;
+    right: 0;
+    border-left-width: 0;
 }
 
 .line p {
@@ -162,6 +182,16 @@ body
     border-top-color: transparent;
     border-bottom-color: transparent;
 
+	border-left-color: #e233af;
+	border-right-color: #e233af;
+}
+
+.inspected .arrowhead {
+	border-left-color: red;
+	border-right-color: red;
+}
+
+.gv-inspected .arrowhead {
 	border-left-color: red;
 	border-right-color: red;
 }
@@ -177,7 +207,7 @@ body
 }
 
 .full .line {
-    opacity:0.2 !important;
+    opacity:1 !important;
     display: block !important;
 }
 
@@ -188,20 +218,43 @@ body
 
 .gv .gv-inspected .line
 {
-    background-color: red;
     opacity: 1 !important;
+}
+
+
+.gv .gv-inspected .line.right {
+    background-image: linear-gradient(to right, red, transparent);
+}
+
+.gv .gv-inspected .line.left {
+    background-image: linear-gradient(to left, red, transparent);
 }
 
 .inspected .line
 {
-    background-color: red;
     opacity: 1 !important;
 }
 
+.inspected .line.right {
+    background-image: linear-gradient(to right, red, transparent);
+}
+
+.inspected .line.left {
+    background-image: linear-gradient(to left, red, transparent);
+}
+
+
 .full .inspected .line
 {
-    background-color: red;
     opacity: 1 !important;
+}
+
+.full .inspected .line.right {
+    background-image: linear-gradient(to right, red, transparent);
+}
+
+.full .inspected .line.left {
+    background-image: linear-gradient(to left, red, transparent);
 }
 
 .button
@@ -365,6 +418,7 @@ a
     margin-left: 10px;
     padding: 10px;
     border-left: 1px solid #0000003b;
+    margin-bottom: 5em;
 }
 
 #guidedview > ul {
@@ -373,10 +427,20 @@ a
     border: none;
 }
 
+#guidedview > ul > li.gv-item {
+    margin-top: 10em;
+}
+
 #guidedview li.gv-item {
-    padding: 1em;
-    border-bottom: 1px solid;
     min-height: 350px;
+    margin: 0.5em;
+    scroll-margin-block-start: 2em
+}
+
+.nodeCard {
+    border-radius: 15px;
+    padding: 1em;
+    box-shadow: 0 0 6px black;
 }
 
 #guidedview img {
@@ -384,9 +448,7 @@ a
 }
 
 .relation {
- border-left: solid 1px red;
- color: red;
- padding-left: 1em;
+ color: #e233af;
 }
 
 .question-text {

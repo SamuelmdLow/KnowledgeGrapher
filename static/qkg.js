@@ -25,7 +25,7 @@ function staticUpdate()
 
 function deselect() {
     for(let i=0; i<selected.length; i++) {
-        document.getElementById(selected[i]).classList.toggle("inspected-circle");
+        document.getElementById(selected[i]).classList.toggle("inspected");
     }
     selected = [];
 }
@@ -49,7 +49,7 @@ function showInspector(that)
     {
         uninspect(document.getElementById(graph.getAttribute("inspected")));
     }
-    that.classList.toggle("inspected-circle");
+    that.classList.toggle("inspected");
     graph.setAttribute("inspected", that.id);
     var inspector = document.getElementById("inspector");
     inspector.style.display = "block";
@@ -66,15 +66,6 @@ function showInspector(that)
 
     var rels = document.getElementById("inspector-rels");
     rels.innerHTML = '';
-
-    for(let i=0; i<that.children.length; i++)
-    {
-        var line = that.children[i];
-        if(line.classList.contains("line"))
-        {
-            line.classList.add("inspected-line");
-        }
-    }
 
     for(let i=0; i<thing.sendTo.length; i++)
     {
@@ -98,7 +89,7 @@ function selectThis(that)
     } else {
         selected.push(thing.id);
     }
-    that.classList.toggle("inspected-circle");
+    that.classList.toggle("inspected");
 }
 
 function setup(things)
@@ -705,7 +696,7 @@ function gvpan(focus, timeline) {;
     var progress = timeline*timeline;
     var graph = document.getElementById("graph");
     var currentScale = parseFloat(graph.getAttribute("scale"));
-    var targetScale = 75/focus.mass;
+    var targetScale = 50/focus.mass;
 
     var scale = currentScale + (targetScale - currentScale) * progress;
 
@@ -749,7 +740,7 @@ function testRel() {
     answer = []
     var q = getRandomRel();
     questionNode = q[0];
-    document.getElementById(questionNode.id).classList.toggle("inspected-circle");
+    document.getElementById(questionNode.id).classList.toggle("inspected");
 
     for (let i=0; i<q[0].sendTo.length; i++) {
         if (q[0].sendTo[i].rel == q[1]) {
@@ -787,6 +778,6 @@ function nextQuestion() {
         alert(answer);
     }
     deselect();
-    document.getElementById(questionNode.id).classList.toggle("inspected-circle");
+    document.getElementById(questionNode.id).classList.toggle("inspected");
     testRel();
 }
