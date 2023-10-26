@@ -16,10 +16,12 @@ function onload()
     getGuidedView();
     MathJax.typesetPromise()
 
-    document.getElementById("guidedview").setAttribute("onclick", "openFullScreen()");
+    if(/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)){
+        document.getElementById("guidedview").setAttribute("onclick", "openFullScreen()");
+    }
 }
 
-function openFullscreen() {
+function openFullScreen() {
     const elem = document.documentElement;
     if (elem.webkitRequestFullscreen) { /* Safari */
         elem.webkitRequestFullscreen();
