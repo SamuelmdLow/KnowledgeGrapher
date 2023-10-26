@@ -1348,7 +1348,7 @@ function separateChapters(chapters) {
     var path = [];
     for (let c=0; c<chapters.length; c++) {
         var guided = guidedNextNode(paths[c][0],paths[c][1]);
-        console.log(guided);
+        //console.log(guided);
         path = path.concat(guided[0]);
     }
     path.concat(paths[paths.length-1]);

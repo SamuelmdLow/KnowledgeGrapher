@@ -15,6 +15,17 @@ function onload()
 
     getGuidedView();
     MathJax.typesetPromise()
+
+    document.getElementById("guidedview").setAttribute("onclick", "openFullScreen()");
+}
+
+function openFullscreen() {
+    const elem = document.documentElement;
+    if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+    }
 }
 
 function staticUpdate()
@@ -602,7 +613,7 @@ function likeGraph()
         data: {},
         dataType: "text",
         success: function(data){
-             console.log(data);
+             //console.log(data);
              if (data=="like") {
                 document.getElementById('like-count').innerHTML = parseInt(document.getElementById('like-count').innerHTML)+1;
              } else {
@@ -626,7 +637,7 @@ function bookmarkGraph()
         data: {},
         dataType: "text",
         success: function(data){
-             console.log(data);
+             //console.log(data);
 
             document.getElementById("bookmark-button").classList.toggle("active");
             document.getElementById("bookmark-button").classList.toggle("inactive");
@@ -692,15 +703,15 @@ function separateChapters(chapters) {
             paths[paths.length-1].push(things[n]);
         }
     }
-    console.log(paths);
+    //console.log(paths);
     var path = [];
     for (let c=0; c<chapters.length; c++) {
         var guided = guidedNextNode(paths[c][0],paths[c][1]);
         path.push(guided[0]);
     }
-    console.log(paths[paths.length-1]);
+    //console.log(paths[paths.length-1]);
     path = path.concat(paths[paths.length-1]);
-    console.log(path);
+    //console.log(path);
     // when showing
     // Get direct children, if no direct children go back to parent
     // Select node with least receiveFrom nodes
@@ -791,7 +802,7 @@ function getDependants(node) {
     }
 
     while (newDependants.length > 0) {
-        console.log(newDependants);
+        //console.log(newDependants);
         var next = [];
         for (let i=0; i<newDependants.length; i++) {
             for (let a=0; a<newDependants[i].receiveFrom.length; a++) {
@@ -832,7 +843,7 @@ function getGuidedView(){
     var chapters = getChapters([], things)
 
     var path = separateChapters(chapters);
-    console.log(path);
+    //console.log(path);
     var gv = document.getElementById("guidedview");
     var text = "";
     text = gv.innerHTML;
@@ -844,7 +855,7 @@ function getGuidedView(){
 
     //text = text.replaceAll("\\\\(", "\\(");
     //text = text.replaceAll("\\\\)", "\\)");
-    console.log(text);
+    //console.log(text);
     gv.innerHTML = text + "</ul>"
 
     gv.offsetHeight;
@@ -888,7 +899,7 @@ function gvSelectNode(focus) {
 }
 
 function gvpan(focus, timeline) {
-    console.log(focus.id);
+    //console.log(focus.id);
     var progress = timeline*timeline;
     var graph = document.getElementById("graph");
     var currentScale = parseFloat(graph.getAttribute("scale"));
