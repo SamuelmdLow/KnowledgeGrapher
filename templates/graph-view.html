@@ -23,7 +23,13 @@
 {% block info %}
 <div class="info-content">
     <h1>{{context.graph.name}}</h1>
-    <img src="{{ url_for('static', filename='images/thumbnails/' + context.graph.user + '-' + context.graph.slug + '.png') }}">
+    <img src="
+    {% if imagesUrl %}
+        {{imagesUrl}}/tn-{{context.graph.user}}-{{context.graph.slug}}.png
+    {% else %}
+        {{ url_for('static', filename='images/thumbnails/' + context.graph.user + '-' + context.graph.slug + '.png') }}
+    {% endif %}
+    ">
     {% if context.graph.privacy == 0 %}
         <p>Private</p>
     {% elif context.graph.privacy == 1 %}
