@@ -948,7 +948,7 @@ function getGuidedViewNode(path, parent, heading) {
     if (parent != null) {
         for (let i=0; i<path[0].sendTo.length; i++) {
             if (path[0].sendTo[i].node == parent) {
-                text = text + "<p class='relation'>" + path[0].name + " " + path[0].sendTo[i].rel + " " + parent.name + "</p>";
+                text = text + "<p class='relation'>" + path[0].name + " <b>" + path[0].sendTo[i].rel + "</b> " + parent.name + "</p>";
                 break;
             }
         }
