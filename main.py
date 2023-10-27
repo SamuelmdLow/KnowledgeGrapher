@@ -1,3 +1,5 @@
+import io
+
 import flask
 from flask import Response, Flask, flash, session, render_template, redirect, url_for, request, send_from_directory, jsonify
 import flask_login
@@ -413,12 +415,27 @@ def saveInfo(ownerSlug, graphSlug):
             'colors': ["#420F69", "#9A22F5", "#6918A9", "#7219B5", "#5A148F"],
         })
 
-        with open('static/images/thumbnails/' + str(ownerSlug) + '-' + str(graphSlug) + '.png', 'wb') as f:
-            f.write(resp.content)
+        if "AWS_S3" in os.environ:
+            import boto3
+            s3 = boto3.client('s3',
+              aws_access_key_id=os.environ["AWS_S3_ID"],
+              aws_secret_access_key=os.environ["AWS_S3_KEY"])
+
+            s3.upload_fileobj(io.BytesIO(resp.content), os.environ["AWS_S3"], 'tn-' + str(ownerSlug) + '-' + str(graphSlug) + ".png")
+        else:
+            with open('static/images/thumbnails/' + str(ownerSlug) + '-' + str(graphSlug) + '.png', 'wb') as f:
+                f.write(resp.content)
 
         return '<script>document.location.href = document.referrer</script>'
 
     return "Page not found", 404
+
+@app.context_processor
+def inject_user():
+    d = {}
+    if "AWS_S3" in os.environ:
+        d["imagesUrl"] = os.environ["IMAGES_URL"]
+    return d
 
 @app.errorhandler(404)
 def page_not_found(e):
