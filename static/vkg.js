@@ -820,11 +820,40 @@ function getDependants(node) {
     return dependants;
 }
 
+function getFirstDependants(node) {
+    var dependants = [node];
+    var newDependants = [];
+
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        if (node.receiveFrom[i].node.sendTo[0].node == node) {
+            newDependants.push(node.receiveFrom[i].node);
+        }
+    }
+
+    while (newDependants.length > 0) {
+        //console.log(newDependants);
+        var next = [];
+        for (let i=0; i<newDependants.length; i++) {
+            for (let a=0; a<newDependants[i].receiveFrom.length; a++) {
+                if(dependants.includes(newDependants[i].receiveFrom[a].node) == false && newDependants.includes(newDependants[i].receiveFrom[a].node) == false && next.includes(newDependants[i].receiveFrom[a].node) == false) {
+                    if (newDependants[i].receiveFrom[a].node.sendTo[0].node == newDependants[i]) {
+                        next.push(newDependants[i].receiveFrom[a].node);
+                    }
+                }
+            }
+        }
+        dependants = dependants.concat(newDependants);
+        newDependants = next;
+    }
+
+    return dependants;
+}
+
 function getChapters(chapters, nodes) {
-    var chapter = nodes.sort(function(a,b){return getDependants(b).length - getDependants(a).length})[0];
+    var chapter = nodes.sort(function(a,b){return getFirstDependants(b).length - getFirstDependants(a).length})[0];
     chapters.push(chapter);
 
-    var taken = getDependants(chapter);
+    var taken = getFirstDependants(chapter);
 
     var left = []
     for (let i=0; i<nodes.length; i++) {
