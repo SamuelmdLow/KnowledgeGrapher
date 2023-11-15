@@ -10,6 +10,7 @@
     <h1>All Users</h1>
     {% for user in context.all_users %}
     <p><a href="/{{user.slug}}">{{user.name}}</a> - {{user.creationDate}}</p>
+    <p>{{user.email}}</p>
     {% endfor %}
 </div>
 
