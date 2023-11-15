@@ -258,6 +258,14 @@ class Database:
         else:
             return result[0]
 
+    def getAllUsers(self):
+        sql = "SELECT * FROM users"
+        self.cursor.execute(sql)
+        result = self.cursor.fetchall()
+        for i in range(len(result)):
+            result[i] = self.User(result[i])
+        return result
+    
     def getUser(self, slug):
         sql = "SELECT * FROM users WHERE slug =%s"
         values = (slug,)

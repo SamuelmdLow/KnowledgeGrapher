@@ -132,6 +132,7 @@ def admin():
         graphCount = db.statsGraphCount()
         graphPubCount = db.statsGraphCount(privacy=2)
 
+        context["all_users"] = db.getAllUsers()
         context["user_count"] = userCount
         context["graphsPerUser"] = graphCount/userCount
         context["graphsPubPerUser"] = graphPubCount/userCount
