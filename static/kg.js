@@ -266,6 +266,13 @@ function toggleMarkup() {
     }
 }
 
+function toggleGuidedView() {
+    var gveditor = document.getElementById("guidedview-editor");
+    getGuidedView();
+    gveditor.classList.toggle("hidden-nodeEditor");
+    gveditor.classList.toggle("show-nodeEditor");
+}
+
 function deleteNode(id, that) {
     if (confirm("Delete this node '" + id + "'?")) {
         for(let x in things) {
@@ -1304,6 +1311,13 @@ function initializeMarkupButton(){
    });
 }
 
+function initializeGuidedViewButton(){
+    document.getElementById("guided-view-button").addEventListener("click", function(event) {
+       event.preventDefault();
+       toggleGuidedView();
+   });
+}
+
 function initializeInfoButton(){
     document.getElementById("info-button").addEventListener("click", function(event) {
        event.preventDefault();
@@ -1392,14 +1406,93 @@ function getNodeDistance(a, b, met) {
     }
 }
 
+function separateChapters(chapters) {
+    var paths = [];
+    for (let c=0; c<chapters.length; c++) {
+        paths.push([chapters[c], []]);
+    }
+    paths.push([]);
 
+    for (let n=0; n<things.length; n++) {
+        if (chapters.includes(things[n])) {
+            continue;
+        }
+        var closest = null;
+        var shortest = null;
+        for (let c=0; c<chapters.length; c++) {
+            //find n's distance to c
+            var distance = getNodeDistance(things[n], chapters[c], []);
+            if (distance != null) {
+                if (shortest == null || distance < shortest) {
+                    closest = c;
+                    shortest = distance;
+                }
+            }
+        }
+
+        if (closest != null) {
+            paths[closest][1].push(things[n]);
+        }
+        else {
+            paths[paths.length-1].push(things[n]);
+        }
+    }
+    //console.log(paths);
+    var path = [];
+    for (let c=0; c<chapters.length; c++) {
+        var guided = guidedNextNode(paths[c][0],paths[c][1]);
+        path.push(guided[0]);
+    }
+    //console.log(paths[paths.length-1]);
+    path = path.concat(paths[paths.length-1]);
+    //console.log(path);
+    // when showing
+    // Get direct children, if no direct children go back to parent
+    // Select node with least receiveFrom nodes
+    // repeat
+    return path
+}
+
+function getNodeDistance(a, b, met) {
+    if (a==b) {
+        return 0;
+    }
+
+    met.push(a);
+
+    if (a.sendTo.length > 0) {
+        var shortest = null;
+        for (let i=0; i<a.sendTo.length; i++) {
+            if (met.includes(a.sendTo[i].node) == false) {
+                var d = getNodeDistance(a.sendTo[i].node, b, met);
+                if (d != null) {
+                    if (shortest == null) {
+                        shortest = d;
+                    }
+                    if (d < shortest) {
+                        shortest = d;
+                    }
+                }
+            }
+        }
+        if (shortest != null) {
+            return shortest + 1
+        } else {
+            return null
+        }
+    } else {
+        return null
+    }
+}
 
 function guidedNextNode(node, candidates) {
 
     var directReceive = [];
 
     for (let i=0; i<node.receiveFrom.length; i++) {
-        directReceive.push(node.receiveFrom[i].node);
+        if (node.receiveFrom[i].node.sendTo[0].node == node) {
+            directReceive.push(node.receiveFrom[i].node);
+        } 
     }
 
     var direct = [];
@@ -1410,7 +1503,7 @@ function guidedNextNode(node, candidates) {
             direct.push(candidates[i]);
         }
     }
-    direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+    //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
 
     var path = [];
     while (direct.length > 0) {
@@ -1422,7 +1515,7 @@ function guidedNextNode(node, candidates) {
         newpath = result[0];
         candidates = result[1];
 
-        path = path.concat(newpath);
+        path.push(newpath);
         //console.log(direct[0]);
         var direct = [];
         for (let i=0; i<candidates.length; i++) {
@@ -1430,8 +1523,135 @@ function guidedNextNode(node, candidates) {
                 direct.push(candidates[i]);
             }
         }
-        direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+        //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
     }
-    path = [node].concat(path);
+    path = [node, path];
     return [path, candidates];
+}
+
+function getDependants(node) {
+    var dependants = [node];
+    var newDependants = [];
+
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        newDependants.push(node.receiveFrom[i].node);
+    }
+
+    while (newDependants.length > 0) {
+        //console.log(newDependants);
+        var next = [];
+        for (let i=0; i<newDependants.length; i++) {
+            for (let a=0; a<newDependants[i].receiveFrom.length; a++) {
+                if(dependants.includes(newDependants[i].receiveFrom[a].node) == false && newDependants.includes(newDependants[i].receiveFrom[a].node) == false && next.includes(newDependants[i].receiveFrom[a].node) == false) {
+                    next.push(newDependants[i].receiveFrom[a].node);
+                }
+            }
+        }
+        dependants = dependants.concat(newDependants);
+        newDependants = next;
+    }
+
+    return dependants;
+}
+
+function getFirstDependants(node) {
+    var dependants = [node];
+    var newDependants = [];
+
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        if (node.receiveFrom[i].node.sendTo[0].node == node) {
+            newDependants.push(node.receiveFrom[i].node);
+        }
+    }
+
+    while (newDependants.length > 0) {
+        //console.log(newDependants);
+        var next = [];
+        for (let i=0; i<newDependants.length; i++) {
+            for (let a=0; a<newDependants[i].receiveFrom.length; a++) {
+                if(dependants.includes(newDependants[i].receiveFrom[a].node) == false && newDependants.includes(newDependants[i].receiveFrom[a].node) == false && next.includes(newDependants[i].receiveFrom[a].node) == false) {
+                    if (newDependants[i].receiveFrom[a].node.sendTo[0].node == newDependants[i]) {
+                        next.push(newDependants[i].receiveFrom[a].node);
+                    }
+                }
+            }
+        }
+        dependants = dependants.concat(newDependants);
+        newDependants = next;
+    }
+
+    return dependants;
+}
+
+function getChapters(chapters, nodes) {
+    var chapter = nodes.sort(function(a,b){return getFirstDependants(b).length - getFirstDependants(a).length})[0];
+    chapters.push(chapter);
+
+    var taken = getFirstDependants(chapter);
+
+    var left = []
+    for (let i=0; i<nodes.length; i++) {
+        if(taken.includes(nodes[i]) == false) {
+            left.push(nodes[i]);
+        }
+    }
+
+    if(left.length == 0) {
+        return chapters
+    } else {
+        return getChapters(chapters, left)
+    }
+}
+
+
+function getGuidedView(){
+
+    var chapters = getChapters([], things)
+
+    var path = separateChapters(chapters);
+    //console.log(path);
+    var gv = document.getElementById("guidedview-editor");
+    var text = "";
+    text = gv.innerHTML;
+    text = text + "<ul>";
+
+    for (let i=0; i<path.length; i++) {
+        text = text + getGuidedViewNode(path[i], null, 2);
+    }
+
+    gv.innerHTML = text + "</ul>"
+}
+
+function getGuidedViewNode(path, parent, heading) {
+    var text = "";
+    if (path.length == 0) {
+        return "";
+    }
+
+    if (Array.isArray(path)) {
+        var node = path[0];
+    } else {
+        var node = path;
+    }
+
+    text = text + "<li class='gve-item' id='" + node.id + "-gv'>";
+
+    text = text + "<p>"+prepareText(node.name)+"</p></li>";
+
+    if (Array.isArray(path)) {
+        if (path[1].length > 0) {
+            text = text + "<ul class='gve-list'>"
+            for (let i=0; i<path[1].length; i++) {
+                text = text + getGuidedViewNode(path[1][i], node, heading+1);
+            }
+            text = text + "</ul>"
+        }
+    }
+    return text;
+}
+
+function prepareText(plainText)
+{
+    let clean = DOMPurify.sanitize(plainText, {USE_PROFILES: {html: true}});
+    return marked.parse(clean);
 }

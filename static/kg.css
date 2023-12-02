@@ -375,3 +375,41 @@ width:100%
 #ui > a {
     z-index: 10;
 }
+
+.gve-item {
+    padding-left: 1em;
+    padding-right: 1em;
+    background-color: #6918A9;
+    color: white;
+    width: fit-content;
+    border-radius: 5px;
+    min-width: 100px;
+    margin: 1px;
+    list-style: square;
+}
+.gve-item p {
+    margin: 0;
+}
+
+.gve-list {
+    padding-left: 0.5em;
+    border-left: 0.2em solid #d9e0e6;
+}
+
+.gve-list > .gve-item {
+    background-color: #6918A9;
+}
+
+.gve-list > .gve-list > .gve-item {
+    background-color: rgb(89, 24, 169);
+}
+
+
+.gve-list > .gve-list > .gve-list > .gve-item {
+    background-color: #2a0d80;
+}
+
+
+.gve-list > .gve-list > .gve-list > .gve-list > .gve-item {
+    background-color: #330953;
+}

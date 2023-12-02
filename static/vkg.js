@@ -758,7 +758,9 @@ function guidedNextNode(node, candidates) {
     var directReceive = [];
 
     for (let i=0; i<node.receiveFrom.length; i++) {
-        directReceive.push(node.receiveFrom[i].node);
+        if (node.receiveFrom[i].node.sendTo[0].node == node) {
+            directReceive.push(node.receiveFrom[i].node);
+        } 
     }
 
     var direct = [];
