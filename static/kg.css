@@ -392,6 +392,7 @@ width:100%
     margin: 0;
     user-select: none;
 }
+
 .gve-item p {
     margin: 0;
 }
@@ -415,6 +416,13 @@ width:100%
 
 .gve-list .gve-list .gve-list .gve-list .gve-item {
     background-color: #330953;
+}
+
+.gve-item:hover {
+    background-color: #e233af !important;
+}
+.gve-item:hover + .gve-list {
+    border-left: 0.2em solid #dcacf2;
 }
 
 .dragReciever {

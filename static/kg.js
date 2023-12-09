@@ -517,10 +517,8 @@ function processInput(input)
         }
     }
 
-    console.log("Hey");
     for (let b=0; b<things.length; b++){
         //alert(thing.sendTo);
-        console.log(things[b].sendTo);
         var newSendTo = [];
         for (let a=0; a< things[b].sendTo.length; a++) {
             var connection = null;
@@ -530,13 +528,12 @@ function processInput(input)
                     break;
                 }
             }
-            console.log(connection);
+            
             if (connection != null) {
                 newSendTo.push(new Relation(things[b].sendTo[a].rel, connection));
                 connection.receiveFrom.push(new Relation(things[b].sendTo[a].rel, things[b]));
             }
         }
-        console.log(newSendTo);
         things[b].sendTo = newSendTo;
 
     }
@@ -1333,7 +1330,6 @@ function openInfo(){
 function separateChapters(chapters) {
     var path = [];
     var candidates = Array.from(things);
-    console.log(candidates);
     for (let c=0; c<chapters.length; c++) {
         var s = guidedNextNode(chapters[c], candidates);
         path.push(s[0]);
@@ -1511,23 +1507,23 @@ function getChapters(chapters, nodes) {
     }
 }
 
+var dragReciever = "<div class='dragReciever' ondrop='dropNode(event)' ondragover='allowDrop(event)' ></div>";
 
 function getGuidedView(){
 
     var chapters = getChapters([], things)
 
     var path = separateChapters(chapters);
-    console.log(path);
     var gv = document.getElementById("guidedview-editor");
     var text = "";
-    text = gv.innerHTML;
-    text = text + "<ul><div class='dragReciever'></div>";
+    gv.innerHTML = "";
+    text = text + "<ul>" + dragReciever;
 
     for (let i=0; i<path.length; i++) {
         text = text + getGuidedViewNode(path[i], null, 2);
     }
 
-    gv.innerHTML = text + "</ul>"
+    gv.innerHTML = text + "</ul>";
 }
 
 function getGuidedViewNode(path, parent, heading) {
@@ -1542,23 +1538,23 @@ function getGuidedViewNode(path, parent, heading) {
         var node = path;
     }
 
-    text = text + "<li class='gve-family' id='" + node.id + "-gv' draggable='true'>";
+    text = text + "<li class='gve-family' id='" + node.id + "-gv' draggable='true' ondragstart='dragNode(event)'>";
 
-    text = text + "<div class='gve-item' onMouseLeave='removeDragRecievers()' onMouseEnter='insertDragRecievers(potentialSiblings(getThingsFromId(" + '"' + node.id + '"' + ")))'> <p>"+prepareText(node.name)+"</p></div>";
+    text = text + "<div class='gve-item' onMouseLeave='removeDragRecievers()' onMouseEnter='insertDragRecievers(getThingsFromId(" + '"' + node.id + '"' + "))'><p>"+prepareText(node.name)+"</p></div>";
 
+    text = text + "<ul class='gve-list'>";
+    text = text + dragReciever;
     if (Array.isArray(path)) {
         if (path[1].length > 0) {
-            text = text + "<ul class='gve-list'>"
-            text = text + "<div class='dragReciever'></div>"
             for (let i=0; i<path[1].length; i++) {
                 text = text + getGuidedViewNode(path[1][i], node, heading+1);
             }
-            text = text + "</ul>"
         }
     }
+    text = text + "</ul>";
 
     text = text + "</li>";
-    text = text + "<div class='dragReciever'></div>"
+    text = text + dragReciever;
     return text;
 }
 
@@ -1589,7 +1585,15 @@ function getPrimaryRecievers(node)
     return primary;
 }
 
-function insertDragRecievers(siblings) {
+function insertDragRecievers(node) {
+    var recievers = node.sendTo;
+    for(let i=0; i<recievers.length; i++) {
+        var element = document.getElementById(recievers[i].node.id + "-gv");
+        element.firstChild.nextSibling.firstChild.classList.add("active");
+    }    
+
+    var siblings = potentialSiblings(node);
+    siblings = siblings.concat(getChapters([], things));
     for(let i=0; i<siblings.length; i++) {
         var element = document.getElementById(siblings[i].id + "-gv");
         if (element != element.parentNode.lastChild) {
@@ -1599,6 +1603,14 @@ function insertDragRecievers(siblings) {
             element.previousSibling.classList.add("active");
         }
     }
+
+    var element = document.getElementById(node.id + "-gv");
+    if (element != element.parentNode.lastChild) {
+        element.nextSibling.classList.remove("active");
+    }
+    if (element != element.parentNode.firstChild) {
+        element.previousSibling.classList.remove("active");
+    }
 }
 
 function removeDragRecievers()
@@ -1607,4 +1619,58 @@ function removeDragRecievers()
     for (let i=0; i<dr.length; i++) {
         dr[i].classList.remove("active");
     }
+}
+
+function dragNode(ev)
+{
+    ev.dataTransfer.setData("node", ev.target.id.slice(0,-3))
+}
+
+function allowDrop(ev)
+{
+    ev.preventDefault();
+}
+
+function dropNode(ev)
+{
+    ev.preventDefault();
+    var node = getThingsFromId(ev.dataTransfer.getData("node"));
+    console.log(node);
+    var parent = getThingsFromId(ev.target.parentNode.parentNode.id.slice(0,-3));
+    console.log(parent);
+    console.log(node.sendTo);
+    for (let i=0; i<node.sendTo.length; i++) {
+        if (node.sendTo[i].node == parent) {
+            var rel = node.sendTo.slice(i,i+1)[0];
+            node.sendTo.splice(i,1);
+            node.sendTo.splice(0,0,rel);
+            break;
+        }
+    }
+    console.log(node.sendTo);
+
+    if (ev.target != ev.target.parentNode.lastChild) {
+        var sibling = getThingsFromId(ev.target.nextSibling.id);
+  
+        for (let i=0; i<things.length; i++) {
+            if (things[i].id == sibling) {
+                var insert = i;
+                break;
+            }
+        }
+
+        for (let i=0; i<things.length; i++) {
+            if (things[i].id == node.id) {
+                var remove = i;
+                break;
+            }
+        }
+
+        things.splice(remove, 1);
+        things.splice(insert,0,node);
+    }
+
+    document.getElementById("input").value = convertToMarkUp(things);
+    saveGraph();
+    setTimeout(getGuidedView, 1);
 }
