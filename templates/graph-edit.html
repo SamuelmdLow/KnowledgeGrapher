@@ -52,6 +52,8 @@
 <a id="markup-button" class="graph-button mobile-hidden" href="#">Open Markup</a>
 <a id="guided-view-button" class="graph-button" href="#">Guided View</a>
 
+<div id="guidedview-editor" class="nodeDetails hidden-nodeEditor"></div>
+
 <div id="inspector" class="nodeDetails hidden-nodeEditor">
     <div id="nodeEditor-info">
         <p id="nodeEditor-id"></p>
@@ -64,6 +66,7 @@
 
 <script>
 initializeMarkupButton();
+initializeGuidedViewButton();
 initializeModal();
 </script>
 {% endblock %}

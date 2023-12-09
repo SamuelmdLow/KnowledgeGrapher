@@ -675,49 +675,16 @@ function initializeGuidedViewButton() {
 }
 
 function separateChapters(chapters) {
-    var paths = [];
-    for (let c=0; c<chapters.length; c++) {
-        paths.push([chapters[c], []]);
-    }
-    paths.push([]);
-
-    for (let n=0; n<things.length; n++) {
-        if (chapters.includes(things[n])) {
-            continue;
-        }
-        var closest = null;
-        var shortest = null;
-        for (let c=0; c<chapters.length; c++) {
-            //find n's distance to c
-            var distance = getNodeDistance(things[n], chapters[c], []);
-            if (distance != null) {
-                if (shortest == null || distance < shortest) {
-                    closest = c;
-                    shortest = distance;
-                }
-            }
-        }
-
-        if (closest != null) {
-            paths[closest][1].push(things[n]);
-        }
-        else {
-            paths[paths.length-1].push(things[n]);
-        }
-    }
-    //console.log(paths);
     var path = [];
+    var candidates = Array.from(things);
+    console.log(candidates);
     for (let c=0; c<chapters.length; c++) {
-        var guided = guidedNextNode(paths[c][0],paths[c][1]);
-        path.push(guided[0]);
+        var s = guidedNextNode(chapters[c], candidates);
+        path.push(s[0]);
+        candidates = s[1];
     }
-    //console.log(paths[paths.length-1]);
-    path = path.concat(paths[paths.length-1]);
-    //console.log(path);
-    // when showing
-    // Get direct children, if no direct children go back to parent
-    // Select node with least receiveFrom nodes
-    // repeat
+    path.concat(candidates);
+
     return path
 }
 
@@ -754,19 +721,13 @@ function getNodeDistance(a, b, met) {
 }
 
 function guidedNextNode(node, candidates) {
-
-    var directReceive = [];
-
-    for (let i=0; i<node.receiveFrom.length; i++) {
-        directReceive.push(node.receiveFrom[i].node);
-    }
+    var directReceive = getPrimaryRecievers(node);
 
     var direct = [];
 
-
-    for (let i=0; i<candidates.length; i++) {
-        if (directReceive.includes(candidates[i])) {
-            direct.push(candidates[i]);
+    for (let i=0; i<directReceive.length; i++) {
+        if (candidates.includes(directReceive[i])) {
+            direct.push(directReceive[i]);
         }
     }
     //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
@@ -782,17 +743,21 @@ function guidedNextNode(node, candidates) {
         candidates = result[1];
 
         path.push(newpath);
-        //console.log(direct[0]);
-        var direct = [];
-        for (let i=0; i<candidates.length; i++) {
-            if (directReceive.includes(candidates[i])) {
-                direct.push(candidates[i]);
-            }
-        }
-        //direct = direct.sort(function(a,b){return a.receiveFrom.length - b.receiveFrom.length});
+        direct.splice(0,1);
     }
     path = [node, path];
     return [path, candidates];
+}
+
+function getPrimaryRecievers(node)
+{
+    var primary = [];
+    for (let i=0; i<node.receiveFrom.length; i++) {
+        if (node.receiveFrom[i].node.sendTo[0].node == node) {
+            primary.push(node.receiveFrom[i].node);
+        } 
+    }
+    return primary;
 }
 
 function getDependants(node) {
