@@ -1274,7 +1274,6 @@ function saveGraph()
     //savebutton.style.backgroundColor = "#98bdfb";
 
     var urlParts = window.location.href.split("/");
-    console.log(urlParts);
     urlParts[5] = "save";
     var url = urlParts.join("/");
     var save = getComplete(things);
@@ -1297,7 +1296,7 @@ function saveGraph()
         wordcloud = wordcloud + node;
     }
 
-    console.log(wordcloud);
+    // console.log(wordcloud);
     document.getElementById("wordcloud").value = wordcloud;
 }
 
@@ -1648,12 +1647,11 @@ function dropNode(ev)
         }
     }
     console.log(node.sendTo);
-
     if (ev.target != ev.target.parentNode.lastChild) {
-        var sibling = getThingsFromId(ev.target.nextSibling.id);
-  
+        var sibling = getThingsFromId(ev.target.nextSibling.id.slice(0,-3));
+        console.log(sibling);
         for (let i=0; i<things.length; i++) {
-            if (things[i].id == sibling) {
+            if (things[i].id == sibling.id) {
                 var insert = i;
                 break;
             }
@@ -1666,8 +1664,19 @@ function dropNode(ev)
             }
         }
 
+        console.log("insert: " + String(insert));
+        console.log(things[insert]);
+        console.log("remove: " + String(remove));
+        console.log(things[remove]);
+        console.log(things);
         things.splice(remove, 1);
-        things.splice(insert,0,node);
+        console.log(things);
+        if (insert > remove) {
+            things.splice(insert-1,0,node);            
+        } else {
+            things.splice(insert,0,node);
+        }
+        console.log(things);
     }
 
     document.getElementById("input").value = convertToMarkUp(things);
