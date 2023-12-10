@@ -42,6 +42,7 @@ body
     resize: none;
     transition-property: left, opacity;
     transition-duration: 0.5s;
+    height: 80%;
 }
 
 .hidden-markup {

@@ -1486,8 +1486,22 @@ function getFirstDependants(node) {
     return dependants;
 }
 
+function mostChildren(nodes) {
+    var most = null;
+    for (let i=0; i<nodes.length; i++) {
+        if (most==null) {
+            most = getFirstDependants(nodes[i]).length;
+            var node = nodes[i];
+        } else if (most < getFirstDependants(nodes[i]).length) {
+            most = getFirstDependants(nodes[i]).length;
+            node = nodes[i];
+        }
+    }
+    return node;
+}
+
 function getChapters(chapters, nodes) {
-    var chapter = nodes.sort(function(a,b){return getFirstDependants(b).length - getFirstDependants(a).length})[0];
+    var chapter = mostChildren(nodes);
     chapters.push(chapter);
 
     var taken = getFirstDependants(chapter);
