@@ -1678,8 +1678,7 @@ function dropNode(ev)
         }
         console.log(things);
     }
-
-    document.getElementById("input").value = convertToMarkUp(things);
+    closeNodeEdit()
     saveGraph();
     setTimeout(getGuidedView, 1);
 }
