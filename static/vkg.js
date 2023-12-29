@@ -765,7 +765,7 @@ function getPrimaryRecievers(node)
 {
     var primary = [];
     for (let i=0; i<node.receiveFrom.length; i++) {
-        if (node.receiveFrom[i].node.sendTo[0].node == node) {
+        if (primary.includes(node.receiveFrom[i].node)==false && node.receiveFrom[i].node.sendTo[0].node == node) {
             primary.push(node.receiveFrom[i].node);
         } 
     }
@@ -802,7 +802,7 @@ function getFirstDependants(node) {
     var newDependants = [];
 
     for (let i=0; i<node.receiveFrom.length; i++) {
-        if (node.receiveFrom[i].node.sendTo[0].node == node) {
+        if (newDependants.includes(node.receiveFrom[i].node)==false && node.receiveFrom[i].node.sendTo[0].node == node) {
             newDependants.push(node.receiveFrom[i].node);
         }
     }
