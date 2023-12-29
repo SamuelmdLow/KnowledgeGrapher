@@ -1534,12 +1534,16 @@ function getChapters() {
             left.push(things[i]);
         }
     }
-
+    console.log(chapters);
     return getRestOfChapters(chapters, left);
 }
 
 function getRestOfChapters(chapters, nodes) {
+    if(nodes.length == 0) {
+        return chapters
+    }
     var chapter = mostChildren(nodes);
+    console.log(chapter);
     chapters.push(chapter);
     var taken = getFirstDependants(chapter);
 
@@ -1550,11 +1554,7 @@ function getRestOfChapters(chapters, nodes) {
         }
     }
 
-    if(left.length == 0) {
-        return chapters
-    } else {
-        return getRestOfChapters(chapters, left)
-    }
+    return getRestOfChapters(chapters, left)
 }
 
 var dragReciever = "<div class='dragReciever' ondrop='dropNode(event)' ondragover='allowDrop(event)' ></div>";

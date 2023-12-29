@@ -860,9 +860,11 @@ function getChapters() {
 }
 
 function getRestOfChapters(chapters, nodes) {
+    if(nodes.length == 0) {
+        return chapters
+    }
     var chapter = mostChildren(nodes);
     chapters.push(chapter);
-
     var taken = getFirstDependants(chapter);
 
     var left = []
@@ -872,11 +874,7 @@ function getRestOfChapters(chapters, nodes) {
         }
     }
 
-    if(left.length == 0) {
-        return chapters
-    } else {
-        return getRestOfChapters(chapters, left)
-    }
+    return getRestOfChapters(chapters, left)
 }
 
 function getGuidedView(){
