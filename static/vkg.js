@@ -210,12 +210,12 @@ function panning()
         graph.setAttribute("panx", panx);
         graph.setAttribute("pany", pany);
 
-        graph.style.backgroundPositionX = String(panx) + "px";
-        graph.style.backgroundPositionY = String(pany) + "px";
+        graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+        graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
     }
 }
 
-function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y)
+function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y, isChapter)
 {
     this.id = id;
     this.name = name;
@@ -228,6 +228,7 @@ function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y)
     this.y = y;
     this.velx = 0;
     this.vely = 0;
+    this.isChapter = isChapter;
 }
 
 function Relation(rel, node)
@@ -332,6 +333,13 @@ function processInput(input)
                     var desc = null;
                 }
 
+                if(thing.includes("isChapter\n")) {
+                    var chapter = true;
+                    thing.replace("isChapter\n","");
+                } else {
+                    var chapter = false;
+                }
+
                 while(thing.includes("\n\n"))
                 {
                     thing = thing.replace("\n\n", "\n");
@@ -356,7 +364,7 @@ function processInput(input)
                     y = oldThing.y;
                 }
 
-                things.push(new Thing(id, name, image, desc, relations,[], 1, x, y));
+                things.push(new Thing(id, name, image, desc, relations,[], 1, x, y, chapter));
             }
         }
     }
@@ -493,9 +501,9 @@ function initializeZooming(e){
     graph.setAttribute("panx", panx);
     graph.setAttribute("pany", pany);
 
-    graph.style.backgroundPositionX = String(panx) + "px";
-    graph.style.backgroundPositionY = String(pany) + "px";
-    graph.style.backgroundSize = String(newscale*25) + "px";
+    graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+    graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
+    graph.style.backgroundSize = String(Math.floor(newscale*25)) + "px";
 }
 
 function placein()
@@ -676,8 +684,12 @@ function initializeGuidedViewButton() {
 
 function separateChapters(chapters) {
     var path = [];
-    var candidates = Array.from(things);
-    console.log(candidates);
+    var candidates = []
+    for (let i=0; i<things.length; i++) {
+        if(chapters.includes(things[i]) == false) {
+            candidates.push(things[i]);
+        }
+    }  
     for (let c=0; c<chapters.length; c++) {
         var s = guidedNextNode(chapters[c], candidates);
         path.push(s[0]);
@@ -828,7 +840,25 @@ function mostChildren(nodes) {
     return node;
 }
 
-function getChapters(chapters, nodes) {
+function getChapters() {
+    var taken = [];
+    var chapters = [];
+    for (let i=0; i<things.length; i++) {
+        if(things[i].isChapter) {
+            chapters.push(things[i]);
+            taken = taken.concat(getFirstDependants(things[i]));
+        }
+    }   
+    var left = []
+    for (let i=0; i<things.length; i++) {
+        if(taken.includes(things[i]) == false && chapters.includes(things[i]) == false) {
+            left.push(things[i]);
+        }
+    }    
+    return getRestOfChapters(chapters, left);
+}
+
+function getRestOfChapters(chapters, nodes) {
     var chapter = mostChildren(nodes);
     chapters.push(chapter);
 
@@ -836,7 +866,7 @@ function getChapters(chapters, nodes) {
 
     var left = []
     for (let i=0; i<nodes.length; i++) {
-        if(taken.includes(nodes[i]) == false) {
+        if(taken.includes(nodes[i]) == false && chapters.includes(nodes[i]) == false) {
             left.push(nodes[i]);
         }
     }
@@ -844,13 +874,19 @@ function getChapters(chapters, nodes) {
     if(left.length == 0) {
         return chapters
     } else {
-        return getChapters(chapters, left)
+        return getRestOfChapters(chapters, left)
     }
 }
 
 function getGuidedView(){
 
-    var chapters = getChapters([], things)
+    var chapters = getChapters();
+
+    var toc = "";
+    for (let c=0; c<chapters.length; c++) {
+        toc = toc + "<li><h2 id='" + chapters[c].id + "-toc'><a href='#" + chapters[c].id + "-gv'>" + chapters[c].name + "</a></h2></li>";
+    }
+    document.getElementById("gv-toc-list").innerHTML = toc;
 
     var path = separateChapters(chapters);
     //console.log(path);
@@ -875,13 +911,13 @@ function getGuidedView(){
     setTimeout(function(){
 
     gsap.to("#circles", {
-        scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[0].id + "-gv", start: "start start", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[0], self.progress)},
+        scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[0].id + "-gv", start: "start center", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[0], self.progress)},
         immediateRender: false,
     });
 
     for (let i=0; i<things.length; i++) {
         gsap.to("#" + things[i].id, {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", end: "+=150", scrub: 2},
             display: "block",
             opacity: 1
         });
@@ -893,7 +929,7 @@ function getGuidedView(){
         });
 
         gsap.to("#circles", {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", end: "+=300", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", end: "+=300", scrub: true, onUpdate: self => gvpan(things[i], self.progress)},
             immediateRender: false,
         });
 
@@ -901,11 +937,26 @@ function getGuidedView(){
             scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", end: "bottom center", onToggle: self => gvSelectNode(things[i])},
         });
     }
+
+    for (let i=0; i<chapters.length; i++) {
+        gsap.to("#circles", {
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + chapters[i].id + "-gv", start: "start center", end: "bottom center", onToggle: self => gvSelectChapter(chapters[i])},
+        });
+    }
+
     }, 500);
 }
 
 function gvSelectNode(focus) {
     document.getElementById(focus.id).classList.toggle("gv-inspected");
+}
+
+function gvSelectChapter(focus) {
+    var c = document.getElementById("gv-toc-list");
+    for(let i=0; i<c.children.length; i++) {
+        c.children[i].firstChild.classList.remove("highlight");
+    }
+    document.getElementById(focus.id + "-toc").classList.add("highlight");
 }
 
 function gvpan(focus, timeline) {
@@ -934,9 +985,9 @@ function gvpan(focus, timeline) {
     graph.setAttribute("pany", pany);
     graph.setAttribute("scale", scale);
 
-    graph.style.backgroundPositionX = String(panx) + "px";
-    graph.style.backgroundPositionY = String(pany) + "px";
-    graph.style.backgroundSize = String(scale*25) + "px";
+    graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+    graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
+    graph.style.backgroundSize = String(Math.floor(scale*25)) + "px";
 }
 
 function getGuidedViewNode(path, parent, heading) {
@@ -953,6 +1004,10 @@ function getGuidedViewNode(path, parent, heading) {
 
     text = text + "<li class='gv-item' id='" + node.id + "-gv'>";
 
+    text = text + "<div class='nodeCard'>";
+
+    text = text + "<h" + String(heading) + "><a href='#"+node.id+"-gv'>"+prepareText(node.name)+"</a></h" + String(heading) +">";
+
     if (parent != null) {
         for (let i=0; i<path[0].sendTo.length; i++) {
             if (path[0].sendTo[i].node == parent) {
@@ -961,19 +1016,22 @@ function getGuidedViewNode(path, parent, heading) {
             }
         }
     }
-    text = text + "<div class='nodeCard'>";
-    text = text + "<h" + String(heading) + "><a href='#"+node.id+"-gv'>"+prepareText(node.name)+"</a></h" + String(heading) +">";
+    
     if (node.image != "null" && node.image != "") {
-        text = text + "<img src='" + node.image + "'>"
+        text = text + "<img src='" + node.image + "'>";
     }
     text = text + "<p>"+prepareText(node.desc)+"</p></li>";
     text = text + "</div>";
 
+    if(heading < 3) {
+        heading = heading + 1;
+    }
+
     if (Array.isArray(path)) {
         if (path[1].length > 0) {
-            text = text + "<ul class='gv-list'>"
+            text = text + "<ul class='gv-list'>";
             for (let i=0; i<path[1].length; i++) {
-                text = text + getGuidedViewNode(path[1][i], node, heading+1);
+                text = text + getGuidedViewNode(path[1][i], node, heading);
             }
             text = text + "</ul>"
         }
