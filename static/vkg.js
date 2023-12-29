@@ -210,8 +210,8 @@ function panning()
         graph.setAttribute("panx", panx);
         graph.setAttribute("pany", pany);
 
-        graph.style.backgroundPositionX = String(panx) + "px";
-        graph.style.backgroundPositionY = String(pany) + "px";
+        graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+        graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
     }
 }
 
@@ -502,9 +502,9 @@ function initializeZooming(e){
     graph.setAttribute("panx", panx);
     graph.setAttribute("pany", pany);
 
-    graph.style.backgroundPositionX = String(panx) + "px";
-    graph.style.backgroundPositionY = String(pany) + "px";
-    graph.style.backgroundSize = String(newscale*25) + "px";
+    graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+    graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
+    graph.style.backgroundSize = String(Math.floor(newscale*25)) + "px";
 }
 
 function placein()
@@ -987,9 +987,9 @@ function gvpan(focus, timeline) {
     graph.setAttribute("pany", pany);
     graph.setAttribute("scale", scale);
 
-    graph.style.backgroundPositionX = String(panx) + "px";
-    graph.style.backgroundPositionY = String(pany) + "px";
-    graph.style.backgroundSize = String(scale*25) + "px";
+    graph.style.backgroundPositionX = String(Math.floor(panx)) + "px";
+    graph.style.backgroundPositionY = String(Math.floor(pany)) + "px";
+    graph.style.backgroundSize = String(Math.floor(scale*25)) + "px";
 }
 
 function getGuidedViewNode(path, parent, heading) {
