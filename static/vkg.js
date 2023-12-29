@@ -334,7 +334,6 @@ function processInput(input)
                 }
 
                 if(thing.includes("isChapter\n")) {
-                    console.log("processInput chapter");
                     var chapter = true;
                     thing.replace("isChapter\n","");
                 } else {
@@ -955,7 +954,6 @@ function gvSelectNode(focus) {
 function gvSelectChapter(focus) {
     var c = document.getElementById("gv-toc-list");
     for(let i=0; i<c.children.length; i++) {
-        console.log(c.children[i]);
         c.children[i].firstChild.classList.remove("highlight");
     }
     document.getElementById(focus.id + "-toc").classList.add("highlight");

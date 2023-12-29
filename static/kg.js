@@ -43,7 +43,6 @@ function convertToMarkUp(things)
          }
         complete = complete + "\ndesc:" + thing.desc +"\n---\n";
         if(thing.isChapter) {
-            console.log("convert to markup chapter");
             complete = complete + "isChapter\n";
         }
         for(let x=0; x<thing.sendTo.length; x++)
@@ -495,7 +494,6 @@ function processInput(input)
                 }
 
                 if(thing.includes("isChapter\n")) {
-                    console.log("processInput chapter");
                     var chapter = true;
                     thing.replace("isChapter\n","");
                 } else {
@@ -1271,7 +1269,6 @@ function getComplete(things)
             complete = complete + "\ny:" + thing.y + "\n";
         }
         if(thing.isChapter) {
-            console.log("convert to markup chapter");
             complete = complete + "isChapter\n";
         }
         for(let x=0; x<thing.sendTo.length; x++)
@@ -1527,7 +1524,6 @@ function getChapters() {
     var chapters = [];
     for (let i=0; i<things.length; i++) {
         if(things[i].isChapter==true) {
-            console.log(things[i]);
             chapters.push(things[i]);
             taken = taken.concat(getFirstDependants(things[i]));
         }
@@ -1566,7 +1562,6 @@ var dragReciever = "<div class='dragReciever' ondrop='dropNode(event)' ondragove
 function getGuidedView(){
 
     var chapters = getChapters();
-    console.log(chapters);
 
     var path = separateChapters(chapters);
     var gv = document.getElementById("guidedview-editor");
@@ -1690,14 +1685,11 @@ function dropNode(ev)
 {
     ev.preventDefault();
     var node = getThingsFromId(ev.dataTransfer.getData("node"));
-    console.log(node);
     if(ev.target.parentNode.parentNode.id=="guidedview-editor") {
         node.isChapter = true;
     } else {
         node.isChapter = false;
         var parent = getThingsFromId(ev.target.parentNode.parentNode.id.slice(0,-3));
-        console.log(parent);
-        console.log(node.sendTo);
         for (let i=0; i<node.sendTo.length; i++) {
             if (node.sendTo[i].node == parent) {
                 var rel = node.sendTo.slice(i,i+1)[0];
