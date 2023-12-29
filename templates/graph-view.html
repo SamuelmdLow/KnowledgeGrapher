@@ -87,16 +87,16 @@
     </div>
 </div>
 
-<a id="guided-view-button" class="graph-button" href="#">Toggle guided view</a>
 <div id="guidedview">
     <h1>{{context.graph.name}}</h1>
     <p>Published by <a href="/{{context.graph.user}}">{{context.graph.user}}</a></p>
     <p>{{context.graph.desc}}</p>
 </div>
-<div id="gv-toc">
+<div id="gv-toc" class="mobile-hidden">
     <h1>{{context.graph.name}}</h1>
     <ul id="gv-toc-list"></ul>
 </div>
+<a id="guided-view-button" class="graph-button" href="#">Toggle guided view</a>
 
 <script>
 initializeModal();

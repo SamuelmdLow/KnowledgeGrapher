@@ -7,7 +7,10 @@ html, body {
 }
 
 nav {
-    background-color: #d5d5d5;
+    background-image: linear-gradient(to bottom, white 50%, transparent);
+    padding-bottom: 20px;
+    border:none;
+    background-color: transparent;
 }
 
 body
@@ -71,7 +74,7 @@ body
     height: 50px;
     text-align: center;
     border-width:1px;
-    border-color: black;
+    border-color: transparent;
     border-style: solid;
     z-index: 2;
     background-size:cover;
@@ -79,7 +82,8 @@ body
     -ms-user-select: none;
     user-select: none;
     font-family: atkinson;
-    background-color: #ffffff75;
+    filter: drop-shadow(0 0 5px black);
+    background-color: white;
 }
 
 .gv .circle {
@@ -197,12 +201,12 @@ body
 }
 
 .gv .gv-inspected .line p {
-    display: block;
+    /*display: block;*/
     opacity: 1;
 }
 
 .inspected .line p {
-    display: block;
+    /*display: block;*/
     opacity: 1;
 }
 
@@ -390,21 +394,20 @@ a
 
 
 .gv #guided-view-button {
-    right: 635px
+    right: 25px
 }
 
 #guidedview {
-    background: white;
-    width: 500px;
+    background: linear-gradient(to right, transparent, white);
+    width: 600px;
     bottom: 0;
-    top: 35px;
+    top: 0;
     position: absolute;
     right: 0;
-    border-left: 2px solid;
     overflow: auto;
     padding: 2em;
-    padding-right: 5em;
-    padding-top: 2em;
+    padding-right: 210px;
+    padding-top: 3em;
     padding-bottom: 55vh;
     display: none;
 }
@@ -434,17 +437,19 @@ a
 #guidedview li.gv-item {
     min-height: 350px;
     margin: 0.5em;
-    scroll-margin-block-start: 100px;
+    scroll-margin-block-start: 200px;
 }
 
 .nodeCard {
     border-radius: 15px;
     padding: 1em;
     box-shadow: 0 0 6px black;
+    background: wheat;
 }
 
 #guidedview img {
     max-width: 100%;
+    max-height: 300px;
 }
 
 .relation {
@@ -501,12 +506,12 @@ a
 
 #gv-toc {
     position: absolute;
-    height: 300px;
-    width: 200px;
-    bottom: 100px;
-    right: 635px;
+    max-height: 500px;
+    width: 175px;
+    top: 100px;
+    right: 25px;
 
-    overflow-y: scroll;
+    overflow-y: auto;
     display: none;
 }
 
@@ -525,6 +530,10 @@ a
     list-style-type: decimal;
     padding-left: 1.75em;
     font-size: x-small;
+}
+
+#gv-toc .highlight {
+    font-weight: bolder;
 }
 
 @media only screen and (max-width: 600px) {

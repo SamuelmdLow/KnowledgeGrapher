@@ -885,7 +885,7 @@ function getGuidedView(){
 
     var toc = "";
     for (let c=0; c<chapters.length; c++) {
-        toc = toc + "<li><h2><a href='#" + chapters[c].id + "-gv'>" + chapters[c].name + "</a></h2></li>";
+        toc = toc + "<li><h2 id='" + chapters[c].id + "-toc'><a href='#" + chapters[c].id + "-gv'>" + chapters[c].name + "</a></h2></li>";
     }
     document.getElementById("gv-toc-list").innerHTML = toc;
 
@@ -912,13 +912,13 @@ function getGuidedView(){
     setTimeout(function(){
 
     gsap.to("#circles", {
-        scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[0].id + "-gv", start: "start start", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[0], self.progress)},
+        scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[0].id + "-gv", start: "start center", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[0], self.progress)},
         immediateRender: false,
     });
 
     for (let i=0; i<things.length; i++) {
         gsap.to("#" + things[i].id, {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", scrub: true},
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "top center", end: "+=150", scrub: 2},
             display: "block",
             opacity: 1
         });
@@ -930,7 +930,7 @@ function getGuidedView(){
         });
 
         gsap.to("#circles", {
-            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", end: "+=300", scrub: 2, onUpdate: self => gvpan(things[i], self.progress)},
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", end: "+=300", scrub: true, onUpdate: self => gvpan(things[i], self.progress)},
             immediateRender: false,
         });
 
@@ -938,11 +938,27 @@ function getGuidedView(){
             scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[i].id + "-gv", start: "start center", end: "bottom center", onToggle: self => gvSelectNode(things[i])},
         });
     }
+
+    for (let i=0; i<chapters.length; i++) {
+        gsap.to("#circles", {
+            scrollTrigger: {scroller: "#guidedview", trigger: "#" + chapters[i].id + "-gv", start: "start center", end: "bottom center", onToggle: self => gvSelectChapter(chapters[i])},
+        });
+    }
+
     }, 500);
 }
 
 function gvSelectNode(focus) {
     document.getElementById(focus.id).classList.toggle("gv-inspected");
+}
+
+function gvSelectChapter(focus) {
+    var c = document.getElementById("gv-toc-list");
+    for(let i=0; i<c.children.length; i++) {
+        console.log(c.children[i]);
+        c.children[i].firstChild.classList.remove("highlight");
+    }
+    document.getElementById(focus.id + "-toc").classList.add("highlight");
 }
 
 function gvpan(focus, timeline) {
@@ -990,6 +1006,10 @@ function getGuidedViewNode(path, parent, heading) {
 
     text = text + "<li class='gv-item' id='" + node.id + "-gv'>";
 
+    text = text + "<div class='nodeCard'>";
+
+    text = text + "<h" + String(heading) + "><a href='#"+node.id+"-gv'>"+prepareText(node.name)+"</a></h" + String(heading) +">";
+
     if (parent != null) {
         for (let i=0; i<path[0].sendTo.length; i++) {
             if (path[0].sendTo[i].node == parent) {
@@ -998,19 +1018,22 @@ function getGuidedViewNode(path, parent, heading) {
             }
         }
     }
-    text = text + "<div class='nodeCard'>";
-    text = text + "<h" + String(heading) + "><a href='#"+node.id+"-gv'>"+prepareText(node.name)+"</a></h" + String(heading) +">";
+    
     if (node.image != "null" && node.image != "") {
-        text = text + "<img src='" + node.image + "'>"
+        text = text + "<img src='" + node.image + "'>";
     }
     text = text + "<p>"+prepareText(node.desc)+"</p></li>";
     text = text + "</div>";
 
+    if(heading < 3) {
+        heading = heading + 1;
+    }
+
     if (Array.isArray(path)) {
         if (path[1].length > 0) {
-            text = text + "<ul class='gv-list'>"
+            text = text + "<ul class='gv-list'>";
             for (let i=0; i<path[1].length; i++) {
-                text = text + getGuidedViewNode(path[1][i], node, heading+1);
+                text = text + getGuidedViewNode(path[1][i], node, heading);
             }
             text = text + "</ul>"
         }
