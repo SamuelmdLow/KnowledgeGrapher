@@ -571,6 +571,11 @@ a
         right: 0;
         left: 0;
         background: none;
+        -webkit-mask-image: linear-gradient(to top, black 95%, transparent);
+    }
+
+    #guidedview>p {
+        margin:1em;
     }
 
     #guidedview li.gv-item {
