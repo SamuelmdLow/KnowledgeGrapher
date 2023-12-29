@@ -395,7 +395,7 @@ input[type="submit" i]:hover {
     overflow-x: hidden;
     }
     .mobile-hidden {
-        display: none;
+        display: none !important;
     }
 
     .logo-li {
