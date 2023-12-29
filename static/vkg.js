@@ -542,6 +542,7 @@ function placein()
         circle.style.width = String(size) + "px";
         circle.style.height = String(size) + "px";
         circle.style.borderRadius = String(size) + "px";
+        circle.style.filter = "drop-shadow(0 0 " + String(size/20) + "px black)";
 
         circle.style.left = String(panx + scale*thing.x - size/2) + "px";
         circle.style.top = String(pany + scale*thing.y - size/2) + "px";
