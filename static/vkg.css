@@ -434,7 +434,7 @@ a
 #guidedview li.gv-item {
     min-height: 350px;
     margin: 0.5em;
-    scroll-margin-block-start: 2em
+    scroll-margin-block-start: 100px;
 }
 
 .nodeCard {
@@ -497,6 +497,34 @@ a
 .quiz .line {
     opacity: 0;
     display: none;
+}
+
+#gv-toc {
+    position: absolute;
+    height: 300px;
+    width: 200px;
+    bottom: 100px;
+    right: 635px;
+
+    overflow-y: scroll;
+    display: none;
+}
+
+.gv #gv-toc {
+    display: block;
+}
+
+#gv-toc h1 {
+    font-size: small;
+}
+#gv-toc ul h2 {
+    font-size: 16px;
+}
+
+#gv-toc ul {
+    list-style-type: decimal;
+    padding-left: 1.75em;
+    font-size: x-small;
 }
 
 @media only screen and (max-width: 600px) {

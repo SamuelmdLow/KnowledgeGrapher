@@ -42,6 +42,10 @@ function convertToMarkUp(things)
             complete = complete + "\nimage:" + thing.image;
          }
         complete = complete + "\ndesc:" + thing.desc +"\n---\n";
+        if(thing.isChapter) {
+            console.log("convert to markup chapter");
+            complete = complete + "isChapter\n";
+        }
         for(let x=0; x<thing.sendTo.length; x++)
         {
             complete = complete + thing.sendTo[x].rel + " -> " + thing.sendTo[x].node.id + "\n";
@@ -307,7 +311,7 @@ function clearPanels() {
     }
 }
 
-function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y)
+function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y, isChapter)
 {
     this.id = id;
     this.name = name;
@@ -320,6 +324,7 @@ function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y)
     this.y = y;
     this.velx = 0;
     this.vely = 0;
+    this.isChapter = isChapter;
 }
 
 function Relation(rel, node)
@@ -410,6 +415,7 @@ function processInput(input)
             {
                 thing = thing.replace(id, "");
                 thing = thing.replace("{", "");
+
                 if(thing.includes("name:"))
                 {
                     var name = thing.slice(thing.indexOf("name:")+5);
@@ -488,6 +494,14 @@ function processInput(input)
                     var desc = null;
                 }
 
+                if(thing.includes("isChapter\n")) {
+                    console.log("processInput chapter");
+                    var chapter = true;
+                    thing.replace("isChapter\n","");
+                } else {
+                    var chapter = false;
+                }
+
                 while(thing.includes("\n\n"))
                 {
                     thing = thing.replace("\n\n", "\n");
@@ -512,7 +526,7 @@ function processInput(input)
                     y = oldThing.y;
                 }
 
-                things.push(new Thing(id, name, image, desc, relations,[], 1, x, y));
+                things.push(new Thing(id, name, image, desc, relations,[], 1, x, y, chapter));
             }
         }
     }
@@ -1155,7 +1169,7 @@ function createNode(x, y, that)
 
     var id = prompt("Enter the new node's id");
     if (id != null) {
-        var node = new Thing(id,id,"","",[],[],1,nodex, nodey);
+        var node = new Thing(id,id,"","",[],[],1,nodex, nodey, false);
         things.push(node);
 
         document.getElementById("input").value = convertToMarkUp(things);
@@ -1256,7 +1270,10 @@ function getComplete(things)
         } else {
             complete = complete + "\ny:" + thing.y + "\n";
         }
-
+        if(thing.isChapter) {
+            console.log("convert to markup chapter");
+            complete = complete + "isChapter\n";
+        }
         for(let x=0; x<thing.sendTo.length; x++)
         {
             complete = complete + thing.sendTo[x].rel + " -> " + thing.sendTo[x].node.id + "\n";
@@ -1328,7 +1345,12 @@ function openInfo(){
 
 function separateChapters(chapters) {
     var path = [];
-    var candidates = Array.from(things);
+    var candidates = []
+    for (let i=0; i<things.length; i++) {
+        if(chapters.includes(things[i]) == false) {
+            candidates.push(things[i]);
+        }
+    }  
     for (let c=0; c<chapters.length; c++) {
         var s = guidedNextNode(chapters[c], candidates);
         path.push(s[0]);
@@ -1500,15 +1522,34 @@ function mostChildren(nodes) {
     return node;
 }
 
-function getChapters(chapters, nodes) {
+function getChapters() {
+    var taken = [];
+    var chapters = [];
+    for (let i=0; i<things.length; i++) {
+        if(things[i].isChapter==true) {
+            console.log(things[i]);
+            chapters.push(things[i]);
+            taken = taken.concat(getFirstDependants(things[i]));
+        }
+    }
+    var left = []
+    for (let i=0; i<things.length; i++) {
+        if(taken.includes(things[i]) == false && chapters.includes(things[i]) == false) {
+            left.push(things[i]);
+        }
+    }
+
+    return getRestOfChapters(chapters, left);
+}
+
+function getRestOfChapters(chapters, nodes) {
     var chapter = mostChildren(nodes);
     chapters.push(chapter);
-
     var taken = getFirstDependants(chapter);
 
     var left = []
     for (let i=0; i<nodes.length; i++) {
-        if(taken.includes(nodes[i]) == false) {
+        if(taken.includes(nodes[i]) == false && chapters.includes(nodes[i]) == false) {
             left.push(nodes[i]);
         }
     }
@@ -1516,7 +1557,7 @@ function getChapters(chapters, nodes) {
     if(left.length == 0) {
         return chapters
     } else {
-        return getChapters(chapters, left)
+        return getRestOfChapters(chapters, left)
     }
 }
 
@@ -1524,7 +1565,8 @@ var dragReciever = "<div class='dragReciever' ondrop='dropNode(event)' ondragove
 
 function getGuidedView(){
 
-    var chapters = getChapters([], things)
+    var chapters = getChapters();
+    console.log(chapters);
 
     var path = separateChapters(chapters);
     var gv = document.getElementById("guidedview-editor");
@@ -1606,7 +1648,7 @@ function insertDragRecievers(node) {
     }    
 
     var siblings = potentialSiblings(node);
-    siblings = siblings.concat(getChapters([], things));
+    siblings = siblings.concat(getChapters());
     for(let i=0; i<siblings.length; i++) {
         var element = document.getElementById(siblings[i].id + "-gv");
         if (element != element.parentNode.lastChild) {
@@ -1649,21 +1691,26 @@ function dropNode(ev)
     ev.preventDefault();
     var node = getThingsFromId(ev.dataTransfer.getData("node"));
     console.log(node);
-    var parent = getThingsFromId(ev.target.parentNode.parentNode.id.slice(0,-3));
-    console.log(parent);
-    console.log(node.sendTo);
-    for (let i=0; i<node.sendTo.length; i++) {
-        if (node.sendTo[i].node == parent) {
-            var rel = node.sendTo.slice(i,i+1)[0];
-            node.sendTo.splice(i,1);
-            node.sendTo.splice(0,0,rel);
-            break;
-        }
+    if(ev.target.parentNode.parentNode.id=="guidedview-editor") {
+        node.isChapter = true;
+    } else {
+        node.isChapter = false;
+        var parent = getThingsFromId(ev.target.parentNode.parentNode.id.slice(0,-3));
+        console.log(parent);
+        console.log(node.sendTo);
+        for (let i=0; i<node.sendTo.length; i++) {
+            if (node.sendTo[i].node == parent) {
+                var rel = node.sendTo.slice(i,i+1)[0];
+                node.sendTo.splice(i,1);
+                node.sendTo.splice(0,0,rel);
+                break;
+            }
+        }    
     }
-    console.log(node.sendTo);
+    
     if (ev.target != ev.target.parentNode.lastChild) {
         var sibling = getThingsFromId(ev.target.nextSibling.id.slice(0,-3));
-        console.log(sibling);
+        
         for (let i=0; i<things.length; i++) {
             if (things[i].id == sibling.id) {
                 var insert = i;
@@ -1678,19 +1725,37 @@ function dropNode(ev)
             }
         }
 
-        console.log("insert: " + String(insert));
-        console.log(things[insert]);
-        console.log("remove: " + String(remove));
-        console.log(things[remove]);
-        console.log(things);
         things.splice(remove, 1);
-        console.log(things);
+
         if (insert > remove) {
             things.splice(insert-1,0,node);            
         } else {
             things.splice(insert,0,node);
         }
-        console.log(things);
+    } else if (ev.target.parentNode.children.length > 1) {
+        var sibling = getThingsFromId(ev.target.previousSibling.id.slice(0,-3));
+        
+        for (let i=0; i<things.length; i++) {
+            if (things[i].id == sibling.id) {
+                var insert = i;
+                break;
+            }
+        }
+
+        for (let i=0; i<things.length; i++) {
+            if (things[i].id == node.id) {
+                var remove = i;
+                break;
+            }
+        }
+
+        things.splice(remove, 1);
+
+        if (insert > remove) {
+            things.splice(insert,0,node);            
+        } else {
+            things.splice(insert+1,0,node);
+        }
     }
     closeNodeEdit()
     saveGraph();

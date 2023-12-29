@@ -215,7 +215,7 @@ function panning()
     }
 }
 
-function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y)
+function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y, isChapter)
 {
     this.id = id;
     this.name = name;
@@ -228,6 +228,7 @@ function Thing(id, name, image, desc, sendTo, receiveFrom, mass, x, y)
     this.y = y;
     this.velx = 0;
     this.vely = 0;
+    this.isChapter = isChapter;
 }
 
 function Relation(rel, node)
@@ -332,6 +333,14 @@ function processInput(input)
                     var desc = null;
                 }
 
+                if(thing.includes("isChapter\n")) {
+                    console.log("processInput chapter");
+                    var chapter = true;
+                    thing.replace("isChapter\n","");
+                } else {
+                    var chapter = false;
+                }
+
                 while(thing.includes("\n\n"))
                 {
                     thing = thing.replace("\n\n", "\n");
@@ -356,7 +365,7 @@ function processInput(input)
                     y = oldThing.y;
                 }
 
-                things.push(new Thing(id, name, image, desc, relations,[], 1, x, y));
+                things.push(new Thing(id, name, image, desc, relations,[], 1, x, y, chapter));
             }
         }
     }
@@ -676,8 +685,12 @@ function initializeGuidedViewButton() {
 
 function separateChapters(chapters) {
     var path = [];
-    var candidates = Array.from(things);
-    console.log(candidates);
+    var candidates = []
+    for (let i=0; i<things.length; i++) {
+        if(chapters.includes(things[i]) == false) {
+            candidates.push(things[i]);
+        }
+    }  
     for (let c=0; c<chapters.length; c++) {
         var s = guidedNextNode(chapters[c], candidates);
         path.push(s[0]);
@@ -828,7 +841,25 @@ function mostChildren(nodes) {
     return node;
 }
 
-function getChapters(chapters, nodes) {
+function getChapters() {
+    var taken = [];
+    var chapters = [];
+    for (let i=0; i<things.length; i++) {
+        if(things[i].isChapter) {
+            chapters.push(things[i]);
+            taken = taken.concat(getFirstDependants(things[i]));
+        }
+    }   
+    var left = []
+    for (let i=0; i<things.length; i++) {
+        if(taken.includes(things[i]) == false && chapters.includes(things[i]) == false) {
+            left.push(things[i]);
+        }
+    }    
+    return getRestOfChapters(chapters, left);
+}
+
+function getRestOfChapters(chapters, nodes) {
     var chapter = mostChildren(nodes);
     chapters.push(chapter);
 
@@ -836,7 +867,7 @@ function getChapters(chapters, nodes) {
 
     var left = []
     for (let i=0; i<nodes.length; i++) {
-        if(taken.includes(nodes[i]) == false) {
+        if(taken.includes(nodes[i]) == false && chapters.includes(nodes[i]) == false) {
             left.push(nodes[i]);
         }
     }
@@ -844,13 +875,19 @@ function getChapters(chapters, nodes) {
     if(left.length == 0) {
         return chapters
     } else {
-        return getChapters(chapters, left)
+        return getRestOfChapters(chapters, left)
     }
 }
 
 function getGuidedView(){
 
-    var chapters = getChapters([], things)
+    var chapters = getChapters();
+
+    var toc = "";
+    for (let c=0; c<chapters.length; c++) {
+        toc = toc + "<li><h2><a href='#" + chapters[c].id + "-gv'>" + chapters[c].name + "</a></h2></li>";
+    }
+    document.getElementById("gv-toc-list").innerHTML = toc;
 
     var path = separateChapters(chapters);
     //console.log(path);
