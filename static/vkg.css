@@ -82,8 +82,15 @@ body
     -ms-user-select: none;
     user-select: none;
     font-family: atkinson;
-    filter: drop-shadow(0 0 5px black);
     background-color: white;
+    filter: drop-shadow(0 0 5px black);
+}
+
+@media only screen and (max-width: 600px) {
+    .circle {
+        border-color: black;
+        filter:none !important;
+    }
 }
 
 .gv .circle {
