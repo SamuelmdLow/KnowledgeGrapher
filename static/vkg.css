@@ -77,7 +77,7 @@ body
     border-color: transparent;
     border-style: solid;
     z-index: 2;
-    background-size:contain;
+    background-size:cover;
     background-repeat: no-repeat;
     background-position: center;
     -webkit-user-select: none;
