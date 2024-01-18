@@ -78,7 +78,6 @@ body
     border-style: solid;
     z-index: 2;
     background-size:cover;
-    background-repeat: no-repeat;
     background-position: center;
     -webkit-user-select: none;
     -ms-user-select: none;
