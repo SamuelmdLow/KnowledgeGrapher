@@ -116,8 +116,8 @@ def index():
     context["newest"] = db.getGraphs(orderby="newest")
     if flask_login.current_user.is_authenticated:
         context["user"] = db.getUser(flask_login.current_user.id)
-        context["user_recent"] = db.getGraphsByUser(flask_login.current_user.id, num=7)
-        context["user_viewed"] = db.getGraphsViewedByUser(flask_login.current_user.id)
+        context["user_recent"] = db.getGraphsByUser(flask_login.current_user.id, num=6)
+        context["user_viewed"] = db.getGraphsViewedByUser(flask_login.current_user.id, num=6)
         context["activity"] = db.getActivity(flask_login.current_user.id)
     return render_template('index.html', context=context)
 

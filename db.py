@@ -312,7 +312,7 @@ class Database:
 
             return result
 
-    def getGraphsViewedByUser(self, userSlug, num=7):
+    def getGraphsViewedByUser(self, userSlug, num=None):
         userId = self.getUserId(userSlug)
 
         if userId is None:

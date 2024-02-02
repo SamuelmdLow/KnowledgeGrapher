@@ -5,13 +5,27 @@
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='home.css') }}">
 {% endblock %}
 
-{% block dashboard %}
-{% endblock %}
-
 {% block content %}
 <div class="home-content">
     <div class="banner"></div>
     <div class="home-main-content">
+        {% if current_user.is_authenticated %}
+        <div id="dashboard-sidebar" class="mobile-hidden">
+        <h1>{{ current_user.name }}</h1>
+        <h2>Recently Viewed</h2>
+        <ul>
+            {% for graph in context.user_viewed %}
+                <p><a href="/{{graph.user}}/{{graph.slug}}">{{graph.name}}</a> {% if graph.user == current_user.id %}<a href="/{{graph.user}}/{{graph.slug}}/edit"><i class="fa-solid fa-pencil"></i></a>{% endif %}</p>
+            {% endfor %}
+        </ul>
+        <h2>Recent Edits</h2>
+        <ul>
+            {% for graph in context.user_recent %}
+                <p><a href="/{{graph.user}}/{{graph.slug}}">{{graph.name}}</a> <a href="/{{graph.user}}/{{graph.slug}}/edit"><i class="fa-solid fa-pencil"></i></a></p>
+            {% endfor %}
+        </ul>
+        </div>
+        {% endif %}
         <div class="main">
             <h1>Popular</h1>
             <div class="scrollList-container">
