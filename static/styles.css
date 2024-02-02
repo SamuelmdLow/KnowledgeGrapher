@@ -425,7 +425,12 @@ input[type="submit" i]:hover {
         width: 66%;
         z-index: 50;
         padding-top: 35px;
-        background-color: #efefef;
+        margin: 0;
+        border-radius: 0;
+        overflow: auto;
+        top: 0;
+        height: 100vh;
+        padding-left: 15px;
     }
 
     .scrollList {
