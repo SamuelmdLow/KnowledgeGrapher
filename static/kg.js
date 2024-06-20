@@ -1308,6 +1308,7 @@ function saveGraph()
         for (let a=0; a<things[i].receiveFrom.length; a++) {
             node = node + "," + things[i].name;
         }
+        node = node + "," + things[i].name;
         wordcloud = wordcloud + node;
     }
 

@@ -27,7 +27,7 @@ function staticUpdate(timeStamp)
 
 function deselect() {
     for(let i=0; i<selected.length; i++) {
-        document.getElementById(selected[i]).classList.toggle("inspected");
+        document.getElementById(selected[i]).classList.remove("inspected");
     }
     selected = [];
 }
@@ -528,6 +528,7 @@ function placein()
         circle.style.width = String(size) + "px";
         circle.style.height = String(size) + "px";
         circle.style.borderRadius = String(size) + "px";
+        circle.style.filter = "drop-shadow(0 0 " + String(size/20) + "px black)";
 
         circle.style.left = String(panx + scale*thing.x - size/2) + "px";
         circle.style.top = String(pany + scale*thing.y - size/2) + "px";
@@ -726,23 +727,28 @@ function gvpan(focus, timeline) {;
 
 var questionNode;
 
-function getRandomRel() {
+function getRandomNode() {
     var node = things[Math.floor(Math.random()*things.length)];
+    return node;
+}
+
+function getRandomRel() {
+    var node = getRandomNode();
     while(node.sendTo.length < 1) {
-        var node = things[Math.floor(Math.random()*things.length)];
+        var node = getRandomNode();
     }
     var rel = node.sendTo[Math.floor(Math.random()*node.sendTo.length)].rel;
 
     return [node, rel];
 }
 
-answer = []
+answer = [];
 
 function testRel() {
-    answer = []
+    answer = [];
     var q = getRandomRel();
     questionNode = q[0];
-    document.getElementById(questionNode.id).classList.toggle("inspected");
+    document.getElementById(questionNode.id).classList.add("inspected");
 
     for (let i=0; i<q[0].sendTo.length; i++) {
         if (q[0].sendTo[i].rel == q[1]) {
@@ -753,9 +759,10 @@ function testRel() {
     var question = "<b>" + q[0].name + "</b> " + q[1] + " <span class='unknown'>?????</span>";
 
     document.getElementById("question").innerHTML = question;
+    document.getElementById("question-small").innerHTML = "Select the node which satisfies the relationship";
 
     var zoomToIndex = 0;
-    var time = 200;
+    var time = 50;
     var zoomTo = setInterval(function () {
         gvpan(questionNode, zoomToIndex/time);
         zoomToIndex += 1;
@@ -764,6 +771,57 @@ function testRel() {
             clearInterval(zoomTo);
         }
     }, 0.1);
+}
+
+let zoomOutStart;
+let duration = 2000;
+
+function zoomOut(timeStamp) {
+
+    if(zoomOutStart === undefined) {
+        zoomOutStart = timeStamp;
+        requestAnimationFrame(zoomOut);
+    } else if (timeStamp - zoomOutStart < duration) {
+        var progress = (timeStamp - zoomOutStart)/ duration;
+        console.log(progress);
+        progress = progress * progress;
+
+        var currentScale = parseFloat(graph.getAttribute("scale"));
+
+        var scale = currentScale + (5 - currentScale) * progress;
+
+        var currentX = parseFloat(graph.getAttribute("panx"));
+        var currentY = parseFloat(graph.getAttribute("pany"));
+
+        var panx = currentX + (800 - currentX) * progress;
+        var pany = currentY + (400 - currentY) * progress;
+
+        graph.setAttribute("panx", panx);
+        graph.setAttribute("pany", pany);
+        graph.setAttribute("scale", scale);
+        
+        graph.style.backgroundPositionX = String(panx) + "px";
+        graph.style.backgroundPositionY = String(pany) + "px";
+        graph.style.backgroundSize = String(scale*25) + "px";    
+
+        requestAnimationFrame(zoomOut);
+    } else {
+        zoomOutStart = undefined;
+    }
+}
+
+function testDescription() {
+    answer = [];
+    var node = getRandomNode();
+
+    answer.push(node.id);
+
+    document.getElementById("inspector-desc").innerHTML = node.desc;
+    document.getElementById("inspector").style.display = "block";
+    document.getElementById("question").innerHTML = "<b>Find the node</b>";
+    document.getElementById("question-small").innerHTML = "Select the node with the description on the right";
+
+    requestAnimationFrame(zoomOut);
 }
 
 function checkAnswer() {
@@ -780,6 +838,14 @@ function nextQuestion() {
         alert(answer);
     }
     deselect();
-    document.getElementById(questionNode.id).classList.toggle("inspected");
-    testRel();
+    document.getElementById("inspector").style.display = "none";
+    document.getElementById("question").innerHTML = "";
+    document.getElementById(questionNode.id).classList.remove("inspected");
+
+    var type = Math.floor(Math.random()*2);
+    if(type==0) {
+        testRel();
+    } else {
+        testDescription();
+    }
 }

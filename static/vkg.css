@@ -518,6 +518,11 @@ a
     display: none;
 }
 
+.quiz .nodeDetails {
+    height: fit-content;
+    font-size: 1.25em;
+}
+
 #gv-toc {
     position: absolute;
     max-height: 500px;
