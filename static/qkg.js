@@ -816,7 +816,7 @@ function testDescription() {
 
     answer.push(node.id);
 
-    document.getElementById("inspector-desc").innerHTML = node.desc;
+    document.getElementById("inspector-desc").innerHTML = prepareText(node.desc);
     document.getElementById("inspector").style.display = "block";
     document.getElementById("question").innerHTML = "<b>Find the node</b>";
     document.getElementById("question-small").innerHTML = "Select the node with the description on the right";
