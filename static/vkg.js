@@ -9,7 +9,7 @@ function onload()
     console.log("type 'markup' to get the markup for this graph");
     things = processInput(saved);
     setup(things);
-    window.setInterval(staticUpdate, 1);
+    window.requestAnimationFrame(staticUpdate);
     document.getElementById("graph").setAttribute("ondblclick", "deselect()");
     document.getElementById("saved").remove();
 
@@ -30,10 +30,12 @@ function openFullScreen() {
     }
 }
 
-function staticUpdate()
+function staticUpdate(timeStamp)
 {
     panning();
     placein();
+
+    window.requestAnimationFrame(staticUpdate);
 }
 
 function uninspect(that)

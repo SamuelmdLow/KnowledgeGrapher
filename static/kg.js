@@ -10,7 +10,7 @@ function onload()
     things = processInput(saved);
     document.getElementById("input").value = convertToMarkUp(things);
     setup(processInput(saved));
-    setInterval(update, 1);
+    window.requestAnimationFrame(update);
     setInterval(checkSave, 1000);
     simplemde = new SimpleMDE({ toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "guide"],
     element: document.getElementById("nodeEditor-desc"),
@@ -333,7 +333,7 @@ function Relation(rel, node)
 }
 
 
-function update()
+function update(timeStamp)
 {
     var input = document.getElementById("input").value;
     var graph = document.getElementById("graph");
@@ -379,6 +379,7 @@ function update()
         //savebutton.style.backgroundColor = "#cfcfcf";
     }
 
+    window.requestAnimationFrame(update);
 }
 
 function checkSave(){

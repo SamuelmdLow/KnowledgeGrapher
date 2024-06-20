@@ -456,7 +456,7 @@ a
 }
 
 .nodeCard>*{
-    overflow: scroll;
+    overflow-x: auto;
     width: auto;
     display: block;
 }
