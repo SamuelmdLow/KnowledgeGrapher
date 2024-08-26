@@ -12,5 +12,25 @@
         <h2><a href="/{{graph.user}}/{{graph.slug}}{% if edit %}/edit{% endif %}">{{graph.name}}</a></h2>
         <p>{{graph.desc}}</p>
         <p>{{graph.lastEdit}}</p>
+        <button onclick="deleteGraph('{{graph.user}}', '{{graph.slug}}', '{{graph.name}}')">Delete</button>
     </div>
 </div>
+
+<script>
+    function deleteGraph(user, slug, name) {
+        var enteredName = prompt("DO YOU WISH TO DELETE THIS GRAPH? Enter the graph's full title '" + name + "' to delete it.")
+        if (enteredName == name) {
+            $.ajax({
+                type: 'POST',
+                url: "/" + user + "/" + slug + "/delete",
+                dataType: "text",
+                success: function(data){
+                        console.log("Delete");
+                        location.reload(); 
+                    }
+            });
+        } else {
+            alert("Delete canceled");
+        }
+    }
+</script>

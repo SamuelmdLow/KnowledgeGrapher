@@ -909,12 +909,32 @@ function getGuidedView(){
 
     gsap.registerPlugin(ScrollTrigger);
 
-    setTimeout(function(){
+
 
     gsap.to("#circles", {
-        scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[0].id + "-gv", start: "start center", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[0], self.progress)},
+        scrollTrigger: {scroller: "#guidedview", trigger: "#" + things[0].id + "-gv", start: "start center", end:"+=300", scrub: 2, onUpdate: self => gvpan(things[0], Math.floor(self.progress/0.75))},
         immediateRender: false,
     });
+
+    var spacers = gsap.utils.toArray('.list-spacer');
+    spacers.forEach((spacer) => {
+        gsap.to("#circles", {
+            scrollTrigger: {scroller: "#guidedview", trigger: spacer, start: "start center", end: "bottom center", scrub: true, 
+                onUpdate: self => {
+                    gvpan(getThingsFromId(self.trigger.getAttribute("parent")), self.progress*self.progress);
+                },
+                onToggle: self => {
+                    //classList.toggle("gv-inspected")
+                    let children = self.trigger.parentElement.getElementsByClassName('gv-item');
+                    console.log(children);
+                    for (let i=0; i<children.length; i++) {
+                        document.getElementById(children[i].id.replace("-gv", "")).classList.toggle("gv-inspected");
+                    }
+                },
+            },
+            immediateRender: false,
+        });
+    })
 
     for (let i=0; i<things.length; i++) {
         gsap.to("#" + things[i].id, {
@@ -944,8 +964,6 @@ function getGuidedView(){
             scrollTrigger: {scroller: "#guidedview", trigger: "#" + chapters[i].id + "-gv", start: "start center", end: "bottom center", onToggle: self => gvSelectChapter(chapters[i])},
         });
     }
-
-    }, 500);
 }
 
 function gvSelectNode(focus) {
@@ -960,9 +978,32 @@ function gvSelectChapter(focus) {
     document.getElementById(focus.id + "-toc").classList.add("highlight");
 }
 
+function fitFrame(elements) {
+    var tightest = {'left': null, 'top': null, 'right': null, 'bottom': null};
+    for (let i=0; i<elements.length; i++) {
+        let e = elements[i];
+        if (tightest.left==null) {
+            tightest = {'left': e.x, 'top': e.y, 'right': e.x + e.mass, 'bottom': e.y + e.mass};
+        } else {
+            if (tightest.left > e.x) {
+                tightest.left = e.x;
+            }
+            if (tightest.top > e.y) {
+                tightest.top = e.y;
+            }
+            if (tightest.right < e.x + e.mass) {
+                tightest.right = e.x + e.mass;
+            }
+            if (tightest.bottom < e.y + e.mass) {
+                tightest.bottom = e.y + e.mass;
+            }
+        }
+    }
+}
+
 function gvpan(focus, timeline) {
     //console.log(focus.id);
-    var progress = timeline*timeline;
+    var progress = timeline;
     var graph = document.getElementById("graph");
     var currentScale = parseFloat(graph.getAttribute("scale"));
     var targetScale = 50/focus.mass;
@@ -1034,7 +1075,7 @@ function getGuidedViewNode(path, parent, heading) {
             for (let i=0; i<path[1].length; i++) {
                 text = text + getGuidedViewNode(path[1][i], node, heading);
             }
-            text = text + "</ul>"
+            text = text + "<div class='list-spacer' parent='" + node.id + "'></div></ul>"
         }
     }
     return text;

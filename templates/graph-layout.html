@@ -11,7 +11,7 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.5/dist/purify.min.js"></script>
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script id="MathJax-script" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script type="text/x-mathjax-config">
       MathJax.Hub.Config({
         tex2jax: {
@@ -23,7 +23,7 @@
     {% block head %}{% endblock %}
 </head>
 <body onmousemove="this.setAttribute('x',event.clientX);this.setAttribute('y',event.clientY);"
-      onload="onload()" class="{% block bodyClass %}{% endblock %}">
+    class="{% block bodyClass %}{% endblock %}">
 
 <div id="modal" class="hidden">
 
@@ -109,6 +109,7 @@
     },{passive:false});
 
     initializeInfoButton();
+    onload();
 </script>
 
 </body>

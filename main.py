@@ -372,6 +372,17 @@ def save(ownerSlug, graphSlug):
 
     return "Page not found", 404
 
+@app.route('/<ownerSlug>/<graphSlug>/delete', methods=['GET', 'POST'])
+@flask_login.login_required
+def delete(ownerSlug, graphSlug):
+    ownerSlug = ownerSlug.lower()
+    if flask_login.current_user.id == ownerSlug:
+        db = Database()
+        db.deleteGraph(ownerSlug, graphSlug)
+        return jsonify(status="success")
+
+    return "Page not found", 404
+
 @app.route('/<ownerSlug>/<graphSlug>/saveInfo', methods=['GET', 'POST'])
 @flask_login.login_required
 def saveInfo(ownerSlug, graphSlug):

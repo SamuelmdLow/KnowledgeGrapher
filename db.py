@@ -122,8 +122,8 @@ class Database:
                 pubdate DATETIME,
                 lastedit DATETIME,
                 PRIMARY KEY (id),
-                FOREIGN KEY (user) REFERENCES users(id),
-                FOREIGN KEY (subject) REFERENCES subjects(id),
+                FOREIGN KEY (user) REFERENCES users(id), ON DELETE CASCADE,
+                FOREIGN KEY (subject) REFERENCES subjects(id), ON DELETE CASCADE,
                 UNIQUE (user, slug)
             )''')
 
@@ -132,8 +132,8 @@ class Database:
                 user int,
                 graph int,
                 date DATETIME,
-                FOREIGN KEY (user) REFERENCES users(id),
-                FOREIGN KEY (graph) REFERENCES graphs(id)
+                FOREIGN KEY (user) REFERENCES users(id), ON DELETE CASCADE,
+                FOREIGN KEY (graph) REFERENCES graphs(id), ON DELETE CASCADE,
             )''')
 
         self.cursor.execute('''
@@ -141,8 +141,8 @@ class Database:
                 user int,
                 graph int,
                 date DATETIME,
-                FOREIGN KEY (user) REFERENCES users(id),
-                FOREIGN KEY (graph) REFERENCES graphs(id)
+                FOREIGN KEY (user) REFERENCES users(id), ON DELETE CASCADE,
+                FOREIGN KEY (graph) REFERENCES graphs(id), ON DELETE CASCADE,
             )''')
 
         self.cursor.execute('''
@@ -150,8 +150,8 @@ class Database:
                 user int,
                 graph int,
                 date DATETIME,
-                FOREIGN KEY (user) REFERENCES users(id),
-                FOREIGN KEY (graph) REFERENCES graphs(id)
+                FOREIGN KEY (user) REFERENCES users(id), ON DELETE CASCADE,
+                FOREIGN KEY (graph) REFERENCES graphs(id), ON DELETE CASCADE,
             )''')
 
         self.cursor.execute('''
@@ -159,8 +159,8 @@ class Database:
                 follower int,
                 followed int,
                 date DATETIME,
-                FOREIGN KEY (follower) REFERENCES users(id),
-                FOREIGN KEY (followed) REFERENCES users(id)
+                FOREIGN KEY (follower) REFERENCES users(id), ON DELETE CASCADE,
+                FOREIGN KEY (followed) REFERENCES users(id), ON DELETE CASCADE,
             )''')
 
         self.cursor.execute('''
@@ -169,7 +169,7 @@ class Database:
                 img VARCHAR(100),
                 text VARCHAR(500),
                 date DATETIME,
-                FOREIGN KEY (user) REFERENCES users(id)
+                FOREIGN KEY (user) REFERENCES users(id), ON DELETE CASCADE,
             )''')
 
     def createGraph(self, userSlug, graphSlug, privacy=0):
@@ -409,6 +409,14 @@ class Database:
         values = (nodes, datetime.datetime.now(), userId, slug)
         self.cursor.execute(sql, values)
         self.mydb.commit()
+
+    def deleteGraph(self, userSlug, slug):
+        userId = self.getUserId(userSlug)
+        sql = "DELETE FROM graphs WHERE user =%s AND slug = %s"
+        values = (userId, slug)
+        self.cursor.execute(sql, values)
+        self.mydb.commit()
+
     def saveGraphInfo(self, userSlug, slug, name, privacy, desc):
         graph = self.getGraph(userSlug, slug)
         userId = self.getUserId(userSlug)

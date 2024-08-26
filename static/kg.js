@@ -335,6 +335,8 @@ function Relation(rel, node)
 
 function update(timeStamp)
 {
+    
+    console.log("updating");
     var input = document.getElementById("input").value;
     var graph = document.getElementById("graph");
     if (nodeEdit == false) {
