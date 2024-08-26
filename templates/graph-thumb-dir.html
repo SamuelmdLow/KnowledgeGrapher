@@ -12,7 +12,9 @@
         <h2><a href="/{{graph.user}}/{{graph.slug}}{% if edit %}/edit{% endif %}">{{graph.name}}</a></h2>
         <p>{{graph.desc}}</p>
         <p>{{graph.lastEdit}}</p>
-        <button onclick="deleteGraph('{{graph.user}}', '{{graph.slug}}', '{{graph.name}}')">Delete</button>
+        {% if edit %}
+            <button onclick="deleteGraph('{{graph.user}}', '{{graph.slug}}', '{{graph.name}}')">Delete</button>
+        {% endif %}
     </div>
 </div>
 
