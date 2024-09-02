@@ -48,6 +48,11 @@ class Database:
             )
             self.cursor = self.mydb.cursor()
 
+    def __del__(self):
+        print("destroying connection")
+        self.cursor.close()
+        self.mydb.close()
+
     class Graph:
         def __init__(self, data):
             self.id = data[0]
