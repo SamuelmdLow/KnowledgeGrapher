@@ -1161,6 +1161,12 @@ function setanchor(event, that)
     }
 }
 
+function convertToSlug(Text) {
+    return Text.toLowerCase()
+      .replace(/[^\w ]+/g, "")
+      .replace(/ +/g, "-");
+  }  
+
 function createNode(x, y, that)
 {
     var graph = document.getElementById("graph");
@@ -1168,9 +1174,9 @@ function createNode(x, y, that)
     var nodex = (parseFloat(x) - parseFloat(graph.getAttribute("panx")))/parseFloat(graph.getAttribute("scale"));
     var nodey = (parseFloat(y) - parseFloat(graph.getAttribute("pany")))/parseFloat(graph.getAttribute("scale"));
 
-    var id = prompt("Enter the new node's id");
+    var id = prompt("Enter the new node's name");
     if (id != null) {
-        var node = new Thing(id,id,"","",[],[],1,nodex, nodey, false);
+        var node = new Thing(convertToSlug(id),id,"","",[],[],1,nodex, nodey, false);
         things.push(node);
 
         document.getElementById("input").value = convertToMarkUp(things);
